@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getSecureSessionId } from "@/lib/draftUtils";
-import { ArrowRight, Loader2, Crown, Check } from "lucide-react";
+import { ArrowLeft, Loader2, Crown, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface DraftRoom {
   id: string;
@@ -34,6 +35,7 @@ export default function JoinDraft() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation("draft");
 
   const [room, setRoom] = useState<DraftRoom | null>(null);
   const [players, setPlayers] = useState<RoomPlayer[]>([]);
@@ -122,8 +124,8 @@ export default function JoinDraft() {
 
       if (roomError || !roomData) {
         toast({
-          title: "חדר לא נמצא",
-          description: "בדוק את קוד החדר",
+          title: t("join.notFound"),
+          description: t("join.checkCode"),
           variant: "destructive",
         });
         navigate("/");
@@ -150,8 +152,8 @@ export default function JoinDraft() {
     } catch (err) {
       console.error("Error fetching room:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לטעון את החדר",
+        title: t("join.error"),
+        description: t("join.loadError"),
         variant: "destructive",
       });
     } finally {
@@ -162,8 +164,8 @@ export default function JoinDraft() {
   const handleClaimPlayer = async (draftRoomPlayerId: string) => {
     if (!sessionId) {
       toast({
-        title: "שגיאה",
-        description: "מזהה הפגישה לא נטען, נסה לרענן את הדף",
+        title: t("join.error"),
+        description: t("join.sessionError"),
         variant: "destructive",
       });
       return;
@@ -184,12 +186,12 @@ export default function JoinDraft() {
       const result = claimResult?.[0];
       if (!result?.success) {
         toast({
-          title: "לא ניתן לבחור",
-          description: result?.message === "Player already claimed" 
-            ? "השחקן כבר נתפס" 
+          title: t("join.cannotSelect"),
+          description: result?.message === "Player already claimed"
+            ? t("join.alreadyClaimed")
             : result?.message === "Session already claimed a player"
-            ? "כבר בחרת זהות בחדר זה"
-            : "בחר שחקן אחר",
+            ? t("join.sessionAlreadyClaimed")
+            : t("join.selectAnother"),
           variant: "destructive",
         });
         fetchRoom(); // Refresh the list
@@ -202,8 +204,8 @@ export default function JoinDraft() {
       // Presence API in WaitingRoom will handle captain connection tracking.
 
       toast({
-        title: "זהות נבחרה!",
-        description: "אתה מחובר לחדר",
+        title: t("join.identitySelected"),
+        description: t("join.connectedToRoom"),
       });
 
       // Navigate to waiting room
@@ -211,8 +213,8 @@ export default function JoinDraft() {
     } catch (err) {
       console.error("Error claiming player:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לבחור את השחקן",
+        title: t("join.error"),
+        description: t("join.claimError"),
         variant: "destructive",
       });
     } finally {
@@ -227,7 +229,7 @@ export default function JoinDraft() {
           <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-3" />
           {autoIdentifying && autoIdentifiedName && (
             <p className="text-emerald-400 font-medium">
-              זוהית כ{autoIdentifiedName}!
+              {t("join.identifiedAs", { name: autoIdentifiedName })}
             </p>
           )}
         </div>
@@ -250,10 +252,10 @@ export default function JoinDraft() {
         >
           <Check className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">
-            כבר בחרת זהות
+            {t("join.alreadySelected")}
           </h2>
           <Button onClick={() => navigate(`/room/${roomCode}`)} className="bg-emerald-500 hover:bg-emerald-600 text-white">
-            כנס לחדר
+            {t("join.enterRoom")}
           </Button>
         </motion.div>
       </div>
@@ -291,7 +293,7 @@ export default function JoinDraft() {
             <div className="text-gray-400 mt-2">Available Players:</div>
             {players.slice(0, 3).map((p) => (
               <div key={p.id} className="ml-2 text-xs">
-                • {p.display_name} ({p.is_captain ? 'Captain' : 'Player'})
+                - {p.display_name} ({p.is_captain ? 'Captain' : 'Player'})
                 {p.claimed_by_session_id && ' - Claimed'}
               </div>
             ))}
@@ -300,18 +302,18 @@ export default function JoinDraft() {
       )}
 
       {/* Header */}
-      <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-50" dir="rtl">
+      <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-50">
         <Link
           to="/"
           className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
         >
-          <ArrowRight className="h-4 w-4" />
-          <span>חזרה</span>
+          <ArrowLeft className="h-4 w-4" />
+          <span>{t("join.back")}</span>
         </Link>
-        <img src="/logo.png" alt="kohot.online" className="h-8 w-auto" />
+        <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
       </header>
 
-      <main className="px-4 py-8 max-w-2xl mx-auto" dir="rtl">
+      <main className="px-4 py-8 max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -319,15 +321,15 @@ export default function JoinDraft() {
         >
           <div className="text-center">
             <div className="inline-block px-4 py-2 bg-black/30 backdrop-blur-sm rounded-lg border border-white/10 mb-4">
-              <span className="text-sm text-white/60">קוד חדר:</span>
-              <span className="font-mono font-bold text-lg mr-2 text-white" dir="ltr">
+              <span className="text-sm text-white/60">{t("join.roomCode")}:</span>
+              <span className="font-mono font-bold text-lg ml-2 text-white">
                 {room.room_code}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">
               {room.draft_name}
             </h1>
-            <p className="text-white/60">בחר את הזהות שלך</p>
+            <p className="text-white/60">{t("join.subtitle")}</p>
           </div>
 
           {/* Captains Section */}
@@ -335,7 +337,7 @@ export default function JoinDraft() {
             <div className="space-y-3">
               <h2 className="font-semibold text-white flex items-center gap-2">
                 <Crown className="h-5 w-5 text-amber-400" />
-                קפטנים
+                {t("join.captains")}
               </h2>
               <div className="grid gap-3">
                 {captains.map((player) => {
@@ -357,20 +359,20 @@ export default function JoinDraft() {
                         photoUrl={player.photo_url}
                         size="lg"
                       />
-                      <div className="flex-1 text-right">
+                      <div className="flex-1 text-left">
                         <p className="font-semibold text-white">
                           {player.display_name}
                         </p>
-                        <p className="text-sm text-amber-400">קפטן</p>
+                        <p className="text-sm text-amber-400">{t("join.captainLabel")}</p>
                       </div>
                       {claiming === player.id ? (
                         <Loader2 className="h-5 w-5 animate-spin text-white" />
                       ) : isClaimed ? (
                         <span className="text-sm text-white/40">
-                          נתפס
+                          {t("join.claimed")}
                         </span>
                       ) : (
-                        <span className="text-sm text-emerald-400">בחר</span>
+                        <span className="text-sm text-emerald-400">{t("join.select")}</span>
                       )}
                     </button>
                   );
@@ -382,7 +384,7 @@ export default function JoinDraft() {
           {/* Other Players Section */}
           {nonCaptains.length > 0 && (
             <div className="space-y-3">
-              <h2 className="font-semibold text-white">שחקנים</h2>
+              <h2 className="font-semibold text-white">{t("join.players")}</h2>
               <div className="grid grid-cols-2 gap-3">
                 {nonCaptains.map((player) => {
                   const isClaimed = !!player.claimed_by_session_id;
@@ -403,7 +405,7 @@ export default function JoinDraft() {
                         photoUrl={player.photo_url}
                         size="md"
                       />
-                      <div className="flex-1 text-right">
+                      <div className="flex-1 text-left">
                         <p className="font-medium text-sm text-white truncate">
                           {player.display_name}
                         </p>

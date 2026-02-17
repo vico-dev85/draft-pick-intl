@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { getCaptainColor, getCaptainBorderColor } from "@/lib/draftUtils";
 import { PlayerChip } from "./PlayerChip";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface Player {
   id: string;
@@ -26,6 +27,7 @@ export function TeamColumn({
   isActive,
   totalPlayersInDraft,
 }: TeamColumnProps) {
+  const { t } = useTranslation("draft");
   const expectedTeamSize = Math.ceil(totalPlayersInDraft / 3);
   const pickCount = players.length;
 
@@ -44,7 +46,7 @@ export function TeamColumn({
           getCaptainColor(captainNumber)
         )}
       >
-        <div className="text-xs opacity-90">קבוצה {captainNumber}</div>
+        <div className="text-xs opacity-90">{t("board.team", { number: captainNumber })}</div>
         <div className="text-sm font-bold">
           ({pickCount}/{expectedTeamSize})
         </div>

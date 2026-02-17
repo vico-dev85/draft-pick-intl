@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { useClubContext } from "@/hooks/useClubContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
-  ArrowRight,
+  ArrowLeft,
   Plus,
   Search,
   Camera,
@@ -22,7 +23,7 @@ import {
   Unlink,
   Trash2,
   Send,
-  ChevronLeft,
+  ChevronRight,
   User,
   Mail,
 } from "lucide-react";
@@ -79,6 +80,7 @@ function getInitials(name: string): string {
 }
 
 export default function Players() {
+  const { t } = useTranslation("players");
   const { user, loading: authLoading } = useAuth();
   const { currentClub, isOwner, isMember, playerId: myPlayerId, permissions } = useClubContext();
   const navigate = useNavigate();
@@ -175,8 +177,8 @@ export default function Players() {
     } catch (err) {
       console.error("Error fetching players:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לטעון את השחקנים",
+        title: t("toast.error"),
+        description: t("toast.loadError"),
         variant: "destructive",
       });
     } finally {
@@ -193,8 +195,8 @@ export default function Players() {
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "קובץ גדול מדי",
-        description: "גודל מקסימלי: 5MB",
+        title: t("toast.fileTooLarge"),
+        description: t("toast.fileTooLargeDescription"),
         variant: "destructive",
       });
       return;
@@ -213,8 +215,8 @@ export default function Players() {
       }
     } catch {
       toast({
-        title: "שגיאה בעיבוד התמונה",
-        description: "נסה תמונה אחרת",
+        title: t("toast.photoProcessError"),
+        description: t("toast.photoProcessErrorDescription"),
         variant: "destructive",
       });
     }
@@ -228,8 +230,8 @@ export default function Players() {
   const handleAddPlayer = async () => {
     if (!newPlayerName.trim()) {
       toast({
-        title: "שם חסר",
-        description: "הכנס שם לשחקן",
+        title: t("toast.nameMissing"),
+        description: t("toast.nameMissingDescription"),
         variant: "destructive",
       });
       return;
@@ -237,8 +239,8 @@ export default function Players() {
 
     if (newPlayerName.trim().length > 30) {
       toast({
-        title: "שם ארוך מדי",
-        description: "מקסימום 30 תווים",
+        title: t("toast.nameTooLong"),
+        description: t("toast.nameTooLongDescription"),
         variant: "destructive",
       });
       return;
@@ -261,8 +263,8 @@ export default function Players() {
       if (error) {
         if (error.code === "23505") {
           toast({
-            title: "שחקן קיים",
-            description: "כבר יש לך שחקן עם שם זה",
+            title: t("toast.duplicateName"),
+            description: t("toast.duplicateNameDescription"),
             variant: "destructive",
           });
           return;
@@ -303,14 +305,14 @@ export default function Players() {
       setShowAddDrawer(false);
 
       toast({
-        title: "שחקן נוסף!",
-        description: `${data.name} נוסף לספרייה`,
+        title: t("toast.playerAdded"),
+        description: t("toast.playerAddedDescription", { name: data.name }),
       });
     } catch (err) {
       console.error("Error adding player:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו להוסיף את השחקן",
+        title: t("toast.error"),
+        description: t("toast.addError"),
         variant: "destructive",
       });
     } finally {
@@ -349,8 +351,8 @@ export default function Players() {
       if (error) {
         if (error.code === "23505") {
           toast({
-            title: "שם קיים",
-            description: "כבר יש לך שחקן עם שם זה",
+            title: t("toast.nameDuplicate"),
+            description: t("toast.nameDuplicateDescription"),
             variant: "destructive",
           });
           return;
@@ -371,12 +373,12 @@ export default function Players() {
 
       setSelectedPlayer({ ...selectedPlayer, name: editName.trim(), photo_url: photoUrl });
       setIsEditing(false);
-      toast({ title: "שחקן עודכן" });
+      toast({ title: t("toast.playerUpdated") });
     } catch (err) {
       console.error("Error updating player:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לעדכן את השחקן",
+        title: t("toast.error"),
+        description: t("toast.updateError"),
         variant: "destructive",
       });
     } finally {
@@ -409,13 +411,13 @@ export default function Players() {
 
         setSelectedPlayer({ ...selectedPlayer, photo_url: photoUrl });
         setIsEditing(false);
-        toast({ title: "תמונה עודכנה" });
+        toast({ title: t("toast.photoUpdated") });
       }
     } catch (err) {
       console.error("Error updating photo:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לעדכן את התמונה",
+        title: t("toast.error"),
+        description: t("toast.photoError"),
         variant: "destructive",
       });
     } finally {
@@ -447,8 +449,8 @@ export default function Players() {
     } catch (err) {
       console.error("Error updating category:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לעדכן את הקטגוריה",
+        title: t("toast.error"),
+        description: t("toast.categoryError"),
         variant: "destructive",
       });
     }
@@ -474,8 +476,8 @@ export default function Players() {
     } catch (err) {
       console.error("Error updating permission:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לעדכן את ההרשאה",
+        title: t("toast.error"),
+        description: t("toast.permissionError"),
         variant: "destructive",
       });
     }
@@ -496,27 +498,21 @@ export default function Players() {
 
       // Create WhatsApp invite message
       const inviteUrl = `${window.location.origin}/?invite=${data.token}`;
-      const message = `היי ${data.player_name}! 👋
-הצטרף לקבוצה שלנו ב-kohot.online
-
-✓ צפה בהיסטוריית הכוחות שלך
-✓ ארגן כוחות בעצמך
-
-${inviteUrl}`;
+      const message = t("invite.message", { name: data.player_name, url: inviteUrl });
 
       // Open WhatsApp
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
 
       toast({
-        title: "הזמנה נוצרה",
-        description: "תוקף ההזמנה: 48 שעות",
+        title: t("invite.created"),
+        description: t("invite.expiresIn"),
       });
     } catch (err) {
       console.error("Error sending invite:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו ליצור הזמנה",
+        title: t("toast.error"),
+        description: t("invite.error"),
         variant: "destructive",
       });
     } finally {
@@ -550,12 +546,12 @@ ${inviteUrl}`;
         can_send_invites: false,
       });
 
-      toast({ title: "החשבון נותק" });
+      toast({ title: t("actions.accountUnlinked") });
     } catch (err) {
       console.error("Error unlinking:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לנתק את החשבון",
+        title: t("toast.error"),
+        description: t("toast.unlinkError"),
         variant: "destructive",
       });
     }
@@ -576,12 +572,12 @@ ${inviteUrl}`;
       setSelectedPlayer(null);
       setShowDeleteConfirm(false);
 
-      toast({ title: "שחקן נמחק" });
+      toast({ title: t("delete.success") });
     } catch (err) {
       console.error("Error deleting player:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו למחוק את השחקן",
+        title: t("toast.error"),
+        description: t("toast.deleteError"),
         variant: "destructive",
       });
     }
@@ -627,12 +623,12 @@ ${inviteUrl}`;
       {/* Content Layer */}
       <div className="relative z-10 pb-24">
         {/* Header */}
-        <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-40" dir="rtl">
+        <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-40">
           <Link to="/dashboard" className="flex items-center gap-2 text-white/70 hover:text-white transition-colors">
-            <ArrowRight className="h-4 w-4" />
-            <span>חזרה</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span>{t("header.back")}</span>
           </Link>
-          <h1 className="text-lg font-bold text-white">שחקנים</h1>
+          <h1 className="text-lg font-bold text-white">{t("header.title")}</h1>
           <button
             onClick={() => setShowSearch(!showSearch)}
             className="p-2 text-white/70 hover:text-white transition-colors"
@@ -650,20 +646,20 @@ ${inviteUrl}`;
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden bg-black/20 border-b border-white/10"
             >
-              <div className="p-3" dir="rtl">
+              <div className="p-3">
                 <div className="relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
                   <Input
-                    placeholder="חיפוש שחקן..."
+                    placeholder={t("search.placeholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pr-10 h-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                    className="pl-10 h-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
                     autoFocus
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -674,7 +670,7 @@ ${inviteUrl}`;
           )}
         </AnimatePresence>
 
-        <main className="px-4 py-4" dir="rtl">
+        <main className="px-4 py-4">
           {players.length === 0 ? (
             /* Empty State */
             <motion.div
@@ -685,25 +681,23 @@ ${inviteUrl}`;
               <div className="text-5xl mb-4">👥</div>
               {isOwner ? (
                 <>
-                  <h3 className="text-lg font-medium text-white mb-2">הוסף את השחקנים שלך</h3>
-                  <p className="text-white/60 text-sm mb-4 px-4">
-                    אלו השחקנים שמשחקים איתך בדרך כלל.
-                    <br />
-                    בכל משחק תבחר מי מגיע ותעשה כוחות.
+                  <h3 className="text-lg font-medium text-white mb-2">{t("empty.ownerTitle")}</h3>
+                  <p className="text-white/60 text-sm mb-4 px-4 whitespace-pre-line">
+                    {t("empty.ownerDescription")}
                   </p>
                   <Button
                     onClick={() => setShowAddDrawer(true)}
                     className="bg-emerald-500 hover:bg-emerald-600"
                   >
-                    <Plus className="h-4 w-4 ml-2" />
-                    הוסף שחקן
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t("actions.addPlayer")}
                   </Button>
                 </>
               ) : (
                 <>
-                  <h3 className="text-lg font-medium text-white mb-2">אין שחקנים עדיין</h3>
+                  <h3 className="text-lg font-medium text-white mb-2">{t("empty.memberTitle")}</h3>
                   <p className="text-white/60 text-sm px-4">
-                    המנהל עדיין לא הוסיף שחקנים לקבוצה.
+                    {t("empty.memberDescription")}
                   </p>
                 </>
               )}
@@ -715,7 +709,7 @@ ${inviteUrl}`;
                 <section>
                   <div className="flex items-center gap-2 mb-3">
                     <Mail className="h-4 w-4 text-emerald-400" />
-                    <h2 className="text-sm font-medium text-emerald-400">ביקשו הזמנה ({filteredRequested.length})</h2>
+                    <h2 className="text-sm font-medium text-emerald-400">{t("categories.requested")} ({filteredRequested.length})</h2>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     {filteredRequested.map((player, index) => (
@@ -726,6 +720,7 @@ ${inviteUrl}`;
                         index={index}
                         isMe={isMyPlayer(player)}
                         isRequested
+                        t={t}
                       />
                     ))}
                   </div>
@@ -737,7 +732,7 @@ ${inviteUrl}`;
                 <section>
                   <div className="flex items-center gap-2 mb-3">
                     <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                    <h2 className="text-sm font-medium text-white/70">קבועים ({filteredRegular.length})</h2>
+                    <h2 className="text-sm font-medium text-white/70">{t("categories.regular")} ({filteredRegular.length})</h2>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     {filteredRegular.map((player, index) => (
@@ -747,6 +742,7 @@ ${inviteUrl}`;
                         onClick={() => handlePlayerClick(player)}
                         index={index}
                         isMe={isMyPlayer(player)}
+                        t={t}
                       />
                     ))}
                   </div>
@@ -756,7 +752,7 @@ ${inviteUrl}`;
               {/* Occasional Players Section */}
               {filteredOccasional.length > 0 && (
                 <section>
-                  <h2 className="text-sm font-medium text-white/70 mb-3">מזדמנים ({filteredOccasional.length})</h2>
+                  <h2 className="text-sm font-medium text-white/70 mb-3">{t("categories.occasional")} ({filteredOccasional.length})</h2>
                   <div className="grid grid-cols-1 gap-2">
                     {filteredOccasional.map((player, index) => (
                       <PlayerRow
@@ -765,6 +761,7 @@ ${inviteUrl}`;
                         onClick={() => handlePlayerClick(player)}
                         index={index}
                         isMe={isMyPlayer(player)}
+                        t={t}
                       />
                     ))}
                   </div>
@@ -774,7 +771,7 @@ ${inviteUrl}`;
               {/* No results */}
               {searchQuery && filteredRegular.length === 0 && filteredOccasional.length === 0 && (
                 <div className="text-center py-8 text-white/60">
-                  לא נמצאו שחקנים
+                  {t("search.noResults")}
                 </div>
               )}
             </div>
@@ -789,7 +786,7 @@ ${inviteUrl}`;
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring" }}
           onClick={() => setShowAddDrawer(true)}
-          className="fixed bottom-6 left-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center z-30"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center z-30"
         >
           <Plus className="h-6 w-6" />
         </motion.button>
@@ -799,14 +796,14 @@ ${inviteUrl}`;
       {isOwner && (
         <Drawer open={showAddDrawer} onOpenChange={setShowAddDrawer}>
           <DrawerContent className="bg-emerald-900 border-white/10">
-            <DrawerHeader className="text-right" dir="rtl">
-              <DrawerTitle className="text-white">הוסף שחקן חדש</DrawerTitle>
+            <DrawerHeader className="text-left">
+              <DrawerTitle className="text-white">{t("addDrawer.title")}</DrawerTitle>
             </DrawerHeader>
-            <div className="p-4 space-y-4" dir="rtl">
+            <div className="p-4 space-y-4">
               <div className="space-y-2">
-                <Label className="text-white/80">שם</Label>
+                <Label className="text-white/80">{t("addDrawer.nameLabel")}</Label>
                 <Input
-                  placeholder="שם השחקן"
+                  placeholder={t("addDrawer.namePlaceholder")}
                   value={newPlayerName}
                   onChange={(e) => setNewPlayerName(e.target.value)}
                   maxLength={30}
@@ -815,7 +812,7 @@ ${inviteUrl}`;
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white/80">תמונה (אופציונלי)</Label>
+                <Label className="text-white/80">{t("addDrawer.photoLabel")}</Label>
                 <div className="flex items-center gap-4">
                   {photoPreview ? (
                     <div className="relative">
@@ -837,7 +834,7 @@ ${inviteUrl}`;
                   ) : (
                     <label className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg cursor-pointer hover:bg-white/30 transition-colors text-white">
                       <Camera className="h-4 w-4" />
-                      <span className="text-sm">בחר תמונה</span>
+                      <span className="text-sm">{t("addDrawer.choosePhoto")}</span>
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
@@ -858,8 +855,8 @@ ${inviteUrl}`;
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Plus className="h-4 w-4 ml-2" />
-                    הוסף שחקן
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t("actions.addPlayer")}
                   </>
                 )}
               </Button>
@@ -873,9 +870,9 @@ ${inviteUrl}`;
         <DrawerContent className="bg-emerald-900 border-white/10 max-h-[85vh]">
           {selectedPlayer && (
             <div className="overflow-y-auto">
-              <DrawerHeader className="text-center pb-0" dir="rtl">
+              <DrawerHeader className="text-center pb-0">
                 <DrawerClose asChild>
-                  <button className="absolute top-4 left-4 p-2 text-white/60 hover:text-white">
+                  <button className="absolute top-4 right-4 p-2 text-white/60 hover:text-white">
                     <X className="h-5 w-5" />
                   </button>
                 </DrawerClose>
@@ -938,7 +935,7 @@ ${inviteUrl}`;
                   {isMyPlayer(selectedPlayer) && (
                     <div className="flex items-center gap-1.5 text-sm text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">
                       <User className="h-3.5 w-3.5" />
-                      זה אני
+                      {t("status.thisIsMe")}
                     </div>
                   )}
 
@@ -946,13 +943,13 @@ ${inviteUrl}`;
                   {isOwner && (
                     <div className={`flex items-center gap-1.5 text-sm ${selectedPlayer.linked_user_id ? 'text-emerald-400' : 'text-white/50'}`}>
                       <div className={`w-2 h-2 rounded-full ${selectedPlayer.linked_user_id ? 'bg-emerald-400' : 'bg-white/30'}`} />
-                      {selectedPlayer.linked_user_id ? 'מחובר' : 'לא מחובר'}
+                      {selectedPlayer.linked_user_id ? t("status.connected") : t("status.notConnected")}
                     </div>
                   )}
                 </div>
               </DrawerHeader>
 
-              <div className="p-4 space-y-4" dir="rtl">
+              <div className="p-4 space-y-4">
                 {/* Owner: Edit/Save Button */}
                 {isOwner && (
                   <>
@@ -967,8 +964,8 @@ ${inviteUrl}`;
                           }}
                           className="flex-1 bg-white/20 hover:bg-white/30 text-white"
                         >
-                          <X className="h-4 w-4 ml-2" />
-                          ביטול
+                          <X className="h-4 w-4 mr-2" />
+                          {t("delete.cancel")}
                         </Button>
                         <Button
                           onClick={handleUpdatePlayer}
@@ -979,8 +976,8 @@ ${inviteUrl}`;
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
                             <>
-                              <Check className="h-4 w-4 ml-2" />
-                              שמור
+                              <Check className="h-4 w-4 mr-2" />
+                              {t("actions.savePhoto").replace("photo", "").trim() || "Save"}
                             </>
                           )}
                         </Button>
@@ -990,8 +987,8 @@ ${inviteUrl}`;
                         onClick={() => setIsEditing(true)}
                         className="w-full bg-white/10 hover:bg-white/20 text-white"
                       >
-                        <Camera className="h-4 w-4 ml-2" />
-                        ערוך שם ותמונה
+                        <Camera className="h-4 w-4 mr-2" />
+                        {t("actions.editNameAndPhoto")}
                       </Button>
                     )}
                   </>
@@ -1010,8 +1007,8 @@ ${inviteUrl}`;
                           }}
                           className="flex-1 bg-white/20 hover:bg-white/30 text-white"
                         >
-                          <X className="h-4 w-4 ml-2" />
-                          ביטול
+                          <X className="h-4 w-4 mr-2" />
+                          {t("delete.cancel")}
                         </Button>
                         <Button
                           onClick={handleUpdateOwnPhoto}
@@ -1022,8 +1019,8 @@ ${inviteUrl}`;
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
                             <>
-                              <Check className="h-4 w-4 ml-2" />
-                              שמור תמונה
+                              <Check className="h-4 w-4 mr-2" />
+                              {t("actions.savePhoto")}
                             </>
                           )}
                         </Button>
@@ -1033,8 +1030,8 @@ ${inviteUrl}`;
                         onClick={() => setIsEditing(true)}
                         className="w-full bg-white/10 hover:bg-white/20 text-white"
                       >
-                        <Camera className="h-4 w-4 ml-2" />
-                        {selectedPlayer.photo_url ? "עדכן תמונה" : "הוסף תמונה"}
+                        <Camera className="h-4 w-4 mr-2" />
+                        {selectedPlayer.photo_url ? t("actions.updatePhoto") : t("actions.addPhoto")}
                       </Button>
                     )}
                   </>
@@ -1043,7 +1040,7 @@ ${inviteUrl}`;
                 {/* Category Selector (owner only) */}
                 {isOwner && (
                   <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                    <Label className="text-white/70 text-sm mb-3 block">סוג שחקן</Label>
+                    <Label className="text-white/70 text-sm mb-3 block">{t("playerType.label")}</Label>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleCategoryChange('regular')}
@@ -1054,7 +1051,7 @@ ${inviteUrl}`;
                         }`}
                       >
                         <Star className={`h-4 w-4 ${selectedPlayer.category === 'regular' ? 'fill-amber-400' : ''}`} />
-                        קבוע
+                        {t("playerType.regular")}
                       </button>
                       <button
                         onClick={() => handleCategoryChange('occasional')}
@@ -1064,7 +1061,7 @@ ${inviteUrl}`;
                             : 'bg-white/10 text-white/60 hover:bg-white/20'
                         }`}
                       >
-                        מזדמן
+                        {t("playerType.occasional")}
                       </button>
                     </div>
                   </div>
@@ -1073,10 +1070,10 @@ ${inviteUrl}`;
                 {/* Permissions (owner only, for linked players) */}
                 {isOwner && selectedPlayer.linked_user_id && (
                   <div className="bg-black/20 rounded-xl p-4 border border-white/10 space-y-4">
-                    <Label className="text-white/70 text-sm">הרשאות</Label>
+                    <Label className="text-white/70 text-sm">{t("permissions.label")}</Label>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-white text-sm">יכול ליצור כוחות</span>
+                      <span className="text-white text-sm">{t("permissions.canCreateDrafts")}</span>
                       <Switch
                         checked={selectedPlayer.can_create_drafts}
                         onCheckedChange={(v) => handlePermissionChange('can_create_drafts', v)}
@@ -1085,7 +1082,7 @@ ${inviteUrl}`;
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-white text-sm">יכול להזמין שחקנים</span>
+                      <span className="text-white text-sm">{t("permissions.canSendInvites")}</span>
                       <Switch
                         checked={selectedPlayer.can_send_invites}
                         onCheckedChange={(v) => handlePermissionChange('can_send_invites', v)}
@@ -1100,7 +1097,7 @@ ${inviteUrl}`;
                   <div className="bg-emerald-500/15 border border-emerald-400/30 rounded-xl p-3 flex items-center gap-2">
                     <Mail className="h-4 w-4 text-emerald-400 flex-shrink-0" />
                     <p className="text-emerald-400 text-sm font-medium">
-                      שחקן זה ביקש להצטרף לקבוצה
+                      {t("status.requestedToJoin")}
                     </p>
                   </div>
                 )}
@@ -1113,8 +1110,8 @@ ${inviteUrl}`;
                         onClick={handleUnlink}
                         className="w-full bg-white/10 hover:bg-white/20 text-white"
                       >
-                        <Unlink className="h-4 w-4 ml-2" />
-                        נתק חשבון
+                        <Unlink className="h-4 w-4 mr-2" />
+                        {t("actions.unlinkAccount")}
                       </Button>
                     ) : (
                       <Button
@@ -1126,8 +1123,8 @@ ${inviteUrl}`;
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <>
-                            <Send className="h-4 w-4 ml-2" />
-                            הזמן להצטרף
+                            <Send className="h-4 w-4 mr-2" />
+                            {t("actions.inviteToJoin")}
                           </>
                         )}
                       </Button>
@@ -1146,8 +1143,8 @@ ${inviteUrl}`;
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        <Send className="h-4 w-4 ml-2" />
-                        הזמן להצטרף
+                        <Send className="h-4 w-4 mr-2" />
+                        {t("actions.inviteToJoin")}
                       </>
                     )}
                   </Button>
@@ -1160,8 +1157,8 @@ ${inviteUrl}`;
                     variant="ghost"
                     className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
                   >
-                    <Trash2 className="h-4 w-4 ml-2" />
-                    מחק שחקן
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t("actions.deletePlayer")}
                   </Button>
                 )}
               </div>
@@ -1172,20 +1169,20 @@ ${inviteUrl}`;
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>בטוח למחוק את {selectedPlayer?.name}?</AlertDialogTitle>
+            <AlertDialogTitle>{t("delete.confirmTitle", { name: selectedPlayer?.name })}</AlertDialogTitle>
             <AlertDialogDescription>
-              פעולה זו לא ניתנת לביטול
+              {t("delete.confirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row-reverse gap-2">
-            <AlertDialogCancel>ביטול</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel>{t("delete.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeletePlayer}
               className="bg-destructive hover:bg-destructive/90"
             >
-              מחק
+              {t("delete.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1195,16 +1192,16 @@ ${inviteUrl}`;
 }
 
 // Player Row Component
-function PlayerRow({ player, onClick, index, isMe, isRequested }: { player: Player; onClick: () => void; index: number; isMe: boolean; isRequested?: boolean }) {
+function PlayerRow({ player, onClick, index, isMe, isRequested, t }: { player: Player; onClick: () => void; index: number; isMe: boolean; isRequested?: boolean; t: (key: string) => string }) {
   return (
     <motion.button
-      initial={{ opacity: 0, x: -20 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.03 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 p-3 backdrop-blur-sm rounded-xl border transition-colors text-right ${
+      className={`w-full flex items-center gap-3 p-3 backdrop-blur-sm rounded-xl border transition-colors text-left ${
         isRequested
-          ? "bg-emerald-500/10 border-emerald-400/30 hover:bg-emerald-500/20 border-r-2 border-r-emerald-400"
+          ? "bg-emerald-500/10 border-emerald-400/30 hover:bg-emerald-500/20 border-l-2 border-l-emerald-400"
           : isMe
             ? "bg-emerald-500/10 border-emerald-400/30 hover:bg-emerald-500/20"
             : "bg-black/30 border-white/10 hover:bg-black/40"
@@ -1230,17 +1227,17 @@ function PlayerRow({ player, onClick, index, isMe, isRequested }: { player: Play
         {isRequested ? (
           <p className="text-xs text-emerald-400 flex items-center gap-1">
             <Mail className="h-3 w-3" />
-            ביקש הזמנה
+            {t("status.requestedInvite")}
           </p>
         ) : isMe ? (
           <p className="text-xs text-emerald-400 flex items-center gap-1">
             <User className="h-3 w-3" />
-            זה אני
+            {t("status.thisIsMe")}
           </p>
         ) : player.linked_user_id ? (
           <p className="text-xs text-emerald-400 flex items-center gap-1">
             <LinkIcon className="h-3 w-3" />
-            מחובר
+            {t("status.connected")}
           </p>
         ) : null}
       </div>
@@ -1250,7 +1247,7 @@ function PlayerRow({ player, onClick, index, isMe, isRequested }: { player: Play
         {player.category === 'regular' && (
           <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
         )}
-        <ChevronLeft className="h-4 w-4 text-white/40" />
+        <ChevronRight className="h-4 w-4 text-white/40" />
       </div>
     </motion.button>
   );

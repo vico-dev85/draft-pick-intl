@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -26,8 +27,8 @@ import { ClubSettings } from "@/components/ClubSettings";
 import { SelfieAvatarEditor } from "@/components/SelfieAvatarEditor";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { InstallPromptBanner } from "@/components/InstallPromptBanner";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { formatDistanceToNow } from "date-fns";
-import { he } from "date-fns/locale";
 
 interface DraftRoom {
   id: string;
@@ -38,6 +39,7 @@ interface DraftRoom {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation("dashboard");
   const { user, signOut, loading: authLoading } = useAuth();
   const { currentClub, isOwner, isMember, permissions, playerId, playerName, playerPhoto, loading: clubLoading } = useClubContext();
   const navigate = useNavigate();
@@ -169,8 +171,8 @@ export default function Dashboard() {
       navigate(`/join/${code}`);
     } else {
       toast({
-        title: "קוד לא תקין",
-        description: "קוד החדר צריך להכיל 4 תווים",
+        title: t("joinCode.invalidCode"),
+        description: t("joinCode.invalidCodeDescription"),
         variant: "destructive",
       });
     }
@@ -179,15 +181,15 @@ export default function Dashboard() {
   const handleDeleteDraft = async (draft: DraftRoom) => {
     if (draft.status === "completed") {
       toast({
-        title: "לא ניתן למחוק",
-        description: "כוחות שהושלמו לא ניתנים למחיקה",
+        title: t("drafts.cannotDelete"),
+        description: t("drafts.cannotDeleteDescription"),
         variant: "destructive",
       });
       return;
     }
 
     const confirmed = window.confirm(
-      `האם למחוק את "${draft.draft_name}"?`
+      t("drafts.confirmDelete", { name: draft.draft_name })
     );
     if (!confirmed) return;
 
@@ -201,11 +203,11 @@ export default function Dashboard() {
       if (error) throw error;
 
       setDrafts((prev) => prev.filter((d) => d.id !== draft.id));
-      toast({ title: "נמחק בהצלחה" });
+      toast({ title: t("drafts.deleted") });
     } catch (err) {
       console.error("Error deleting draft:", err);
       toast({
-        title: "שגיאה במחיקה",
+        title: t("drafts.deleteError"),
         variant: "destructive",
       });
     } finally {
@@ -230,10 +232,10 @@ export default function Dashboard() {
 
       await supabase.from("user_players").update({ photo_url: url }).eq("id", playerId);
       setLocalPhotoUrl(url);
-      toast({ title: "התמונה עודכנה!" });
+      toast({ title: t("photoUpdated") });
     } catch (err) {
       console.error("Member photo upload error:", err);
-      toast({ title: "שגיאה בהעלאת התמונה", variant: "destructive" });
+      toast({ title: t("photoUploadError"), variant: "destructive" });
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -251,7 +253,7 @@ export default function Dashboard() {
 
       await supabase.auth.updateUser({ data: { avatar_url: url } });
       setOwnerPhotoUrl(url);
-      toast({ title: "התמונה עודכנה!" });
+      toast({ title: t("photoUpdated") });
 
       // If this was from onboarding, proceed to walkthrough
       if (playerCount === 0) {
@@ -259,7 +261,7 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error("Owner photo upload error:", err);
-      toast({ title: "שגיאה בהעלאת התמונה", variant: "destructive" });
+      toast({ title: t("photoUploadError"), variant: "destructive" });
     } finally {
       setIsUploadingOwnerPhoto(false);
     }
@@ -291,7 +293,7 @@ export default function Dashboard() {
             <div className="h-8 w-8 rounded bg-white/10 animate-pulse" />
           </div>
           {/* Skeleton content */}
-          <div className="px-4 py-6 max-w-md mx-auto space-y-6" dir="rtl">
+          <div className="px-4 py-6 max-w-md mx-auto space-y-6">
             {/* Profile card skeleton */}
             <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10">
               <div className="flex items-center gap-4">
@@ -343,9 +345,8 @@ export default function Dashboard() {
         {/* Header */}
         <header
           className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm"
-          dir="rtl"
         >
-          <img src="/logo.png" alt="kohot.online" className="h-9 w-auto" />
+          <img src="/logo.png" alt="Draft Pick" className="h-9 w-auto" />
           <div className="flex items-center gap-1">
             {/* Players button — owner only */}
             {isOwner && (
@@ -355,10 +356,10 @@ export default function Dashboard() {
                 className="text-white/60 hover:text-white hover:bg-white/10 relative"
                 onClick={() => navigate("/players")}
               >
-                <Users className="h-4 w-4 ml-1" />
-                <span className="hidden sm:inline">השחקנים שלי</span>
+                <Users className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">{t("header.myPlayers")}</span>
                 {inviteRequestCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -left-1 bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                     {inviteRequestCount}
                   </span>
                 )}
@@ -371,17 +372,18 @@ export default function Dashboard() {
                 size="icon"
                 className="text-white/60 hover:text-white hover:bg-white/10"
                 onClick={() => setShowSettings(true)}
-                title="הגדרות"
+                title={t("header.settings")}
               >
                 <Settings className="h-4 w-4" />
               </Button>
             )}
+            <LanguagePicker />
             <Button
               variant="ghost"
               size="icon"
               className="text-white/60 hover:text-white hover:bg-white/10"
               onClick={handleSignOut}
-              title="התנתק"
+              title={t("header.signOut")}
             >
               <LogOut className="h-4 w-4" />
             </Button>
@@ -389,7 +391,7 @@ export default function Dashboard() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 py-6" dir="rtl">
+        <main className="flex-1 px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -434,12 +436,12 @@ export default function Dashboard() {
                     </h2>
                     {currentClub && (
                       <p className="text-white/60 text-sm">
-                        חבר ב{currentClub.name}
+                        {t("profile.memberOf", { clubName: currentClub.name })}
                       </p>
                     )}
                     <div className="flex items-center gap-1.5 mt-1">
                       <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-emerald-400 text-xs">מזוהה אוטומטית</span>
+                      <span className="text-emerald-400 text-xs">{t("profile.autoIdentified")}</span>
                     </div>
                   </div>
                 </div>
@@ -450,8 +452,8 @@ export default function Dashboard() {
                     className="w-full mt-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 text-sm transition-colors"
                     disabled={isUploadingPhoto}
                   >
-                    <Camera className="h-4 w-4 inline ml-1" />
-                    צלם תמונה
+                    <Camera className="h-4 w-4 inline mr-1" />
+                    {t("profile.takePhoto")}
                   </button>
                 )}
               </motion.div>
@@ -465,7 +467,7 @@ export default function Dashboard() {
                 className="bg-white/5 rounded-xl p-4 border border-white/10 text-center"
               >
                 <p className="text-white/60 text-sm">
-                  כשהמנהל ייצור כוחות חדשים, תקבל הודעה להצטרף
+                  {t("memberGuidance")}
                 </p>
               </motion.div>
             )}
@@ -486,7 +488,7 @@ export default function Dashboard() {
                   >
                     {(ownerPhotoUrl || user?.user_metadata?.avatar_url) ? (
                       <PlayerAvatar
-                        name={user?.user_metadata?.full_name || "מנהל"}
+                        name={user?.user_metadata?.full_name || t("profile.defaultOwnerName")}
                         photoUrl={ownerPhotoUrl || user?.user_metadata?.avatar_url}
                         size="lg"
                         className="border-2 border-amber-400/50"
@@ -504,14 +506,14 @@ export default function Dashboard() {
                   </button>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-xl font-bold text-white truncate">
-                      {user?.user_metadata?.full_name || user?.email?.split("@")[0] || "מנהל"}
+                      {user?.user_metadata?.full_name || user?.email?.split("@")[0] || t("profile.defaultOwnerName")}
                     </h2>
                     <p className="text-white/60 text-sm">
                       {currentClub.name}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1">
                       <Crown className="h-3.5 w-3.5 text-amber-400" />
-                      <span className="text-amber-400 text-xs">מנהל הקבוצה</span>
+                      <span className="text-amber-400 text-xs">{t("profile.clubOwner")}</span>
                     </div>
                   </div>
                 </div>
@@ -533,7 +535,7 @@ export default function Dashboard() {
                 >
                   <Link to="/create-draft" className="flex items-center justify-center gap-3">
                     <Plus className="h-6 w-6" />
-                    צור כוחות חדשים
+                    {t("cta.createDraft")}
                   </Link>
                 </Button>
 
@@ -547,9 +549,9 @@ export default function Dashboard() {
                     >
                       <Link to="/players" className="flex items-center justify-center gap-2">
                         <Users className="h-4 w-4" />
-                        ניהול שחקנים
+                        {t("cta.managePlayers")}
                         {inviteRequestCount > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                          <span className="absolute -top-2 -left-2 bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                             {inviteRequestCount}
                           </span>
                         )}
@@ -560,8 +562,8 @@ export default function Dashboard() {
                       className="flex-1 h-11 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
                       onClick={() => setShowSettings(true)}
                     >
-                      <Settings className="h-4 w-4 ml-2" />
-                      הגדרות
+                      <Settings className="h-4 w-4 mr-2" />
+                      {t("cta.settings")}
                     </Button>
                   </div>
                 )}
@@ -582,13 +584,13 @@ export default function Dashboard() {
             >
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex-1 h-px bg-white/20" />
-                <span className="text-white/60 text-sm">יש לך קוד?</span>
+                <span className="text-white/60 text-sm">{t("joinCode.title")}</span>
                 <div className="flex-1 h-px bg-white/20" />
               </div>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="הקלד קוד"
+                  placeholder={t("joinCode.placeholder")}
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDown}
@@ -601,7 +603,7 @@ export default function Dashboard() {
                   disabled={joinCode.trim().length !== 4}
                   className="h-12 px-6 bg-white/10 hover:bg-white/20 text-white border-2 border-white/70"
                 >
-                  הצטרף
+                  {t("joinCode.join")}
                 </Button>
               </div>
             </motion.div>
@@ -616,7 +618,7 @@ export default function Dashboard() {
               >
                 <h2 className="text-white/80 text-sm font-medium flex items-center gap-2">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                  כוחות פעילים
+                  {t("drafts.active")}
                 </h2>
                 {activeDrafts.map((draft) => (
                   <div
@@ -629,7 +631,6 @@ export default function Dashboard() {
                         <p className="text-sm text-white/50">
                           {formatDistanceToNow(new Date(draft.created_at), {
                             addSuffix: true,
-                            locale: he,
                           })}
                         </p>
                       </div>
@@ -641,7 +642,7 @@ export default function Dashboard() {
                               : "bg-blue-500/20 text-blue-300"
                           }`}
                         >
-                          {draft.status === "drafting" ? "בתהליך" : "ממתין"}
+                          {draft.status === "drafting" ? t("drafts.statusDrafting") : t("drafts.statusWaiting")}
                         </span>
                       </div>
                     </div>
@@ -652,8 +653,8 @@ export default function Dashboard() {
                         className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
                       >
                         <Link to={getDraftLink(draft)}>
-                          <Play className="h-4 w-4 ml-1" />
-                          המשך
+                          <Play className="h-4 w-4 mr-1" />
+                          {t("drafts.continue")}
                         </Link>
                       </Button>
                       {isOwner && (
@@ -689,7 +690,7 @@ export default function Dashboard() {
                   onClick={() => setShowHistory(!showHistory)}
                   className="w-full text-white/60 text-sm font-medium flex items-center justify-between hover:text-white/80 transition-colors"
                 >
-                  <span>כוחות אחרונים</span>
+                  <span>{t("drafts.recent")}</span>
                   {showHistory ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -713,12 +714,11 @@ export default function Dashboard() {
                             <p className="text-xs text-white/40">
                               {formatDistanceToNow(new Date(draft.created_at), {
                                 addSuffix: true,
-                                locale: he,
                               })}
                             </p>
                           </div>
                           <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300">
-                            הושלם
+                            {t("drafts.statusCompleted")}
                           </span>
                         </div>
                       </Link>
@@ -738,14 +738,14 @@ export default function Dashboard() {
               >
                 <div className="text-5xl mb-4">⚽</div>
                 <h3 className="text-lg font-medium text-white mb-2">
-                  {isMember ? "עדיין אין כוחות בקבוצה" : "עדיין לא יצרת כוחות"}
+                  {isMember ? t("empty.memberTitle") : t("empty.ownerTitle")}
                 </h3>
                 <p className="text-white/50 text-sm">
                   {isMember
-                    ? "כשהמנהל ייצור כוחות חדשים, הם יופיעו כאן"
+                    ? t("empty.memberDescription")
                     : permissions.canCreateDrafts
-                      ? "לחץ על הכפתור למעלה כדי להתחיל!"
-                      : "כשהמנהל ייצור כוחות חדשים, הם יופיעו כאן"}
+                      ? t("empty.ownerDescription")
+                      : t("empty.memberFallback")}
                 </p>
               </motion.div>
             )}
@@ -770,9 +770,9 @@ export default function Dashboard() {
         </main>
 
         {/* Footer */}
-        <footer className="p-4 text-center" dir="rtl">
+        <footer className="p-4 text-center">
           <p className="text-white/30 text-xs">
-            כוחות אונליין - דראפט הוגן, יותר זמן לשחק
+            {t("footer")}
           </p>
         </footer>
       </div>
@@ -814,15 +814,14 @@ export default function Dashboard() {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
-              dir="rtl"
             >
               <div className="bg-emerald-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center">
                 <div className="text-4xl mb-3">📸</div>
                 <h2 className="text-xl font-bold text-white">
-                  צלם תמונה לפרופיל
+                  {t("onboarding.selfie.title")}
                 </h2>
                 <p className="text-white/60 text-sm mt-2 mb-6">
-                  התמונה שלך תופיע בכרטיס הכוחות
+                  {t("onboarding.selfie.description")}
                 </p>
                 <Button
                   className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base"
@@ -831,7 +830,7 @@ export default function Dashboard() {
                     setShowOwnerSelfieEditor(true);
                   }}
                 >
-                  בוא נצלם!
+                  {t("onboarding.selfie.cta")}
                 </Button>
                 <button
                   onClick={() => {
@@ -840,7 +839,7 @@ export default function Dashboard() {
                   }}
                   className="mt-3 text-white/40 text-sm hover:text-white/60 transition-colors"
                 >
-                  אולי אח"כ
+                  {t("onboarding.selfie.skip")}
                 </button>
               </div>
             </motion.div>
@@ -865,16 +864,15 @@ export default function Dashboard() {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
-              dir="rtl"
             >
               <div className="bg-emerald-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">⚽</div>
                   <h2 className="text-xl font-bold text-white">
-                    ברוך הבא לכוחות אונליין!
+                    {t("onboarding.welcome.title")}
                   </h2>
                   <p className="text-white/60 text-sm mt-1">
-                    3 צעדים פשוטים להתחיל
+                    {t("onboarding.welcome.subtitle")}
                   </p>
                 </div>
 
@@ -884,8 +882,8 @@ export default function Dashboard() {
                       <span className="text-emerald-400 font-bold text-sm">1</span>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">צור את הקבוצה שלך</p>
-                      <p className="text-white/50 text-xs">כבר יצרנו לך אחת! אפשר לשנות שם בהגדרות</p>
+                      <p className="text-white font-medium text-sm">{t("onboarding.welcome.step1Title")}</p>
+                      <p className="text-white/50 text-xs">{t("onboarding.welcome.step1Description")}</p>
                     </div>
                   </div>
 
@@ -894,8 +892,8 @@ export default function Dashboard() {
                       <span className="text-emerald-400 font-bold text-sm">2</span>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">הוסף את השחקנים הקבועים</p>
-                      <p className="text-white/50 text-xs">שמור אותם בספרייה לשימוש חוזר</p>
+                      <p className="text-white font-medium text-sm">{t("onboarding.welcome.step2Title")}</p>
+                      <p className="text-white/50 text-xs">{t("onboarding.welcome.step2Description")}</p>
                     </div>
                   </div>
 
@@ -904,8 +902,8 @@ export default function Dashboard() {
                       <span className="text-emerald-400 font-bold text-sm">3</span>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">ביום המשחק, בחר מי מגיע ותעשה כוחות</p>
-                      <p className="text-white/50 text-xs">3 קפטנים, דראפט נחש הוגן</p>
+                      <p className="text-white font-medium text-sm">{t("onboarding.welcome.step3Title")}</p>
+                      <p className="text-white/50 text-xs">{t("onboarding.welcome.step3Description")}</p>
                     </div>
                   </div>
                 </div>
@@ -917,7 +915,7 @@ export default function Dashboard() {
                     navigate("/players");
                   }}
                 >
-                  הבנתי, בוא נתחיל
+                  {t("onboarding.welcome.cta")}
                 </Button>
               </div>
             </motion.div>

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { getCaptainColor } from "@/lib/draftUtils";
+import { useTranslation } from "react-i18next";
 
 interface Captain {
   number: number;
@@ -15,19 +16,20 @@ interface CaptainWheelProps {
 }
 
 export function CaptainWheel({ captains, onSpinComplete, isSpinning, setIsSpinning }: CaptainWheelProps) {
+  const { t } = useTranslation("draft");
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState<number[] | null>(null);
 
   const spinWheel = useCallback(() => {
     if (isSpinning) return;
-    
+
     setIsSpinning(true);
     setResult(null);
 
     // Random spins (5-8 full rotations) + random final position
     const spins = 5 + Math.random() * 3;
     const finalRotation = spins * 360 + Math.random() * 360;
-    
+
     setRotation(prev => prev + finalRotation);
 
     // After spin completes, determine winner
@@ -65,7 +67,7 @@ export function CaptainWheel({ captains, onSpinComplete, isSpinning, setIsSpinni
             const startAngle = index * segmentAngle - 90;
             const endAngle = (index + 1) * segmentAngle - 90;
             const midAngle = ((startAngle + endAngle) / 2) * (Math.PI / 180);
-            
+
             return (
               <div
                 key={captain.number}
@@ -88,11 +90,11 @@ export function CaptainWheel({ captains, onSpinComplete, isSpinning, setIsSpinni
               </div>
             );
           })}
-          
+
           {/* Center Circle */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-card border-4 border-border flex items-center justify-center shadow-lg">
-              <span className="text-2xl">⚽</span>
+              <span className="text-2xl">&#9917;</span>
             </div>
           </div>
         </motion.div>
@@ -107,7 +109,7 @@ export function CaptainWheel({ captains, onSpinComplete, isSpinning, setIsSpinni
           whileHover={{ scale: isSpinning ? 1 : 1.05 }}
           whileTap={{ scale: isSpinning ? 1 : 0.95 }}
         >
-          {isSpinning ? "הגלגל מסתובב..." : "🎡 סובב את הגלגל!"}
+          {isSpinning ? t("wheel.spinning") : t("wheel.spin")}
         </motion.button>
       )}
 
@@ -118,7 +120,7 @@ export function CaptainWheel({ captains, onSpinComplete, isSpinning, setIsSpinni
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <h3 className="text-xl font-bold text-foreground mb-4">סדר הבחירה נקבע!</h3>
+          <h3 className="text-xl font-bold text-foreground mb-4">{t("waiting.raffle.result")}</h3>
           <div className="flex gap-4 justify-center">
             {result.map((captainNum, index) => {
               const captain = captains.find(c => c.number === captainNum);

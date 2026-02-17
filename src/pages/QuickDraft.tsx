@@ -22,6 +22,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Player {
   id: string;
@@ -33,6 +34,7 @@ type Step = "name" | "players" | "captains" | "confirm";
 export default function QuickDraft() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation("draft");
 
   const [step, setStep] = useState<Step>("name");
   const [draftName, setDraftName] = useState("");
@@ -48,8 +50,8 @@ export default function QuickDraft() {
     // Check for duplicate
     if (players.some((p) => p.name.toLowerCase() === trimmedName.toLowerCase())) {
       toast({
-        title: "שחקן קיים",
-        description: "כבר יש שחקן עם שם זה",
+        title: t("quick.duplicatePlayer"),
+        description: t("quick.duplicatePlayerDescription"),
         variant: "destructive",
       });
       return;
@@ -117,16 +119,16 @@ export default function QuickDraft() {
       if (error) throw error;
 
       toast({
-        title: "הכוחות נוצרו!",
-        description: `קוד החדר: ${roomCode}`,
+        title: t("quick.toast.created"),
+        description: t("quick.toast.roomCode", { code: roomCode }),
       });
 
       navigate(`/room/${roomCode}`);
     } catch (err) {
       console.error("Error creating quick draft:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו ליצור את הכוחות",
+        title: t("quick.toast.error"),
+        description: t("quick.toast.errorDescription"),
         variant: "destructive",
       });
     } finally {
@@ -165,22 +167,21 @@ export default function QuickDraft() {
         {/* Header */}
         <header
           className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm"
-          dir="rtl"
         >
           <Link
             to="/"
             className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
           >
-            <ArrowRight className="h-4 w-4" />
-            <span>חזרה</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span>{t("quick.back")}</span>
           </Link>
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-amber-400" />
-            <span className="text-lg font-bold text-white">כוחות מהיר</span>
+            <span className="text-lg font-bold text-white">{t("quick.title")}</span>
           </div>
         </header>
 
-        <main className="px-4 py-8 max-w-2xl mx-auto" dir="rtl">
+        <main className="px-4 py-8 max-w-2xl mx-auto">
           {/* Progress Steps */}
           <div className="flex justify-center mb-8">
             <div className="flex items-center gap-2">
@@ -236,22 +237,22 @@ export default function QuickDraft() {
                 <div className="text-center">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-full text-amber-300 text-sm mb-4">
                     <Zap className="h-4 w-4" />
-                    בלי הרשמה
+                    {t("quick.subtitle")}
                   </div>
                   <h1 className="text-2xl font-bold text-white mb-2">
-                    כוחות מהיר
+                    {t("quick.title")}
                   </h1>
-                  <p className="text-white/60">תן שם לכוחות</p>
+                  <p className="text-white/60">{t("quick.nameDraft")}</p>
                 </div>
 
                 <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
                   <div>
                     <Label htmlFor="draftName" className="text-white/80">
-                      שם הכוחות
+                      {t("quick.draftNameLabel")}
                     </Label>
                     <Input
                       id="draftName"
-                      placeholder="לדוגמה: כוחות יום שישי"
+                      placeholder={t("quick.draftNamePlaceholder")}
                       value={draftName}
                       onChange={(e) => setDraftName(e.target.value)}
                       className="mt-2 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
@@ -266,8 +267,8 @@ export default function QuickDraft() {
                   disabled={!canProceedToPlayers}
                   className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white font-bold"
                 >
-                  המשך
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t("quick.continue")}
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </motion.div>
             )}
@@ -283,11 +284,11 @@ export default function QuickDraft() {
               >
                 <div className="text-center">
                   <h1 className="text-2xl font-bold text-white mb-2">
-                    <Users className="inline h-6 w-6 ml-2" />
-                    הוסף שחקנים
+                    <Users className="inline h-6 w-6 mr-2" />
+                    {t("quick.addPlayersTitle")}
                   </h1>
                   <p className="text-white/60">
-                    הוספת {players.length} שחקנים (נדרש {MIN_PLAYERS}-{MAX_PLAYERS})
+                    {t("quick.playersAdded", { count: players.length, min: MIN_PLAYERS, max: MAX_PLAYERS })}
                   </p>
                 </div>
 
@@ -295,7 +296,7 @@ export default function QuickDraft() {
                 <div className="bg-amber-500/10 rounded-xl p-4 border border-amber-500/30">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="שם השחקן"
+                      placeholder={t("quick.playerPlaceholder")}
                       value={newPlayerName}
                       onChange={(e) => setNewPlayerName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addPlayer()}
@@ -339,7 +340,7 @@ export default function QuickDraft() {
 
                 {players.length === 0 && (
                   <div className="text-center py-8 text-white/40">
-                    הוסף לפחות {MIN_PLAYERS} שחקנים להמשך
+                    {t("quick.minimumPlayers", { min: MIN_PLAYERS })}
                   </div>
                 )}
 
@@ -348,16 +349,16 @@ export default function QuickDraft() {
                     onClick={goBack}
                     className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20"
                   >
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                    חזרה
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("quick.back")}
                   </Button>
                   <Button
                     onClick={goNext}
                     disabled={!canProceedToCaptains}
                     className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
                   >
-                    המשך
-                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("quick.continue")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
               </motion.div>
@@ -374,11 +375,11 @@ export default function QuickDraft() {
               >
                 <div className="text-center">
                   <h1 className="text-2xl font-bold text-white mb-2">
-                    <Crown className="inline h-6 w-6 ml-2 text-amber-400" />
-                    בחר {NUM_TEAMS} קפטנים
+                    <Crown className="inline h-6 w-6 mr-2 text-amber-400" />
+                    {t("quick.pickCaptains", { count: NUM_TEAMS })}
                   </h1>
                   <p className="text-white/60">
-                    בחרת {captainIds.length}/{NUM_TEAMS} קפטנים
+                    {t("quick.captainsSelected", { count: captainIds.length, total: NUM_TEAMS })}
                   </p>
                 </div>
 
@@ -408,7 +409,7 @@ export default function QuickDraft() {
                           </>
                         ) : (
                           <span className="text-white/50 text-xs">
-                            קפטן {num}
+                            {t("captain", { number: num })}
                           </span>
                         )}
                       </div>
@@ -455,16 +456,16 @@ export default function QuickDraft() {
                     onClick={goBack}
                     className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20"
                   >
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                    חזרה
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("quick.back")}
                   </Button>
                   <Button
                     onClick={goNext}
                     disabled={!canProceedToConfirm}
                     className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
                   >
-                    המשך
-                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("quick.continue")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
               </motion.div>
@@ -481,24 +482,24 @@ export default function QuickDraft() {
               >
                 <div className="text-center">
                   <h1 className="text-2xl font-bold text-white mb-2">
-                    אישור הכוחות
+                    {t("quick.confirmTitle")}
                   </h1>
-                  <p className="text-white/60">בדוק את הפרטים לפני היצירה</p>
+                  <p className="text-white/60">{t("quick.confirmSubtitle")}</p>
                 </div>
 
                 <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-white/60">שם הכוחות:</span>
+                    <span className="text-white/60">{t("quick.draftNameLabel")}:</span>
                     <span className="font-semibold text-white">{draftName}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/60">מספר שחקנים:</span>
+                    <span className="text-white/60">{t("quick.playerCount")}:</span>
                     <span className="font-semibold text-white">
                       {players.length}
                     </span>
                   </div>
                   <div className="border-t border-white/10 pt-4">
-                    <span className="text-white/60 block mb-3">קפטנים:</span>
+                    <span className="text-white/60 block mb-3">{t("quick.captainsLabel")}:</span>
                     <div className="flex justify-center gap-4">
                       {captains.map((captain, idx) => (
                         <div key={captain.id} className="text-center">
@@ -511,7 +512,7 @@ export default function QuickDraft() {
                             {captain.name}
                           </p>
                           <span className="text-xs text-white/60">
-                            קפטן {idx + 1}
+                            {t("captain", { number: idx + 1 })}
                           </span>
                         </div>
                       ))}
@@ -524,8 +525,8 @@ export default function QuickDraft() {
                     onClick={goBack}
                     className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20"
                   >
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                    חזרה
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("quick.back")}
                   </Button>
                   <Button
                     onClick={handleCreate}
@@ -536,8 +537,8 @@ export default function QuickDraft() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        צור כוחות
-                        <Zap className="h-4 w-4 mr-2" />
+                        {t("quick.startDraft")}
+                        <Zap className="h-4 w-4 ml-2" />
                       </>
                     )}
                   </Button>

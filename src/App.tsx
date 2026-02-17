@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +38,7 @@ function hasOAuthTokenInUrl(): boolean {
 
 // Component to handle OAuth callback tokens in URL hash
 function OAuthCallbackHandler({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation("common");
   // Use synchronous initial check to prevent any flash
   const [isProcessingAuth, setIsProcessingAuth] = useState(hasOAuthTokenInUrl);
 
@@ -79,7 +81,7 @@ function OAuthCallbackHandler({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-emerald-900 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
-        <p className="text-white/70">מתחבר...</p>
+        <p className="text-white/70">{t("status.connecting")}</p>
       </div>
     );
   }

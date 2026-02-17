@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
+import "../i18n";
 
 // Mock Supabase client — prevents real API calls during tests
 vi.mock("@/integrations/supabase/client", () => ({

@@ -1,10 +1,11 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PickAnnouncementProps {
   id: string; // Unique ID for proper AnimatePresence keying
-  pickerName: string; // "את/ה" for self, captain name for others
+  pickerName: string; // "You" for self, captain name for others
   playerName: string;
   isMe: boolean;
   onComplete: () => void;
@@ -17,6 +18,7 @@ export function PickAnnouncement({
   isMe,
   onComplete,
 }: PickAnnouncementProps) {
+  const { t } = useTranslation("draft");
   const isMountedRef = useRef(true);
   const onCompleteRef = useRef(onComplete);
 
@@ -70,11 +72,11 @@ export function PickAnnouncement({
         <div className="text-center">
           {isMe ? (
             <span className="text-lg font-semibold">
-              בחרת את <strong>{playerName}</strong>
+              {t("board.announcement.youPicked", { player: playerName })}
             </span>
           ) : (
             <span className="text-lg">
-              <strong>{pickerName}</strong> בחר את <strong>{playerName}</strong>
+              {t("board.announcement.captainPicked", { captain: pickerName, player: playerName })}
             </span>
           )}
         </div>

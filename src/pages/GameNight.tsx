@@ -25,7 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { format } from "date-fns";
-import { he } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 // --- Types ---
 
@@ -141,6 +141,7 @@ export default function GameNight() {
   const { nightId } = useParams<{ nightId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation("gamenight");
   useWakeLock(true);
   // Loading & data
   const [loading, setLoading] = useState(true);
@@ -182,19 +183,19 @@ export default function GameNight() {
   // Timer
   const timer = useGameTimer({
     onTwoMinWarning: () => {
-      enqueue({ priority: 3, ttsText: "שתי דקות לסיום" });
+      enqueue({ priority: 3, ttsText: t("tts.twoMinWarning") });
     },
     onOneMinWarning: () => {
-      enqueue({ priority: 3, ttsText: "דקה לסיום" });
+      enqueue({ priority: 3, ttsText: t("tts.oneMinWarning") });
     },
     onLastAttack: () => {
-      enqueue({ priority: 3, ttsText: "התקפה אחרונה!" });
+      enqueue({ priority: 3, ttsText: t("tts.lastAttack") });
     },
     onTimeUp: (period) => {
       if (period === "regular") {
         // Check if tied
         if (scoreA === scoreB) {
-          enqueue({ priority: 4, sound: "whistle.mp3", ttsText: "תיקו! שתי דקות נוספות", ttsDelay: 800 });
+          enqueue({ priority: 4, sound: "whistle.mp3", ttsText: t("tts.drawExtraTime"), ttsDelay: 800 });
           setTimeout(() => {
             timer.startExtraTime();
             if (activeGameId) {
@@ -212,7 +213,7 @@ export default function GameNight() {
       } else {
         // Extra time ended
         if (scoreA === scoreB) {
-          enqueue({ priority: 5, ttsText: "פנדלים!" });
+          enqueue({ priority: 5, ttsText: t("tts.penalties") });
           timer.goToPenalties();
           setView("penalties");
         } else {
@@ -364,10 +365,10 @@ export default function GameNight() {
         timer_paused_at: null,
         timer_elapsed_before_pause: 0,
       });
-      enqueue({ priority: 2, sound: "whistle.mp3", ttsText: "שריקת פתיחה!" });
+      enqueue({ priority: 2, sound: "whistle.mp3", ttsText: t("tts.kickoff") });
     } catch (err) {
       console.error("Error starting game:", err);
-      toast({ title: "שגיאה", description: "לא הצלחנו להתחיל משחק", variant: "destructive" });
+      toast({ title: t("end.errorTitle"), description: t("tts.errorStartGame"), variant: "destructive" });
     }
   };
 
@@ -392,7 +393,7 @@ export default function GameNight() {
     scoreARef.current = newScoreA;
     scoreBRef.current = newScoreB;
 
-    const scorerName = player?.display_name || "שחקן";
+    const scorerName = player?.display_name || t("goals.player");
     setGoals((prev) => [
       ...prev,
       {
@@ -411,7 +412,7 @@ export default function GameNight() {
     enqueue({
       priority: 1,
       sound: "whistle.mp3",
-      ttsText: `גול! ${scorerName}! ${scoreText}`,
+      ttsText: t("tts.goalScored", { player: scorerName, score: scoreText }),
       ttsDelay: 600,
     });
 
@@ -454,7 +455,7 @@ export default function GameNight() {
       console.error("Error undoing goal:", err);
     }
 
-    toast({ title: "הגול בוטל" });
+    toast({ title: t("goals.undone") });
   };
 
   const handleGameEnd = async () => {
@@ -480,8 +481,8 @@ export default function GameNight() {
       priority: 2,
       sound: "whistle.mp3",
       ttsText: winnerName
-        ? `המשחק הסתיים! ${scoreARef.current}-${scoreBRef.current}. ${winnerName} ניצחו!`
-        : `המשחק הסתיים בתיקו! ${scoreARef.current}-${scoreBRef.current}`,
+        ? t("tts.gameEndWin", { score: `${scoreARef.current}-${scoreBRef.current}`, winner: winnerName })
+        : t("tts.gameEndDraw", { score: `${scoreARef.current}-${scoreBRef.current}` }),
       ttsDelay: 800,
     });
 
@@ -533,7 +534,7 @@ export default function GameNight() {
       setView("summary");
     } catch (err) {
       console.error("Error ending night:", err);
-      toast({ title: "שגיאה", variant: "destructive" });
+      toast({ title: t("end.errorTitle"), variant: "destructive" });
     } finally {
       setEndingNight(false);
     }
@@ -549,17 +550,23 @@ export default function GameNight() {
   const generateShareText = useCallback(() => {
     if (!summary) return "";
 
-    const date = format(new Date(summary.started_at), "d בMMMM yyyy", { locale: he });
-    let text = `⚽ סיכום הערב — ${summary.club_name || ""} | ${date}\n\n`;
-    text += `🏟️ ${summary.total_games} משחקים, ${summary.total_goals} גולים\n\n`;
+    const date = format(new Date(summary.started_at), "MMMM d, yyyy");
+    let text = `⚽ ${t("shareText.nightSummary", { club: summary.club_name || "", date })}\n\n`;
+    text += `🏟️ ${t("shareText.gamesAndGoals", { games: summary.total_games, goals: summary.total_goals })}\n\n`;
 
     for (const game of summary.games || []) {
       if (!game.ended_at) continue;
       const aName = getTeamName(game.team_a_captain_number);
       const bName = getTeamName(game.team_b_captain_number);
-      text += `משחק ${game.game_number}: קבוצת ${aName} ${game.score_a}-${game.score_b} קבוצת ${bName}`;
+      text += t("shareText.gameResult", {
+        number: game.game_number,
+        teamA: aName,
+        scoreA: game.score_a,
+        scoreB: game.score_b,
+        teamB: bName,
+      });
       if (game.penalty_score_a != null) {
-        text += ` (פנ' ${game.penalty_score_a}-${game.penalty_score_b})`;
+        text += ` ${t("shareText.penaltyResult", { scoreA: game.penalty_score_a, scoreB: game.penalty_score_b })}`;
       }
       if (game.goals && game.goals.length > 0) {
         const goalNames = game.goals.map((g) => g.player_name + (g.minute ? ` ${g.minute}'` : "")).join(", ");
@@ -569,15 +576,22 @@ export default function GameNight() {
     }
 
     if (summary.standings?.length) {
-      text += "\n🏆 טבלה:\n";
+      text += `\n🏆 ${t("shareText.standingsTitle")}\n`;
       summary.standings.forEach((s, i) => {
         const name = getTeamName(s.captain_number);
-        text += `${i + 1}. קבוצת ${name} — ${s.wins}נ ${s.draws}ת ${s.losses}ה (${s.points} נק')\n`;
+        text += t("shareText.standingRow", {
+          rank: i + 1,
+          name,
+          wins: s.wins,
+          draws: s.draws,
+          losses: s.losses,
+          points: s.points,
+        }) + "\n";
       });
     }
 
     if (summary.top_scorers?.length) {
-      text += `\n⚽ מלך השערים: ${summary.top_scorers[0].player_name} (${summary.top_scorers[0].goals} גולים)\n`;
+      text += `\n⚽ ${t("shareText.topScorer", { name: summary.top_scorers[0].player_name, goals: summary.top_scorers[0].goals })}\n`;
       if (summary.top_scorers.length > 1) {
         const rest = summary.top_scorers
           .slice(1, 3)
@@ -589,10 +603,10 @@ export default function GameNight() {
 
     const baseUrl = window.location.origin;
     text += `\n📊 ${baseUrl}/#/night-results/${nightId}\n`;
-    text += `\n⚡ kohot.online — כוחות הוגנים בקליק`;
+    text += `\n⚡ ${t("shareText.fairTeams")}`;
 
     return text;
-  }, [summary, nightId, getTeamName]);
+  }, [summary, nightId, getTeamName, t]);
 
   const shareViaWhatsApp = () => {
     const text = generateShareText();
@@ -635,12 +649,12 @@ export default function GameNight() {
       <div className="relative z-10">
         {/* ====== PRE-GAME VIEW ====== */}
         {view === "pre_game" && (
-          <div className="min-h-screen flex flex-col" dir="rtl">
+          <div className="min-h-screen flex flex-col">
             {/* Header */}
             <header className="px-4 py-3 flex items-center justify-between bg-black/20 backdrop-blur-sm border-b border-white/10">
               <div className="flex items-center gap-2">
                 <Timer className="h-5 w-5 text-emerald-400" />
-                <h1 className="text-lg font-bold text-white">ערב משחקים</h1>
+                <h1 className="text-lg font-bold text-white">{t("title")}</h1>
               </div>
               <Button variant="ghost" size="icon" className="text-white/60" onClick={handleToggleMute}>
                 {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -658,7 +672,7 @@ export default function GameNight() {
                       className="flex-shrink-0 bg-black/30 rounded-lg px-3 py-2 border border-white/10 text-center min-w-[80px]"
                     >
                       <div className="text-white/50 text-xs">#{g.game_number}</div>
-                      <div className="text-white font-bold text-sm" dir="ltr">
+                      <div className="text-white font-bold text-sm">
                         {g.score_a} - {g.score_b}
                       </div>
                     </div>
@@ -669,7 +683,7 @@ export default function GameNight() {
             {/* Matchup Selection */}
             <div className="flex-1 px-4 py-6 space-y-6">
               <h2 className="text-center text-white/70 text-sm font-medium">
-                משחק {(summary.games || []).filter((g) => g.ended_at).length + 1}
+                {t("preGame.gameNumber", { number: (summary.games || []).filter((g) => g.ended_at).length + 1 })}
               </h2>
 
               {/* Team cards */}
@@ -699,7 +713,7 @@ export default function GameNight() {
                         {team?.captainName || getCaptainLabel(captainNum)}
                       </p>
                       <p className="text-white/40 text-xs mt-1">
-                        {isResting ? "נחה" : idx === 0 ? "בית" : "חוץ"}
+                        {isResting ? t("preGame.resting") : idx === 0 ? t("preGame.home") : t("preGame.away")}
                       </p>
                     </motion.div>
                   );
@@ -707,7 +721,7 @@ export default function GameNight() {
               </div>
 
               <div className="text-center text-white/40 text-xs">
-                לחץ התחל — הקבוצות נבחרות אוטומטית לפי סיבוב
+                {t("preGame.autoRotation")}
               </div>
 
               {/* Start Game Button */}
@@ -715,8 +729,8 @@ export default function GameNight() {
                 onClick={handleStartGame}
                 className="w-full h-16 text-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
               >
-                <Play className="h-6 w-6 ml-2" />
-                התחל משחק
+                <Play className="h-6 w-6 mr-2" />
+                {t("preGame.startGame")}
               </Button>
 
               {/* End Night (if games played) */}
@@ -728,14 +742,14 @@ export default function GameNight() {
                       disabled={endingNight}
                       className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white"
                     >
-                      {endingNight ? <Loader2 className="h-4 w-4 animate-spin" /> : "כן, סיים את הערב"}
+                      {endingNight ? <Loader2 className="h-4 w-4 animate-spin" /> : t("end.yesEnd")}
                     </Button>
                     <Button
                       onClick={() => setConfirmEndNight(false)}
                       variant="outline"
                       className="h-11 bg-white/5 border-white/20 text-white hover:bg-white/10"
                     >
-                      ביטול
+                      {t("end.cancel")}
                     </Button>
                   </div>
                 ) : (
@@ -744,7 +758,7 @@ export default function GameNight() {
                     variant="outline"
                     className="w-full h-11 bg-white/5 border-white/20 text-white hover:bg-white/10"
                   >
-                    סיים את הערב
+                    {t("end.endNight")}
                   </Button>
                 )
               )}
@@ -754,14 +768,14 @@ export default function GameNight() {
 
         {/* ====== ACTIVE GAME VIEW ====== */}
         {view === "active_game" && (
-          <div className="min-h-screen flex flex-col" dir="rtl">
+          <div className="min-h-screen flex flex-col">
             {/* Header */}
             <header className="px-4 py-2 flex items-center justify-between bg-black/30 backdrop-blur-sm">
-              <span className="text-white/60 text-sm font-medium">משחק #{activeGameNumber}</span>
+              <span className="text-white/60 text-sm font-medium">{t("activeGame.gameNumber", { number: activeGameNumber })}</span>
               <div className="flex items-center gap-1">
                 {timer.currentPeriod === "extra_time" && (
-                  <span className="text-amber-400 text-xs font-bold px-2 py-0.5 bg-amber-400/20 rounded-full mr-2">
-                    הארכה
+                  <span className="text-amber-400 text-xs font-bold px-2 py-0.5 bg-amber-400/20 rounded-full ml-2">
+                    {t("activeGame.extraTime")}
                   </span>
                 )}
                 <Button variant="ghost" size="icon" className="text-white/60 h-8 w-8" onClick={handleToggleMute}>
@@ -782,7 +796,7 @@ export default function GameNight() {
                 </div>
 
                 {/* Score */}
-                <div className="text-center" dir="ltr">
+                <div className="text-center">
                   <div className="text-white font-black text-5xl tracking-wider">
                     {scoreA} - {scoreB}
                   </div>
@@ -805,7 +819,6 @@ export default function GameNight() {
                 className={`text-8xl font-mono font-black tracking-tight ${
                   timer.remainingMs <= 10_000 ? "text-red-400" : timer.remainingMs <= 60_000 ? "text-amber-400" : "text-white"
                 }`}
-                dir="ltr"
               >
                 {timer.formattedTime}
               </motion.div>
@@ -850,14 +863,14 @@ export default function GameNight() {
                   disabled={goalDebounce}
                   className={`flex-1 h-16 rounded-xl ${getCaptainColor(teamA)} text-white font-bold text-lg shadow-lg active:scale-95 transition-transform disabled:opacity-50`}
                 >
-                  +גול {getTeamName(teamA)}
+                  {t("activeGame.goalButton", { team: getTeamName(teamA) })}
                 </button>
                 <button
                   onClick={() => handleGoalTap(teamB)}
                   disabled={goalDebounce}
                   className={`flex-1 h-16 rounded-xl ${getCaptainColor(teamB)} text-white font-bold text-lg shadow-lg active:scale-95 transition-transform disabled:opacity-50`}
                 >
-                  +גול {getTeamName(teamB)}
+                  {t("activeGame.goalButton", { team: getTeamName(teamB) })}
                 </button>
               </div>
 
@@ -869,8 +882,8 @@ export default function GameNight() {
                     variant="ghost"
                     className="text-white/50 hover:text-white text-xs"
                   >
-                    <Undo2 className="h-3 w-3 ml-1" />
-                    בטל גול אחרון
+                    <Undo2 className="h-3 w-3 mr-1" />
+                    {t("goals.undoLast")}
                   </Button>
                 )}
                 <div className="flex-1" />
@@ -881,14 +894,14 @@ export default function GameNight() {
                       variant="ghost"
                       className="text-red-400 text-xs font-bold"
                     >
-                      כן, סיים
+                      {t("end.yesEndGame")}
                     </Button>
                     <Button
                       onClick={() => setConfirmEndGame(false)}
                       variant="ghost"
                       className="text-white/50 text-xs"
                     >
-                      ביטול
+                      {t("end.cancel")}
                     </Button>
                   </div>
                 ) : (
@@ -897,7 +910,7 @@ export default function GameNight() {
                     variant="ghost"
                     className="text-red-400/70 hover:text-red-400 text-xs"
                   >
-                    סיים משחק
+                    {t("end.endGame")}
                   </Button>
                 )}
               </div>
@@ -938,10 +951,9 @@ export default function GameNight() {
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="fixed bottom-0 left-0 right-0 z-50 bg-emerald-900 border-t border-white/10 rounded-t-2xl max-h-[60vh] flex flex-col"
-                dir="rtl"
               >
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
-                  <h3 className="text-lg font-bold text-white">מי הבקיע?</h3>
+                  <h3 className="text-lg font-bold text-white">{t("goals.selectScorer")}</h3>
                   <button
                     onClick={() => { setGoalPickerTeam(null); setView("active_game"); }}
                     className="p-2 text-white/60 hover:text-white"
@@ -954,7 +966,7 @@ export default function GameNight() {
                     <button
                       key={player.id}
                       onClick={() => handleScorerSelected(player)}
-                      className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-right"
+                      className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-left"
                     >
                       <PlayerAvatar
                         name={player.display_name}
@@ -974,7 +986,7 @@ export default function GameNight() {
                     onClick={() => handleScorerSelected(null)}
                     className="w-full p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors text-center text-white/50 text-sm"
                   >
-                    לא ידוע
+                    {t("goals.unknown")}
                   </button>
                 </div>
               </motion.div>
@@ -984,9 +996,9 @@ export default function GameNight() {
 
         {/* ====== PENALTIES VIEW ====== */}
         {view === "penalties" && (
-          <div className="min-h-screen flex flex-col items-center justify-center px-4" dir="rtl">
-            <h2 className="text-2xl font-bold text-white mb-2">פנדלים!</h2>
-            <p className="text-white/60 text-sm mb-8" dir="ltr">
+          <div className="min-h-screen flex flex-col items-center justify-center px-4">
+            <h2 className="text-2xl font-bold text-white mb-2">{t("penalties.title")}</h2>
+            <p className="text-white/60 text-sm mb-8">
               {scoreA} - {scoreB}
             </p>
             <div className="flex gap-4 w-full max-w-sm">
@@ -994,13 +1006,13 @@ export default function GameNight() {
                 onClick={() => handlePenaltyWin("team_a_win")}
                 className={`flex-1 h-20 rounded-xl ${getCaptainColor(teamA)} text-white font-bold text-lg shadow-lg active:scale-95 transition-transform`}
               >
-                {getTeamName(teamA)} ניצחו
+                {t("penalties.teamWon", { team: getTeamName(teamA) })}
               </button>
               <button
                 onClick={() => handlePenaltyWin("team_b_win")}
                 className={`flex-1 h-20 rounded-xl ${getCaptainColor(teamB)} text-white font-bold text-lg shadow-lg active:scale-95 transition-transform`}
               >
-                {getTeamName(teamB)} ניצחו
+                {t("penalties.teamWon", { team: getTeamName(teamB) })}
               </button>
             </div>
           </div>
@@ -1008,13 +1020,13 @@ export default function GameNight() {
 
         {/* ====== GAME OVER VIEW ====== */}
         {view === "game_over" && (
-          <div className="min-h-screen flex flex-col items-center justify-center px-4 space-y-6" dir="rtl">
+          <div className="min-h-screen flex flex-col items-center justify-center px-4 space-y-6">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="bg-black/30 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center w-full max-w-sm"
             >
-              <h2 className="text-xl font-bold text-white mb-4">משחק #{activeGameNumber} הסתיים</h2>
+              <h2 className="text-xl font-bold text-white mb-4">{t("gameOver.title", { number: activeGameNumber })}</h2>
 
               <div className="flex items-center justify-center gap-6 mb-4">
                 <div className="text-center">
@@ -1023,7 +1035,7 @@ export default function GameNight() {
                   </div>
                   <p className="text-white text-sm truncate max-w-[80px]">{getTeamName(teamA)}</p>
                 </div>
-                <div className="text-white font-black text-4xl" dir="ltr">
+                <div className="text-white font-black text-4xl">
                   {scoreA} - {scoreB}
                 </div>
                 <div className="text-center">
@@ -1036,7 +1048,7 @@ export default function GameNight() {
 
               {scoreA !== scoreB && (
                 <p className="text-emerald-400 font-bold mb-4">
-                  {scoreA > scoreB ? getTeamName(teamA) : getTeamName(teamB)} ניצחו!
+                  {t("gameOver.winner", { team: scoreA > scoreB ? getTeamName(teamA) : getTeamName(teamB) })}
                 </p>
               )}
             </motion.div>
@@ -1045,8 +1057,8 @@ export default function GameNight() {
               onClick={handleNextGame}
               className="w-full max-w-sm h-14 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
             >
-              <Play className="h-5 w-5 ml-2" />
-              משחק הבא
+              <Play className="h-5 w-5 mr-2" />
+              {t("gameOver.nextGame")}
             </Button>
 
             {confirmEndNight ? (
@@ -1056,14 +1068,14 @@ export default function GameNight() {
                   disabled={endingNight}
                   className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white"
                 >
-                  {endingNight ? <Loader2 className="h-4 w-4 animate-spin" /> : "כן, סיים"}
+                  {endingNight ? <Loader2 className="h-4 w-4 animate-spin" /> : t("end.yesEndGame")}
                 </Button>
                 <Button
                   onClick={() => setConfirmEndNight(false)}
                   variant="outline"
                   className="h-11 bg-white/5 border-white/20 text-white hover:bg-white/10"
                 >
-                  ביטול
+                  {t("end.cancel")}
                 </Button>
               </div>
             ) : (
@@ -1072,7 +1084,7 @@ export default function GameNight() {
                 variant="outline"
                 className="w-full max-w-sm h-11 bg-white/5 border-white/20 text-white hover:bg-white/10"
               >
-                סיים את הערב
+                {t("end.endNight")}
               </Button>
             )}
           </div>
@@ -1080,11 +1092,11 @@ export default function GameNight() {
 
         {/* ====== SUMMARY VIEW ====== */}
         {view === "summary" && summary && (
-          <div className="min-h-screen" dir="rtl">
+          <div className="min-h-screen">
             {/* Header */}
             <header className="px-4 py-3 flex items-center justify-center gap-2 bg-black/20 backdrop-blur-sm border-b border-white/10">
               <Trophy className="h-5 w-5 text-yellow-400" />
-              <h1 className="text-lg font-bold text-white">סיכום הערב</h1>
+              <h1 className="text-lg font-bold text-white">{t("summary.title")}</h1>
             </header>
 
             <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
@@ -1094,7 +1106,7 @@ export default function GameNight() {
                   <p className="text-white/60 text-sm">{summary.club_name}</p>
                 )}
                 <p className="text-white/40 text-xs">
-                  {format(new Date(summary.started_at), "EEEE, d בMMMM yyyy", { locale: he })}
+                  {format(new Date(summary.started_at), "EEEE, MMMM d, yyyy")}
                 </p>
               </div>
 
@@ -1103,11 +1115,11 @@ export default function GameNight() {
                 <div className="flex justify-center gap-8">
                   <div>
                     <p className="text-3xl font-bold text-white">{summary.total_games}</p>
-                    <p className="text-white/50 text-xs">משחקים</p>
+                    <p className="text-white/50 text-xs">{t("summary.games")}</p>
                   </div>
                   <div>
                     <p className="text-3xl font-bold text-white">{summary.total_goals}</p>
-                    <p className="text-white/50 text-xs">גולים</p>
+                    <p className="text-white/50 text-xs">{t("summary.totalGoals")}</p>
                   </div>
                 </div>
               </div>
@@ -1115,7 +1127,7 @@ export default function GameNight() {
               {/* Game Results */}
               {(summary.games || []).filter((g) => g.ended_at).length > 0 && (
                 <div className="space-y-2">
-                  <h3 className="text-white/70 text-sm font-medium">תוצאות</h3>
+                  <h3 className="text-white/70 text-sm font-medium">{t("summary.results")}</h3>
                   {(summary.games || [])
                     .filter((g) => g.ended_at)
                     .map((g) => {
@@ -1131,7 +1143,7 @@ export default function GameNight() {
                             <span className={`text-sm font-medium ${isAWin ? "text-emerald-400" : "text-white/70"}`}>
                               {getTeamName(g.team_a_captain_number)}
                             </span>
-                            <span className="text-white font-bold text-base" dir="ltr">
+                            <span className="text-white font-bold text-base">
                               {g.score_a} - {g.score_b}
                             </span>
                             <span className={`text-sm font-medium ${isBWin ? "text-emerald-400" : "text-white/70"}`}>
@@ -1139,7 +1151,7 @@ export default function GameNight() {
                             </span>
                           </div>
                           {g.penalty_score_a != null && (
-                            <span className="text-white/40 text-xs">(פנ')</span>
+                            <span className="text-white/40 text-xs">{t("summary.penalties")}</span>
                           )}
                           {/* Goal scorers */}
                           {g.goals && g.goals.length > 0 && (
@@ -1165,15 +1177,15 @@ export default function GameNight() {
                 <div className="space-y-2">
                   <h3 className="text-white/70 text-sm font-medium flex items-center gap-1.5">
                     <Trophy className="h-4 w-4 text-yellow-400" />
-                    טבלה
+                    {t("standings.title")}
                   </h3>
                   <div className="bg-black/20 rounded-xl border border-white/10 overflow-hidden">
                     <div className="grid grid-cols-6 gap-1 px-3 py-2 text-white/40 text-xs border-b border-white/10">
                       <span className="col-span-2">#</span>
-                      <span className="text-center">נ</span>
-                      <span className="text-center">ת</span>
-                      <span className="text-center">ה</span>
-                      <span className="text-center font-bold">נק'</span>
+                      <span className="text-center">{t("standings.wins")}</span>
+                      <span className="text-center">{t("standings.draws")}</span>
+                      <span className="text-center">{t("standings.losses")}</span>
+                      <span className="text-center font-bold">{t("standings.points")}</span>
                     </div>
                     {summary.standings.map((s, i) => (
                       <div
@@ -1197,7 +1209,7 @@ export default function GameNight() {
               {/* Top Scorers */}
               {summary.top_scorers?.length > 0 && (
                 <div className="space-y-2">
-                  <h3 className="text-white/70 text-sm font-medium">מלך השערים</h3>
+                  <h3 className="text-white/70 text-sm font-medium">{t("summary.topScorer")}</h3>
                   <div className="space-y-2">
                     {summary.top_scorers.slice(0, 3).map((scorer, i) => (
                       <div
@@ -1233,7 +1245,7 @@ export default function GameNight() {
                   className="w-full gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white h-12 text-base"
                 >
                   <MessageCircle className="h-5 w-5" />
-                  שתף בוואטסאפ
+                  {t("summary.shareWhatsApp")}
                 </Button>
 
                 <Button
@@ -1243,7 +1255,7 @@ export default function GameNight() {
                 >
                   <Link to="/dashboard">
                     <Home className="h-4 w-4" />
-                    חזרה לדשבורד
+                    {t("summary.backToDashboard")}
                   </Link>
                 </Button>
               </div>
@@ -1255,7 +1267,7 @@ export default function GameNight() {
                   className="inline-flex items-center gap-1.5 text-white/30 hover:text-white/50 transition-colors text-xs"
                 >
                   <img src="/favicon.ico" alt="" className="w-3.5 h-3.5 opacity-40" />
-                  kohot.online
+                  {t("footer.brand")}
                 </Link>
               </div>
             </div>

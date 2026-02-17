@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 export default function Landing() {
+  const { t } = useTranslation("landing");
+  const { t: tc } = useTranslation("common");
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [joinCode, setJoinCode] = useState("");
@@ -108,22 +112,25 @@ export default function Landing() {
       {/* Content Layer */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <header className="p-4 flex justify-between items-center" dir="rtl">
-          <img src="/logo.png" alt="kohot.online" className="h-8 w-auto" />
-          {!authLoading && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(user ? "/dashboard" : "/auth")}
-              className="text-white/80 hover:text-white hover:bg-white/10"
-            >
-              {user ? "הכוחות שלי" : "התחברות"}
-            </Button>
-          )}
+        <header className="p-4 flex justify-between items-center">
+          <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
+          <div className="flex items-center gap-1">
+            <LanguagePicker />
+            {!authLoading && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(user ? "/dashboard" : "/auth")}
+                className="text-white/80 hover:text-white hover:bg-white/10"
+              >
+                {user ? tc("nav.myDrafts") : tc("nav.signIn")}
+              </Button>
+            )}
+          </div>
         </header>
 
         {/* Main Content - Centered */}
-        <main className="flex-1 flex flex-col items-center justify-center px-6 pb-8" dir="rtl">
+        <main className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -132,14 +139,14 @@ export default function Landing() {
           >
             {/* Logo/Brand */}
             <div className="space-y-2">
-              <h1 className="text-5xl font-bold text-white">כוחות אונליין</h1>
+              <h1 className="text-5xl font-bold text-white">{t("hero.title")}</h1>
             </div>
 
             {/* Tagline */}
             <div className="space-y-1">
-              <p className="text-2xl font-bold text-white">בוחרים 3 ראשי קבוצות</p>
-              <p className="text-2xl font-bold text-white">עושים כוחות מהבית</p>
-              <p className="text-2xl font-bold text-emerald-400">מתחילים בזמן</p>
+              <p className="text-2xl font-bold text-white">{t("hero.tagline1")}</p>
+              <p className="text-2xl font-bold text-white">{t("hero.tagline2")}</p>
+              <p className="text-2xl font-bold text-emerald-400">{t("hero.tagline3")}</p>
             </div>
 
             {/* Primary CTA */}
@@ -154,21 +161,21 @@ export default function Landing() {
                 size="lg"
                 className="w-full h-14 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
               >
-                צור קבוצה חדשה
+                {t("cta.createClub")}
               </Button>
               <div className="flex items-center justify-center gap-2 text-sm">
                 <button
                   onClick={() => navigate("/auth")}
                   className="text-white/50 hover:text-white/80 transition-colors"
                 >
-                  כבר יש לי חשבון? התחברות
+                  {t("cta.alreadyHaveAccount")}
                 </button>
                 <span className="text-white/30">·</span>
                 <button
                   onClick={() => navigate("/quick-draft")}
                   className="text-white/50 hover:text-white/80 transition-colors"
                 >
-                  נסה בלי חשבון
+                  {t("cta.tryWithoutAccount")}
                 </button>
               </div>
             </motion.div>
@@ -176,7 +183,7 @@ export default function Landing() {
             {/* Divider */}
             <div className="flex items-center gap-4">
               <div className="flex-1 h-px bg-white/40" />
-              <span className="text-white/80 text-sm font-medium">יש לך קוד?</span>
+              <span className="text-white/80 text-sm font-medium">{t("joinCode.divider")}</span>
               <div className="flex-1 h-px bg-white/40" />
             </div>
 
@@ -189,7 +196,7 @@ export default function Landing() {
             >
               <Input
                 type="text"
-                placeholder="הקלד קוד"
+                placeholder={t("joinCode.placeholder")}
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 onKeyDown={handleKeyDown}
@@ -205,7 +212,7 @@ export default function Landing() {
                 {isJoining ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  "הצטרף"
+                  t("joinCode.join")
                 )}
               </Button>
             </motion.div>
@@ -213,9 +220,9 @@ export default function Landing() {
         </main>
 
         {/* Footer */}
-        <footer className="p-4 text-center" dir="rtl">
+        <footer className="p-4 text-center">
           <p className="text-white/30 text-xs">
-            דראפט הוגן. יותר זמן לשחק.
+            {t("footer.tagline")}
           </p>
         </footer>
       </div>

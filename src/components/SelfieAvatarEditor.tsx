@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Camera, Image as ImageIcon, ZoomOut, ZoomIn, X, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -13,7 +14,7 @@ import { cropFaceToFile } from "@/lib/cropFace";
 // Oval positioning constants
 const OVAL_CENTER_Y_RATIO = 0.42; // 42% from top
 const OVAL_RX_RATIO = 0.35; // half-width = 35% of container width
-const OVAL_ASPECT = 1.35; // height = 1.35 × width
+const OVAL_ASPECT = 1.35; // height = 1.35 * width
 const OUTPUT_WIDTH = 280; // output image width in px
 
 interface SelfieAvatarEditorProps {
@@ -29,6 +30,7 @@ export function SelfieAvatarEditor({
   onOpenChange,
   onComplete,
 }: SelfieAvatarEditorProps) {
+  const { t } = useTranslation("common");
   const [step, setStep] = useState<Step>("pick");
   const [isCropping, setIsCropping] = useState(false);
 
@@ -256,12 +258,12 @@ export function SelfieAvatarEditor({
 
         {step === "pick" && (
           <>
-            <DrawerHeader className="text-center" dir="rtl">
+            <DrawerHeader className="text-center">
               <DrawerTitle className="text-white text-lg">
-                צלם תמונה לפרופיל
+                {t("selfieEditor.pickTitle")}
               </DrawerTitle>
             </DrawerHeader>
-            <div className="p-6 space-y-4 flex flex-col items-center" dir="rtl">
+            <div className="p-6 space-y-4 flex flex-col items-center">
               <div className="text-6xl opacity-30 mb-2">🤳</div>
 
               <Button
@@ -269,7 +271,7 @@ export function SelfieAvatarEditor({
                 className="w-full max-w-xs h-14 text-base font-bold bg-emerald-500 hover:bg-emerald-600 text-white gap-3"
               >
                 <Camera className="h-5 w-5" />
-                צלם סלפי
+                {t("selfieEditor.takeSelfie")}
               </Button>
 
               <Button
@@ -278,11 +280,11 @@ export function SelfieAvatarEditor({
                 className="w-full max-w-xs h-12 text-sm bg-white/5 border-white/20 text-white/70 hover:bg-white/10 hover:text-white gap-3"
               >
                 <ImageIcon className="h-4 w-4" />
-                בחר מהגלריה
+                {t("selfieEditor.chooseFromGallery")}
               </Button>
 
               <p className="text-white/40 text-xs text-center">
-                תמונת פנים מקדימה עובדת הכי טוב
+                {t("selfieEditor.bestPhotoTip")}
               </p>
             </div>
           </>
@@ -290,7 +292,7 @@ export function SelfieAvatarEditor({
 
         {step === "position" && imgSrc && (
           <>
-            <DrawerHeader className="text-center pb-2" dir="rtl">
+            <DrawerHeader className="text-center pb-2">
               <div className="flex items-center justify-between px-2">
                 <button
                   onClick={() => {
@@ -302,13 +304,13 @@ export function SelfieAvatarEditor({
                   <X className="h-5 w-5" />
                 </button>
                 <DrawerTitle className="text-white text-base">
-                  מקם את הפנים
+                  {t("selfieEditor.positionTitle")}
                 </DrawerTitle>
                 <div className="w-7" /> {/* spacer */}
               </div>
             </DrawerHeader>
 
-            <div className="px-4 pb-4 space-y-3" dir="rtl">
+            <div className="px-4 pb-4 space-y-3">
               {/* Editor area */}
               <div
                 ref={containerRef}
@@ -369,7 +371,7 @@ export function SelfieAvatarEditor({
                 ) : (
                   <>
                     <Check className="h-5 w-5" />
-                    אישור
+                    {t("selfieEditor.confirm")}
                   </>
                 )}
               </Button>

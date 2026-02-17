@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -11,14 +12,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getSafeRedirectPath } from "@/lib/safeRedirect";
 import { Loader2, ArrowRight, ChevronDown, Mail } from "lucide-react";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 const formSchema = z.object({
-  email: z.string().email("כתובת אימייל לא תקינה"),
-  password: z.string().min(6, "הסיסמה חייבת להכיל לפחות 6 תווים"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("כתובת אימייל לא תקינה"),
+  email: z.string().email("Invalid email address"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -31,6 +33,7 @@ interface LocationState {
 }
 
 export default function Auth() {
+  const { t } = useTranslation(["auth", "common"]);
   const location = useLocation();
   const locationState = location.state as LocationState | null;
   const returnTo = locationState?.returnTo || "/dashboard";
@@ -69,14 +72,14 @@ export default function Auth() {
         const { error } = await resetPassword(data.email);
         if (error) {
           toast({
-            title: "שגיאה",
+            title: t("auth:errors.error"),
             description: getErrorMessage(error.message),
             variant: "destructive",
           });
         } else {
           toast({
-            title: "נשלח בהצלחה",
-            description: "בדוק את תיבת האימייל שלך להוראות איפוס סיסמה",
+            title: t("auth:success.resetSent"),
+            description: t("auth:success.resetSentDescription"),
           });
           setShowForgotPassword(false);
         }
@@ -85,7 +88,7 @@ export default function Auth() {
         const { error } = await signIn(loginData.email, loginData.password);
         if (error) {
           toast({
-            title: "שגיאה בהתחברות",
+            title: t("auth:errors.loginError"),
             description: getErrorMessage(error.message),
             variant: "destructive",
           });
@@ -97,22 +100,22 @@ export default function Auth() {
         const { error } = await signUp(signupData.email, signupData.password);
         if (error) {
           toast({
-            title: "שגיאה בהרשמה",
+            title: t("auth:errors.signupError"),
             description: getErrorMessage(error.message),
             variant: "destructive",
           });
         } else {
           toast({
-            title: "נרשמת בהצלחה!",
-            description: "ברוך הבא לכוחות אונליין",
+            title: t("auth:success.signupSuccess"),
+            description: t("auth:success.signupWelcome"),
           });
           navigate(returnTo);
         }
       }
     } catch (err) {
       toast({
-        title: "שגיאה",
-        description: "אירעה שגיאה לא צפויה",
+        title: t("auth:errors.error"),
+        description: t("auth:errors.unexpectedError"),
         variant: "destructive",
       });
     } finally {
@@ -122,16 +125,16 @@ export default function Auth() {
 
   const getErrorMessage = (message: string): string => {
     if (message.includes("Invalid login credentials")) {
-      return "אימייל או סיסמה שגויים";
+      return t("auth:errors.invalidCredentials");
     }
     if (message.includes("User already registered")) {
-      return "משתמש עם אימייל זה כבר קיים";
+      return t("auth:errors.userExists");
     }
     if (message.includes("Email not confirmed")) {
-      return "האימייל לא אומת";
+      return t("auth:errors.emailNotConfirmed");
     }
     if (message.includes("Password")) {
-      return "הסיסמה חייבת להכיל לפחות 6 תווים";
+      return t("auth:errors.passwordTooShort");
     }
     return message;
   };
@@ -161,21 +164,24 @@ export default function Auth() {
       {/* Content Layer */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <header className="p-4 flex items-center justify-between" dir="rtl">
+        <header className="p-4 flex items-center justify-between">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
           >
             <ArrowRight className="h-4 w-4" />
-            <span>חזרה לעמוד הבית</span>
+            <span>{t("auth:nav.backToHome")}</span>
           </Link>
-          <Link to="/">
-            <img src="/logo.png" alt="kohot.online" className="h-8 w-auto" />
-          </Link>
+          <div className="flex items-center gap-1">
+            <LanguagePicker />
+            <Link to="/">
+              <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
+            </Link>
+          </div>
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center px-6 pb-8" dir="rtl">
+        <main className="flex-1 flex items-center justify-center px-6 pb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -195,7 +201,7 @@ export default function Auth() {
                     const { error } = await signInWithGoogle();
                     if (error) {
                       toast({
-                        title: "שגיאה בהתחברות עם Google",
+                        title: t("auth:errors.googleError"),
                         description: error.message,
                         variant: "destructive",
                       });
@@ -203,7 +209,7 @@ export default function Auth() {
                   }}
                   disabled={isLoading}
                 >
-                  <svg className="w-5 h-5 ml-2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -221,13 +227,13 @@ export default function Auth() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  המשך עם Google
+                  {t("auth:form.continueWithGoogle")}
                 </Button>
 
                 {/* Divider */}
                 <div className="flex items-center gap-4">
                   <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-white/30 text-xs">או</span>
+                  <span className="text-white/30 text-xs">{t("auth:form.or")}</span>
                   <div className="flex-1 h-px bg-white/10" />
                 </div>
 
@@ -238,7 +244,7 @@ export default function Auth() {
                   className="w-full flex items-center justify-center gap-2 text-sm text-white/40 hover:text-white/60 transition-colors"
                 >
                   <Mail className="h-4 w-4" />
-                  <span>המשך עם אימייל</span>
+                  <span>{t("auth:form.continueWithEmail")}</span>
                   <ChevronDown className={`h-4 w-4 transition-transform ${showEmailForm ? "rotate-180" : ""}`} />
                 </button>
               </div>
@@ -258,7 +264,7 @@ export default function Auth() {
                             : "text-white/50 hover:text-white/70"
                         }`}
                       >
-                        כניסה
+                        {t("auth:form.login")}
                       </button>
                       <button
                         type="button"
@@ -269,7 +275,7 @@ export default function Auth() {
                             : "text-white/50 hover:text-white/70"
                         }`}
                       >
-                        הרשמה
+                        {t("auth:form.signup")}
                       </button>
                     </div>
                   )}
@@ -277,14 +283,14 @@ export default function Auth() {
                   {/* Forgot password header */}
                   {showForgotPassword && (
                     <div className="mb-4 text-center">
-                      <p className="text-white/80 text-sm">נשלח לך קישור לאיפוס הסיסמה</p>
+                      <p className="text-white/80 text-sm">{t("auth:form.forgotPasswordDescription")}</p>
                     </div>
                   )}
 
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4" noValidate>
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-white/80">
-                        אימייל
+                        {t("auth:form.email")}
                       </Label>
                       <Input
                         id="email"
@@ -304,7 +310,7 @@ export default function Auth() {
                     {!showForgotPassword && (
                       <div className="space-y-2">
                         <Label htmlFor="password" className="text-white/80">
-                          סיסמה
+                          {t("auth:form.password")}
                         </Label>
                         <Input
                           id="password"
@@ -330,11 +336,11 @@ export default function Auth() {
                       {isLoading ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
                       ) : showForgotPassword ? (
-                        "שלח קישור איפוס"
+                        t("auth:form.sendResetLink")
                       ) : emailTab === "login" ? (
-                        "התחבר"
+                        t("auth:form.signIn")
                       ) : (
-                        "צור חשבון"
+                        t("auth:form.createAccount")
                       )}
                     </Button>
 
@@ -345,7 +351,7 @@ export default function Auth() {
                         onClick={() => setShowForgotPassword(true)}
                         className="w-full text-sm text-white/40 hover:text-white/60 transition-colors"
                       >
-                        שכחת סיסמה?
+                        {t("auth:form.forgotPassword")}
                       </button>
                     )}
 
@@ -356,7 +362,7 @@ export default function Auth() {
                         onClick={() => setShowForgotPassword(false)}
                         className="w-full text-sm text-emerald-400 hover:underline"
                       >
-                        חזרה להתחברות
+                        {t("auth:form.backToLogin")}
                       </button>
                     )}
                   </form>
@@ -370,14 +376,14 @@ export default function Auth() {
                   onClick={() => navigate("/quick-draft")}
                   className="w-full text-sm text-white/40 hover:text-amber-400 transition-colors"
                 >
-                  או נסה כוחות ראשונים בלי חשבון →
+                  {t("auth:quickDraft")}
                 </button>
               </div>
             </div>
 
             {/* Footer */}
             <p className="text-center text-white/30 text-xs mt-6">
-              עושים כוחות אמיתיים אונליין - מתחילים לשחק בזמן
+              {t("auth:footer")}
             </p>
           </motion.div>
         </main>

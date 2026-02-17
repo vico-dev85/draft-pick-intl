@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -27,14 +28,15 @@ interface PeekResult {
 type Status = "loading" | "invite-preview" | "email-confirmation-pending" | "accepting" | "success" | "error";
 
 const formSchema = z.object({
-  email: z.string().email("כתובת אימייל לא תקינה"),
-  password: z.string().min(6, "הסיסמה חייבת להכיל לפחות 6 תווים"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 type FormData = z.infer<typeof formSchema>;
 
 type EmailTab = "signup" | "login";
 
 export default function AcceptInvite() {
+  const { t } = useTranslation(["auth", "common"]);
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
@@ -68,7 +70,7 @@ export default function AcceptInvite() {
   useEffect(() => {
     const inviteToken = token || sessionStorage.getItem("pendingInviteToken") || localStorage.getItem("pendingInviteToken");
     if (!inviteToken) {
-      setError("קישור הזמנה חסר");
+      setError(t("auth:invite.missingLink"));
       setStatus("error");
       return;
     }
@@ -134,7 +136,7 @@ export default function AcceptInvite() {
     const inviteToken = token || sessionStorage.getItem("pendingInviteToken") || localStorage.getItem("pendingInviteToken");
 
     if (!inviteToken) {
-      setError("קישור הזמנה חסר");
+      setError(t("auth:invite.missingLink"));
       setStatus("error");
       return;
     }
@@ -148,11 +150,11 @@ export default function AcceptInvite() {
 
       if (error) {
         if (error.message.includes("expired")) {
-          setError("תוקף ההזמנה פג. בקש הזמנה חדשה מהמארגן.");
+          setError(t("auth:invite.expired"));
         } else if (error.message.includes("already linked")) {
-          setError("השחקן הזה כבר מקושר לחשבון אחר.");
+          setError(t("auth:invite.alreadyLinked"));
         } else if (error.message.includes("Invalid")) {
-          setError("קישור הזמנה לא תקין.");
+          setError(t("auth:invite.invalidLink"));
         } else {
           setError(error.message);
         }
@@ -172,16 +174,16 @@ export default function AcceptInvite() {
         setStatus("success");
 
         toast({
-          title: "הצטרפת בהצלחה!",
-          description: `מחובר כ-${data.player_name}`,
+          title: t("auth:invite.joinedToast"),
+          description: t("auth:invite.connectedAs", { name: data.player_name }),
         });
       } else {
-        setError("משהו השתבש. נסה שוב.");
+        setError(t("auth:invite.somethingWentWrong"));
         setStatus("error");
       }
     } catch (err) {
       console.error("Error accepting invite:", err);
-      setError("שגיאה בקבלת ההזמנה");
+      setError(t("auth:invite.acceptError"));
       setStatus("error");
     }
   };
@@ -196,7 +198,7 @@ export default function AcceptInvite() {
     const { error } = await signInWithGoogle();
     if (error) {
       toast({
-        title: "שגיאה בהתחברות",
+        title: t("auth:errors.loginError"),
         description: error.message,
         variant: "destructive",
       });
@@ -216,7 +218,7 @@ export default function AcceptInvite() {
         if (error) {
           const isAlreadyRegistered = error.message.includes("User already registered");
           toast({
-            title: "שגיאה בהרשמה",
+            title: t("auth:errors.signupError"),
             description: getErrorMessage(error.message),
             variant: "destructive",
           });
@@ -230,7 +232,7 @@ export default function AcceptInvite() {
         const { error } = await signIn(data.email, data.password);
         if (error) {
           toast({
-            title: "שגיאה בהתחברות",
+            title: t("auth:errors.loginError"),
             description: getErrorMessage(error.message),
             variant: "destructive",
           });
@@ -239,8 +241,8 @@ export default function AcceptInvite() {
       }
     } catch {
       toast({
-        title: "שגיאה",
-        description: "אירעה שגיאה לא צפויה",
+        title: t("auth:errors.error"),
+        description: t("auth:errors.unexpectedError"),
         variant: "destructive",
       });
     } finally {
@@ -250,16 +252,16 @@ export default function AcceptInvite() {
 
   const getErrorMessage = (message: string): string => {
     if (message.includes("Invalid login credentials")) {
-      return "אימייל או סיסמה שגויים";
+      return t("auth:errors.invalidCredentials");
     }
     if (message.includes("User already registered")) {
-      return "משתמש עם אימייל זה כבר קיים. נסה להתחבר.";
+      return t("auth:errors.userExistsTryLogin");
     }
     if (message.includes("Email not confirmed")) {
-      return "האימייל לא אומת";
+      return t("auth:errors.emailNotConfirmed");
     }
     if (message.includes("Password")) {
-      return "הסיסמה חייבת להכיל לפחות 6 תווים";
+      return t("auth:errors.passwordTooShort");
     }
     return message;
   };
@@ -283,7 +285,7 @@ export default function AcceptInvite() {
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-4" />
           <p className="text-white/70">
-            {status === "accepting" ? "מצטרף לקבוצה..." : "טוען..."}
+            {status === "accepting" ? t("auth:invite.joiningClub") : t("common:status.loading")}
           </p>
         </div>
       </div>
@@ -306,24 +308,28 @@ export default function AcceptInvite() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <img src="/logo.png" alt="kohot.online" className="h-12 w-auto mx-auto mb-2" />
+            <img src="/logo.png" alt="Draft Pick" className="h-12 w-auto mx-auto mb-2" />
           </div>
 
           {/* Invite Preview — Main auth screen */}
           {status === "invite-preview" && (
-            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center" dir="rtl">
+            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center">
               <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserPlus className="h-8 w-8 text-emerald-400" />
               </div>
 
               {/* Personalized or generic greeting */}
               <h2 className="text-xl font-bold text-white mb-1">
-                {peekData?.player_name ? `היי ${peekData.player_name}!` : "הוזמנת להצטרף!"}
+                {peekData?.player_name
+                  ? t("auth:invite.greetingPersonalized", { name: peekData.player_name })
+                  : t("auth:invite.greetingGeneric")}
               </h2>
               <p className="text-white/70 mb-6">
                 {peekData?.club_name
-                  ? <>הוזמנת להצטרף ל-<span className="text-emerald-400 font-bold">{peekData.club_name}</span></>
-                  : "התחבר כדי להצטרף לקבוצה"}
+                  ? <Trans i18nKey="auth:invite.invitedToClub" values={{ club: peekData.club_name }}>
+                      You've been invited to join <span className="text-emerald-400 font-bold">{{club: peekData.club_name} as any}</span>
+                    </Trans>
+                  : t("auth:invite.signInToJoin")}
               </p>
 
               {/* Google OAuth — Primary */}
@@ -338,13 +344,13 @@ export default function AcceptInvite() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      <svg className="w-5 h-5 ml-2" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                       </svg>
-                      המשך עם Google
+                      {t("auth:form.continueWithGoogle")}
                     </>
                   )}
                 </Button>
@@ -352,7 +358,7 @@ export default function AcceptInvite() {
                 {/* Divider */}
                 <div className="flex items-center gap-4">
                   <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-white/30 text-xs">או</span>
+                  <span className="text-white/30 text-xs">{t("auth:form.or")}</span>
                   <div className="flex-1 h-px bg-white/10" />
                 </div>
 
@@ -363,7 +369,7 @@ export default function AcceptInvite() {
                   className="w-full flex items-center justify-center gap-2 text-sm text-white/40 hover:text-white/60 transition-colors"
                 >
                   <Mail className="h-4 w-4" />
-                  <span>המשך עם אימייל</span>
+                  <span>{t("auth:form.continueWithEmail")}</span>
                   <ChevronDown className={`h-4 w-4 transition-transform ${showEmailForm ? "rotate-180" : ""}`} />
                 </button>
               </div>
@@ -382,7 +388,7 @@ export default function AcceptInvite() {
                           : "text-white/50 hover:text-white/70"
                       }`}
                     >
-                      הרשמה
+                      {t("auth:form.signup")}
                     </button>
                     <button
                       type="button"
@@ -393,14 +399,14 @@ export default function AcceptInvite() {
                           : "text-white/50 hover:text-white/70"
                       }`}
                     >
-                      כניסה
+                      {t("auth:form.login")}
                     </button>
                   </div>
 
                   <form onSubmit={form.handleSubmit(handleEmailSubmit)} className="space-y-4" noValidate>
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-white/80">
-                        אימייל
+                        {t("auth:form.email")}
                       </Label>
                       <Input
                         id="email"
@@ -419,7 +425,7 @@ export default function AcceptInvite() {
 
                     <div className="space-y-2">
                       <Label htmlFor="password" className="text-white/80">
-                        סיסמה
+                        {t("auth:form.password")}
                       </Label>
                       <div className="relative">
                         <Input
@@ -454,9 +460,9 @@ export default function AcceptInvite() {
                       {isSubmitting ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
                       ) : emailTab === "signup" ? (
-                        "צור חשבון והצטרף"
+                        t("auth:form.createAccountAndJoin")
                       ) : (
-                        "התחבר והצטרף"
+                        t("auth:form.signInAndJoin")
                       )}
                     </Button>
                   </form>
@@ -467,35 +473,37 @@ export default function AcceptInvite() {
 
           {/* Email Confirmation Pending */}
           {status === "email-confirmation-pending" && (
-            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center" dir="rtl">
+            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center">
               <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail className="h-8 w-8 text-amber-400" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">בדוק את האימייל שלך</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t("auth:invite.checkEmail")}</h2>
               <p className="text-white/70 mb-2">
-                שלחנו קישור אימות לכתובת שהזנת.
+                {t("auth:invite.verificationSent")}
               </p>
               <p className="text-white/50 text-sm mb-4">
                 {peekData?.club_name
-                  ? <>לחץ על הקישור באימייל כדי להשלים את ההרשמה ולהצטרף ל-<span className="text-emerald-400">{peekData.club_name}</span>.</>
-                  : "לחץ על הקישור באימייל כדי להשלים את ההרשמה ולהצטרף לקבוצה."}
+                  ? <Trans i18nKey="auth:invite.clickToCompleteWithClub" values={{ club: peekData.club_name }}>
+                      Click the link in the email to complete signup and join <span className="text-emerald-400">{{club: peekData.club_name} as any}</span>.
+                    </Trans>
+                  : t("auth:invite.clickToComplete")}
               </p>
               <div className="bg-white/5 rounded-lg p-3 text-sm text-white/50 mb-4">
-                לא קיבלת? בדוק בתיקיית הספאם.
+                {t("auth:invite.checkSpam")}
               </div>
               <button
                 type="button"
                 onClick={() => setStatus("invite-preview")}
                 className="text-sm text-white/40 hover:text-white/70 transition-colors"
               >
-                חזרה
+                {t("auth:invite.back")}
               </button>
             </div>
           )}
 
           {/* Success */}
           {status === "success" && (
-            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center" dir="rtl">
+            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -504,38 +512,40 @@ export default function AcceptInvite() {
               >
                 <CheckCircle className="h-8 w-8 text-emerald-400" />
               </motion.div>
-              <h2 className="text-xl font-bold text-white mb-2">הצטרפת בהצלחה!</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t("auth:invite.joinedSuccess")}</h2>
               <p className="text-white/70 mb-2">
-                מעכשיו את/ה <span className="text-emerald-400 font-bold">{inviteData?.playerName}</span>
+                <Trans i18nKey="auth:invite.youAreNow" values={{ name: inviteData?.playerName }}>
+                  You are now <span className="text-emerald-400 font-bold">{{name: inviteData?.playerName} as any}</span>
+                </Trans>
               </p>
               {inviteData?.clubName && (
                 <p className="text-white/50 text-sm mb-6">
-                  ב-{inviteData.clubName}
+                  {t("auth:invite.inClub", { club: inviteData.clubName })}
                 </p>
               )}
               <Button
                 onClick={handleGoToDashboard}
                 className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
               >
-                עבור לדשבורד
+                {t("auth:invite.goToDashboard")}
               </Button>
             </div>
           )}
 
           {/* Error */}
           {status === "error" && (
-            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center" dir="rtl">
+            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <XCircle className="h-8 w-8 text-red-400" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">משהו השתבש</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t("auth:invite.somethingWentWrongTitle")}</h2>
               <p className="text-white/70 mb-6">{error}</p>
               <div className="space-y-3">
                 <Button
                   onClick={() => navigate("/")}
                   className="w-full h-12 bg-white/10 hover:bg-white/20 text-white"
                 >
-                  חזרה לדף הבית
+                  {t("auth:invite.backToHomePage")}
                 </Button>
               </div>
             </div>

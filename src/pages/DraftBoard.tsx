@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { getSecureSessionId } from "@/lib/draftUtils";
-import { ArrowRight, Loader2, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Loader2, Volume2, VolumeX } from "lucide-react";
 import {
   playSound,
   playRandomCrowd,
@@ -22,6 +22,7 @@ import {
   PickAnnouncement,
   ConfirmPickModal,
 } from "@/components/draft";
+import { useTranslation } from "react-i18next";
 
 interface DraftRoom {
   id: string;
@@ -89,6 +90,7 @@ export default function DraftBoard() {
   const { roomCode } = useParams<{ roomCode: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation("draft");
   useWakeLock(true);
 
   const [room, setRoom] = useState<DraftRoom | null>(null);
@@ -126,9 +128,9 @@ export default function DraftBoard() {
     if (draftCompleteHandledRef.current) return;
     draftCompleteHandledRef.current = true;
     playSound("whistle.mp3");
-    setTimeout(() => speak("הקבוצות מוכנות. תודה שבחרת כוחות אונליין"), 2200);
+    setTimeout(() => speak(t("board.tts.draftComplete")), 2200);
     setTimeout(() => navigate(`/results/${roomCode}`), 5000);
-  }, [navigate, roomCode]);
+  }, [navigate, roomCode, t]);
 
   // Load sessionId and preload sounds on mount
   useEffect(() => {
@@ -161,10 +163,10 @@ export default function DraftBoard() {
   useEffect(() => {
     if (isMyTurn && !wasMyTurnRef.current) {
       vibrateIfSupported([150, 100, 150]);
-      playSoundThenSpeak("ding.mp3", "תורך לבחור", 500);
+      playSoundThenSpeak("ding.mp3", t("board.tts.yourTurn"), 500);
     }
     wasMyTurnRef.current = isMyTurn;
-  }, [isMyTurn]);
+  }, [isMyTurn, t]);
 
   // One follow-up vibration nudge at 15 seconds if still your turn
   useEffect(() => {
@@ -178,12 +180,12 @@ export default function DraftBoard() {
   // Browser tab title when it's your turn
   useEffect(() => {
     if (isMyTurn) {
-      document.title = "🟢 תורך לבחור! | Kohot";
+      document.title = `${t("board.tabTitleYourTurn")} | Draft Pick`;
     } else {
-      document.title = "דראפט | Kohot";
+      document.title = `${t("board.tabTitleDraft")} | Draft Pick`;
     }
-    return () => { document.title = "Kohot"; };
-  }, [isMyTurn]);
+    return () => { document.title = "Draft Pick"; };
+  }, [isMyTurn, t]);
 
   // Get captain name by number
   const getCaptainNameByNumber = useCallback((captainNum: number): string => {
@@ -193,7 +195,7 @@ export default function DraftBoard() {
       room?.captain3_player_id;
 
     const captain = players.find(p => p.player_id === captainPlayerId);
-    return captain?.display_name || `קפטן ${captainNum}`;
+    return captain?.display_name || `Captain ${captainNum}`;
   }, [room, players]);
 
   // Fetch players from database
@@ -226,16 +228,16 @@ export default function DraftBoard() {
           playerName: truncateName(player.display_name),
           isMe: false,
         });
-        // Sound: crowd reaction + TTS "[captain] בחר את [player]"
+        // Sound: crowd reaction + TTS "[captain] picked [player]"
         playRandomCrowd();
-        setTimeout(() => speak(`${captainName} בחר את ${player.display_name}`), 600);
+        setTimeout(() => speak(t("board.tts.playerPicked", { captain: captainName, player: player.display_name })), 600);
         break; // Only one announcement at a time
       }
     }
 
     // Update previous state
     previousPlayersRef.current = [...players];
-  }, [players, getCaptainNameByNumber]);
+  }, [players, getCaptainNameByNumber, t]);
 
   // Initial data fetch
   useEffect(() => {
@@ -432,8 +434,8 @@ export default function DraftBoard() {
       if (error) {
         console.error("[DraftBoard] RPC error:", error);
         toast({
-          title: "שגיאה",
-          description: "לא הצלחנו לבחור את השחקן",
+          title: t("board.errors.error"),
+          description: t("board.errors.pickFailed"),
           variant: "destructive",
         });
         lastPickedByMeRef.current = null;
@@ -446,8 +448,8 @@ export default function DraftBoard() {
 
         if (result.error === 'not_your_turn') {
           toast({
-            title: "לא התור שלך",
-            description: `עכשיו התור של קפטן ${result.current_turn}`,
+            title: t("board.errors.notYourTurn"),
+            description: t("board.errors.captainTurn", { captain: result.current_turn }),
             variant: "destructive",
           });
           setRoom(prev => prev ? {
@@ -457,27 +459,27 @@ export default function DraftBoard() {
           } : null);
         } else if (result.error === 'player_unavailable') {
           toast({
-            title: "השחקן לא זמין",
-            description: "השחקן כבר נבחר",
+            title: t("board.errors.playerUnavailable"),
+            description: t("board.errors.alreadyPicked"),
             variant: "destructive",
           });
           if (roomCode) fetchPlayers(roomCode);
         } else if (result.error === 'pick_already_made') {
           toast({
-            title: "הבחירה כבר בוצעה",
-            description: "מרענן את המצב...",
+            title: t("board.errors.pickAlreadyMade"),
+            description: t("board.errors.refreshing"),
           });
           if (roomCode) fetchPlayers(roomCode);
         } else if (result.error === 'unauthorized') {
           toast({
-            title: "אין הרשאה",
-            description: "אתה לא מחובר כקפטן",
+            title: t("board.errors.unauthorized"),
+            description: t("board.errors.notCaptain"),
             variant: "destructive",
           });
         } else {
           toast({
-            title: "שגיאה",
-            description: result.error || "לא הצלחנו לבחור",
+            title: t("board.errors.error"),
+            description: result.error || t("board.errors.pickFailed"),
             variant: "destructive",
           });
         }
@@ -488,11 +490,11 @@ export default function DraftBoard() {
       console.log(`[DraftBoard] Pick SUCCESS: ${playerName} (pick #${result.pick_number})`);
 
       playRandomCrowd();
-      setTimeout(() => speak(`בחרת את ${playerName}`), 600);
+      setTimeout(() => speak(t("board.tts.youPicked", { player: playerName })), 600);
 
       setAnnouncement({
         id: generateAnnouncementId(),
-        pickerName: "את/ה",
+        pickerName: t("board.you"),
         playerName: truncateName(playerName),
         isMe: true,
       });
@@ -519,8 +521,8 @@ export default function DraftBoard() {
       console.error("[DraftBoard] Error:", err);
       lastPickedByMeRef.current = null;
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו לבחור את השחקן",
+        title: t("board.errors.error"),
+        description: t("board.errors.pickFailed"),
         variant: "destructive",
       });
     } finally {
@@ -552,7 +554,7 @@ export default function DraftBoard() {
 
   const totalNonCaptainPlayers = players.filter(p => !p.is_captain).length;
 
-  // Order columns by raffle result (first picker on the right in RTL)
+  // Order columns by raffle result (first picker on the left in LTR)
   const raffleOrder = room.draft_order
     ? (room.draft_order as number[]).slice(0, 3)
     : [1, 2, 3];
@@ -570,7 +572,7 @@ export default function DraftBoard() {
 
     return {
       number: num as 1 | 2 | 3,
-      captainName: captainPlayer?.display_name || `קפטן ${num}`,
+      captainName: captainPlayer?.display_name || `Captain ${num}`,
       captainPhotoUrl: captainPlayer?.photo_url,
       players: pickedPlayers.map(p => ({
         id: p.id,
@@ -585,20 +587,20 @@ export default function DraftBoard() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Compact Header - emerald branded */}
-      <header className="px-3 py-2 flex items-center justify-between border-b border-emerald-700 bg-emerald-800" dir="rtl">
+      <header className="px-3 py-2 flex items-center justify-between border-b border-emerald-700 bg-emerald-800">
         <Link
           to="/"
           className="flex items-center gap-1 text-white/70 hover:text-white transition-colors text-sm"
         >
-          <ArrowRight className="h-3 w-3" />
-          <span>חזרה</span>
+          <ArrowLeft className="h-3 w-3" />
+          <span>{t("board.back")}</span>
         </Link>
-        <img src="/logo.png" alt="kohot.online" className="h-6 w-auto" />
+        <img src="/logo.png" alt="Draft Pick" className="h-6 w-auto" />
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSoundMuted(toggleMute())}
             className="text-white/60 hover:text-white transition-colors"
-            title={soundMuted ? "הפעל צלילים" : "השתק צלילים"}
+            title={soundMuted ? t("board.enableSounds") : t("board.muteSounds")}
           >
             {soundMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
@@ -606,7 +608,7 @@ export default function DraftBoard() {
         </div>
       </header>
 
-      <main className="flex-1 px-3 py-2 flex flex-col" dir="rtl">
+      <main className="flex-1 px-3 py-2 flex flex-col">
         {/* Debug Panel */}
         {isDebugMode && (
           <div className="mb-2 p-2 bg-black/90 text-green-400 text-[10px] font-mono rounded border border-green-500">
@@ -646,7 +648,7 @@ export default function DraftBoard() {
         {/* Available Players Pool */}
         <div className="mt-4 flex-1">
           <div className="text-base font-semibold mb-3 text-gray-800">
-            שחקנים זמינים ({availablePlayers.length})
+            {t("board.availablePlayers", { count: availablePlayers.length })}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

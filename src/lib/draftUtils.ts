@@ -93,13 +93,13 @@ export function getCaptainBorderColor(captainNumber: number): string {
 export function getCaptainLabel(captainNumber: number): string {
   switch (captainNumber) {
     case 1:
-      return "קפטן 1";
+      return "Captain 1";
     case 2:
-      return "קפטן 2";
+      return "Captain 2";
     case 3:
-      return "קפטן 3";
+      return "Captain 3";
     default:
-      return "קפטן";
+      return "Captain";
   }
 }
 

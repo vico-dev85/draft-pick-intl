@@ -1,0 +1,21 @@
+{
+  "hero": {
+    "title": "Draft Pick",
+    "tagline1": "Pick 3 captains",
+    "tagline2": "Draft teams from home",
+    "tagline3": "Start on time"
+  },
+  "cta": {
+    "createClub": "Create a New Club",
+    "alreadyHaveAccount": "Already have an account? Sign in",
+    "tryWithoutAccount": "Try without an account"
+  },
+  "joinCode": {
+    "divider": "Have a code?",
+    "placeholder": "Enter code",
+    "join": "Join"
+  },
+  "footer": {
+    "tagline": "Fair draft. More time to play."
+  }
+}

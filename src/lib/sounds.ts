@@ -1,6 +1,6 @@
 // Sound & TTS utility for Draft Board and Waiting Room
 // All sounds are in /public/sounds/ and played via HTML5 Audio
-// TTS uses the browser's built-in SpeechSynthesis API (Hebrew)
+// TTS uses the browser's built-in SpeechSynthesis API (English)
 
 const SOUND_BASE = "/sounds/";
 
@@ -106,24 +106,35 @@ export function playRandomCrowd(): void {
   playSound(`crowd${idx}.mp3`);
 }
 
-// Hebrew TTS
-export function speak(text: string): void {
+// TTS — reads language from i18next so voice matches the active locale
+export function speak(text: string, lang?: string): void {
   if (isMuted()) return;
   if (!("speechSynthesis" in window)) return;
 
   // Cancel any ongoing speech
   window.speechSynthesis.cancel();
 
+  // Resolve language: explicit param → i18next → fallback "en"
+  let activeLang = lang || "en";
+  try {
+    // Dynamic import avoidance: read from localStorage directly
+    // to keep sounds.ts free of React/i18n imports
+    const stored = localStorage.getItem("draftpick_lang");
+    if (!lang && stored) activeLang = stored;
+  } catch {
+    // localStorage unavailable — keep fallback
+  }
+
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "he-IL";
+  utterance.lang = activeLang;
   utterance.rate = 1.0;
   utterance.pitch = 1.0;
 
-  // Try to find a Hebrew voice
+  // Try to find a matching voice
   const voices = window.speechSynthesis.getVoices();
-  const hebrewVoice = voices.find((v) => v.lang.startsWith("he"));
-  if (hebrewVoice) {
-    utterance.voice = hebrewVoice;
+  const matchedVoice = voices.find((v) => v.lang.startsWith(activeLang));
+  if (matchedVoice) {
+    utterance.voice = matchedVoice;
   }
 
   window.speechSynthesis.speak(utterance);

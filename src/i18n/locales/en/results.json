@@ -1,0 +1,60 @@
+{
+  "title": "Draft Results",
+  "teams": "Teams",
+  "team": "Team {{captain}}",
+  "players": "{{count}} players",
+  "share": {
+    "button": "Share on WhatsApp",
+    "copied": "Copied to clipboard!",
+    "title": "Draft Results: {{name}}",
+    "teamHeader": "{{captain}}:",
+    "viewResults": "View results:",
+    "fairTeams": "Fair teams in one click — Draft Pick",
+    "copy": "Copy"
+  },
+  "gameNight": {
+    "start": "Start Game Night",
+    "continue": "Continue Game Night",
+    "viewSummary": "View Night Summary",
+    "errorTitle": "Error",
+    "errorDescription": "Could not start game night"
+  },
+  "reactions": {
+    "loved": "Loved it",
+    "fire": "Fire",
+    "laughing": "Laughing",
+    "dead": "Dead",
+    "poop": "Poop"
+  },
+  "remakeDraft": "New Draft with Same Players",
+  "home": "Home",
+  "claim": {
+    "sheetTitle": "Who are you?",
+    "teamLabel": "Team {{name}}",
+    "noPlayers": "No players available to select",
+    "alreadyLinked": "This player is already linked to an account",
+    "errorTitle": "Error",
+    "errorDescription": "Please try again later"
+  },
+  "member": {
+    "title": "You're a club member",
+    "subtitle": "Next time you'll be auto-identified in drafts"
+  },
+  "requestSent": {
+    "title": "Request sent!",
+    "subtitle": "The admin will receive a notification and send you an invite"
+  },
+  "visitor": {
+    "title": "Were you in this draft?",
+    "subtitle": "Request an invite to connect and enjoy the full experience",
+    "claimButton": "That's me — pick your name"
+  },
+  "growth": {
+    "title": "Have your own team?",
+    "subtitle": "Manage drafts and game nights — totally free",
+    "cta": "Get Started"
+  },
+  "footer": {
+    "brand": "Draft Pick"
+  }
+}

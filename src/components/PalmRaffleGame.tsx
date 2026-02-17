@@ -8,8 +8,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RaffleScript, PalmRound, HandDirection } from '@/lib/raffleScript';
-import { getRankLabelHebrew } from '@/lib/raffleScript';
+import { getRankLabel } from '@/lib/raffleScript';
 import { getCaptainColor } from '@/lib/draftUtils';
+import { useTranslation } from "react-i18next";
 
 // Asset paths - relative to public folder
 const ASSETS_PATH = '/assets/hands';
@@ -61,6 +62,7 @@ const POSITIONS = {
 };
 
 export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleGameProps) {
+  const { t } = useTranslation("draft");
   const [state, setState] = useState<GameState>({
     phase: 'countdown',
     stage: 1,
@@ -143,8 +145,8 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
           if (currentRound.isReroll) {
             // Show reroll message
             const message = currentRound.neutralPosition !== null && currentRound.winner === null
-              ? 'יד ניטרלית שונה — שוב!'
-              : 'כולם אותו דבר — שוב!';
+              ? t("palmRaffle.rerollNeutral")
+              : t("palmRaffle.rerollSame");
             setState(s => ({ ...s, rerollMessage: message }));
             await sleep(1500);
             if (!isMountedRef.current) return;
@@ -191,7 +193,7 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
     };
 
     runPhase();
-  }, [state.phase, state.countdown, state.roundIndex, state.stage, script, onComplete]);
+  }, [state.phase, state.countdown, state.roundIndex, state.stage, script, onComplete, t]);
 
   // Get current round data
   const getCurrentRound = (): PalmRound | null => {
@@ -205,7 +207,7 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
   const getPositionData = (posIndex: number) => {
     const captainNum = script.positions[posIndex];
     const isNeutral = state.stage === 2 && currentRound?.neutralPosition === posIndex;
-    const name = isNeutral ? '' : (captainNames[captainNum] || `קפטן ${captainNum}`);
+    const name = isNeutral ? '' : (captainNames[captainNum] || `Captain ${captainNum}`);
 
     // Determine hand direction
     let handDirection: HandDirection | 'ready' = 'ready';
@@ -324,7 +326,7 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
           </div>
         ) : (
           <div className="mt-2 px-3 py-1 rounded-full text-sm text-muted-foreground bg-muted">
-            ניטרלי
+            {t("palmRaffle.neutral")}
           </div>
         )}
       </div>
@@ -372,7 +374,7 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
             >
               {state.countdown > 0 ? state.countdown : "!"}
             </motion.div>
-            <p className="text-sm text-muted-foreground">מערבבים...</p>
+            <p className="text-sm text-muted-foreground">{t("palmRaffle.shuffling")}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -383,16 +385,16 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
           {/* Header */}
           <div className="text-center mb-4">
             <h2 className="text-xl font-bold mb-1">
-              {state.stage === 1 ? 'מי בוחר ראשון?' : 'מי בוחר שני?'}
+              {state.stage === 1 ? t("palmRaffle.whoPicksFirst") : t("palmRaffle.whoPicksSecond")}
             </h2>
             {state.showHelper && (
               <p className="text-sm text-muted-foreground">
-                היד השונה מנצחת
+                {t("palmRaffle.oddOneOutWins")}
               </p>
             )}
             {state.stage === 2 && state.roundIndex === 0 && state.phase === 'ready' && (
               <p className="text-xs text-muted-foreground mt-1">
-                היד הניטרלית עוזרת להכריע
+                {t("palmRaffle.neutralHelps")}
               </p>
             )}
           </div>
@@ -406,7 +408,7 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
             >
               <span className="font-bold">{captainNames[state.firstPlaceWinner]}</span>
               <span className="mx-2">—</span>
-              <span>{getRankLabelHebrew(1)}!</span>
+              <span>{getRankLabel(1)}!</span>
             </motion.div>
           )}
 
@@ -441,7 +443,7 @@ export function PalmRaffleGame({ script, captainNames, onComplete }: PalmRaffleG
               animate={{ opacity: 1, y: 0 }}
               className="mt-6 text-center"
             >
-              <h3 className="text-lg font-bold mb-3">סדר הבחירה:</h3>
+              <h3 className="text-lg font-bold mb-3">{t("palmRaffle.draftOrder")}</h3>
               <div className="space-y-2">
                 {script.finalOrder.map((captainNum, idx) => (
                   <div

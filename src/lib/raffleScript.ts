@@ -211,14 +211,3 @@ export function getRankLabel(rank: number): string {
   }
 }
 
-/**
- * Get Hebrew display text for rank
- */
-export function getRankLabelHebrew(rank: number): string {
-  switch (rank) {
-    case 1: return 'ראשון';
-    case 2: return 'שני';
-    case 3: return 'שלישי';
-    default: return '';
-  }
-}

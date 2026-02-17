@@ -24,14 +24,15 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useClubContext } from "@/hooks/useClubContext";
 import { InstallPromptBanner } from "@/components/InstallPromptBanner";
+import { useTranslation } from "react-i18next";
 
 // Emoji reactions visitors can give
-const REACTIONS = [
-  { emoji: "👍", label: "אהבתי" },
-  { emoji: "🔥", label: "אש" },
-  { emoji: "😂", label: "צוחק" },
-  { emoji: "💀", label: "מת" },
-  { emoji: "💩", label: "חרא" },
+const REACTION_EMOJIS = [
+  { emoji: "👍", labelKey: "reactions.loved" },
+  { emoji: "🔥", labelKey: "reactions.fire" },
+  { emoji: "😂", labelKey: "reactions.laughing" },
+  { emoji: "💀", labelKey: "reactions.dead" },
+  { emoji: "💩", labelKey: "reactions.poop" },
 ];
 
 interface DraftRoom {
@@ -66,6 +67,7 @@ export default function Results() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { isOwner, isMember } = useClubContext();
+  const { t } = useTranslation("results");
 
   const [room, setRoom] = useState<DraftRoom | null>(null);
   const [players, setPlayers] = useState<RoomPlayer[]>([]);
@@ -185,11 +187,11 @@ export default function Results() {
 
   const handleShare = async () => {
     const text = generateShareText();
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `תוצאות דראפט: ${room?.draft_name}`,
+          title: t("share.title", { name: room?.draft_name }),
           text,
         });
       } catch (err) {
@@ -203,13 +205,13 @@ export default function Results() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: "הועתק ללוח!" });
+    toast({ title: t("share.copied") });
   };
 
   const generateShareText = () => {
     if (!room) return "";
 
-    let text = `🏆 תוצאות כוחות: ${room.draft_name}\n\n`;
+    let text = `🏆 ${t("share.title", { name: room.draft_name })}\n\n`;
 
     teams.forEach((team) => {
       text += `⚽ ${team.name}:\n`;
@@ -235,7 +237,7 @@ export default function Results() {
     const baseUrl = window.location.origin;
     const resultsUrl = `${baseUrl}/#/results/${room.room_code}`;
 
-    let message = `🏆 *תוצאות כוחות: ${room.draft_name}*\n\n`;
+    let message = `🏆 *${t("share.title", { name: room.draft_name })}*\n\n`;
 
     teams.forEach((team) => {
       message += `⚽ *${team.name}:*\n`;
@@ -255,8 +257,8 @@ export default function Results() {
       message += "\n";
     }
 
-    message += `📋 לצפייה בתוצאות:\n${resultsUrl}\n\n`;
-    message += `⚡ כוחות הוגנים בקליק — kohot.online`;
+    message += `📋 ${t("share.viewResults")}:\n${resultsUrl}\n\n`;
+    message += `⚡ ${t("share.fairTeams")}`;
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
@@ -370,7 +372,7 @@ export default function Results() {
 
         {/* Location & Notes */}
         {(room.location || room.notes) && (
-          <div className="px-4 py-2 space-y-1" dir="rtl">
+          <div className="px-4 py-2 space-y-1">
             {room.location && (
               <div className="flex items-center gap-2 text-white/70 text-sm">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
@@ -447,7 +449,7 @@ export default function Results() {
               {/* Team count - includes captain */}
               <div className="px-2 py-1.5 text-center border-t border-white/10">
                 <span className="text-white/60 text-xs">
-                  {team.players.length + 1} שחקנים
+                  {t("players", { count: team.players.length + 1 })}
                 </span>
               </div>
             </motion.div>
@@ -475,7 +477,7 @@ export default function Results() {
         </AnimatePresence>
 
         <div className="flex justify-center gap-2">
-          {REACTIONS.map(({ emoji, label }) => {
+          {REACTION_EMOJIS.map(({ emoji, labelKey }) => {
             const count = reactionCounts[emoji] || 0;
             const isActive = myReactions.has(emoji);
 
@@ -494,7 +496,7 @@ export default function Results() {
                     : "bg-white/10 hover:bg-white/20"
                   }
                 `}
-                title={label}
+                title={t(labelKey)}
               >
                 <span className="text-2xl">{emoji}</span>
                 {count > 0 && (
@@ -521,7 +523,7 @@ export default function Results() {
           className="w-full gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white h-12 text-base"
         >
           <MessageCircle className="h-5 w-5" />
-          שתף בוואטסאפ
+          {t("share.button")}
         </Button>
 
         {/* Remake Draft - club members */}
@@ -547,7 +549,7 @@ export default function Results() {
             className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white h-11"
           >
             <RefreshCw className="h-5 w-5" />
-            כוחות חדשים עם אותם שחקנים
+            {t("remakeDraft")}
           </Button>
         )}
 
@@ -567,7 +569,7 @@ export default function Results() {
                   const result = data as { id: string; already_existed: boolean };
                   navigate(`/night/${result.id}`);
                 } catch {
-                  toast({ title: "שגיאה", description: "לא ניתן להתחיל ערב משחקים", variant: "destructive" });
+                  toast({ title: t("gameNight.errorTitle"), description: t("gameNight.errorDescription"), variant: "destructive" });
                 } finally {
                   setStartingNight(false);
                 }
@@ -582,10 +584,10 @@ export default function Results() {
               <Timer className="h-5 w-5" />
             )}
             {gameNight?.status === "ended"
-              ? "צפה בסיכום הערב"
+              ? t("gameNight.viewSummary")
               : gameNight
-                ? "המשך ערב משחקים"
-                : "התחל ערב משחקים"}
+                ? t("gameNight.continue")
+                : t("gameNight.start")}
           </Button>
         )}
 
@@ -597,7 +599,7 @@ export default function Results() {
             className="flex-1 gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 h-10"
           >
             <Share2 className="h-4 w-4" />
-            העתק
+            {t("share.copy")}
           </Button>
           <Button
             asChild
@@ -606,7 +608,7 @@ export default function Results() {
           >
             <Link to="/">
               <Home className="h-4 w-4" />
-              בית
+              {t("home")}
             </Link>
           </Button>
         </div>
@@ -619,7 +621,7 @@ export default function Results() {
 
       {/* Smart CTA - non-club visitors */}
       {!canManageDraft && (
-        <div className="relative z-10 px-4 pb-4" dir="rtl">
+        <div className="relative z-10 px-4 pb-4">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -634,10 +636,10 @@ export default function Results() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-emerald-400 font-bold text-sm">
-                    את/ה חבר/ה בקבוצה
+                    {t("member.title")}
                   </p>
                   <p className="text-white/60 text-xs mt-0.5">
-                    בפעם הבאה תזוהה אוטומטית בכוחות
+                    {t("member.subtitle")}
                   </p>
                 </div>
               </div>
@@ -649,31 +651,31 @@ export default function Results() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-emerald-400 font-bold text-sm">
-                    בקשה נשלחה!
+                    {t("requestSent.title")}
                   </p>
                   <p className="text-white/60 text-xs mt-0.5">
-                    המנהל יקבל הודעה וישלח לך הזמנה
+                    {t("requestSent.subtitle")}
                   </p>
                 </div>
               </div>
             ) : (
-              /* Not a member — show "זה אני" button */
+              /* Not a member — show claim button */
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
                   <Users className="h-5 w-5 text-emerald-300" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-bold text-sm">
-                    השתתפת בכוחות?
+                    {t("visitor.title")}
                   </p>
                   <p className="text-white/60 text-xs mt-0.5">
-                    בקש/י הזמנה להתחבר וליהנות מהחוויה המלאה
+                    {t("visitor.subtitle")}
                   </p>
                   <button
                     onClick={() => setShowClaimSheet(true)}
                     className="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
                   >
-                    זה אני — בחר/י את השם שלך
+                    {t("visitor.claimButton")}
                   </button>
                 </div>
               </div>
@@ -699,11 +701,10 @@ export default function Results() {
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-50 bg-emerald-900 border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col"
-              dir="rtl"
             >
               {/* Sheet header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h3 className="text-lg font-bold text-white">מי את/ה?</h3>
+                <h3 className="text-lg font-bold text-white">{t("claim.sheetTitle")}</h3>
                 <button
                   onClick={() => setShowClaimSheet(false)}
                   className="p-2 text-white/60 hover:text-white"
@@ -727,7 +728,7 @@ export default function Results() {
                     <div key={team.number}>
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-3 h-3 rounded-full ${getCaptainColor(team.number)}`} />
-                        <p className="text-white/50 text-xs">קבוצת {team.name}</p>
+                        <p className="text-white/50 text-xs">{t("claim.teamLabel", { name: team.name })}</p>
                       </div>
                       <div className="space-y-2">
                         {/* Captain */}
@@ -745,19 +746,19 @@ export default function Results() {
                                 if (error) throw error;
                                 const result = data as { success?: boolean; already_linked?: boolean };
                                 if (result.already_linked) {
-                                  toast({ title: "שחקן זה כבר מחובר לחשבון" });
+                                  toast({ title: t("claim.alreadyLinked") });
                                 } else {
                                   setClaimSent(true);
                                 }
                                 setShowClaimSheet(false);
                               } catch (err) {
                                 console.error("Error requesting invite:", err);
-                                toast({ title: "שגיאה", description: "נסה שוב מאוחר יותר", variant: "destructive" });
+                                toast({ title: t("claim.errorTitle"), description: t("claim.errorDescription"), variant: "destructive" });
                               } finally {
                                 setClaimingId(null);
                               }
                             }}
-                            className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-right"
+                            className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-left"
                           >
                             <PlayerAvatar
                               name={captainPlayer.display_name}
@@ -789,19 +790,19 @@ export default function Results() {
                                 if (error) throw error;
                                 const result = data as { success?: boolean; already_linked?: boolean };
                                 if (result.already_linked) {
-                                  toast({ title: "שחקן זה כבר מחובר לחשבון" });
+                                  toast({ title: t("claim.alreadyLinked") });
                                 } else {
                                   setClaimSent(true);
                                 }
                                 setShowClaimSheet(false);
                               } catch (err) {
                                 console.error("Error requesting invite:", err);
-                                toast({ title: "שגיאה", description: "נסה שוב מאוחר יותר", variant: "destructive" });
+                                toast({ title: t("claim.errorTitle"), description: t("claim.errorDescription"), variant: "destructive" });
                               } finally {
                                 setClaimingId(null);
                               }
                             }}
-                            className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-right"
+                            className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-left"
                           >
                             <PlayerAvatar
                               name={player.display_name}
@@ -824,7 +825,7 @@ export default function Results() {
 
                 {players.filter(p => p.player_id).length === 0 && (
                   <p className="text-center text-white/50 text-sm py-4">
-                    אין שחקנים זמינים לבחירה
+                    {t("claim.noPlayers")}
                   </p>
                 )}
               </div>
@@ -835,19 +836,19 @@ export default function Results() {
 
       {/* Growth CTA */}
       {!canManageDraft && (
-        <div className="relative z-10 px-4 pt-2" dir="rtl">
+        <div className="relative z-10 px-4 pt-2">
           <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center max-w-md mx-auto">
             <p className="text-white font-bold text-sm mb-1">
-              יש לך קבוצה משלך?
+              {t("growth.title")}
             </p>
             <p className="text-white/60 text-xs mb-3">
-              נהל דראפט וערב משחקים — חינם לגמרי
+              {t("growth.subtitle")}
             </p>
             <Link
               to="/auth"
               className="inline-block px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm rounded-lg transition-colors"
             >
-              התחל עכשיו
+              {t("growth.cta")}
             </Link>
           </div>
         </div>
@@ -860,7 +861,7 @@ export default function Results() {
           className="inline-flex items-center gap-1.5 text-white/30 hover:text-white/50 transition-colors text-xs"
         >
           <img src="/favicon.ico" alt="" className="w-3.5 h-3.5 opacity-40" />
-          kohot.online
+          {t("footer.brand")}
         </Link>
       </div>
     </div>

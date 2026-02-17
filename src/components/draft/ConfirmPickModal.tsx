@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCaptainColor } from "@/lib/draftUtils";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmPickModalProps {
   playerName: string;
@@ -39,6 +40,8 @@ export function ConfirmPickModal({
   onConfirm,
   onCancel,
 }: ConfirmPickModalProps) {
+  const { t } = useTranslation("draft");
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -65,7 +68,7 @@ export function ConfirmPickModal({
       >
         {/* Header with captain color */}
         <div className={cn("px-6 py-4 text-white text-center", getCaptainColor(captainNumber))}>
-          <p className="text-lg font-bold">בחר שחקן?</p>
+          <p className="text-lg font-bold">{t("board.pickPlayer", { player: playerName })}</p>
         </div>
 
         {/* Content */}
@@ -101,8 +104,8 @@ export function ConfirmPickModal({
               size="lg"
               className="flex-1 h-12 text-base"
             >
-              <X className="w-5 h-5 ml-2" />
-              ביטול
+              <X className="w-5 h-5 mr-2" />
+              {t("board.cancel")}
             </Button>
             <Button
               onClick={onConfirm}
@@ -113,8 +116,8 @@ export function ConfirmPickModal({
                 "hover:opacity-90"
               )}
             >
-              <Check className="w-5 h-5 ml-2" />
-              בחר!
+              <Check className="w-5 h-5 mr-2" />
+              {t("board.confirmPick")}
             </Button>
           </div>
         </div>

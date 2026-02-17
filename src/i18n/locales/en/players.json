@@ -1,0 +1,96 @@
+{
+  "header": {
+    "title": "Players",
+    "back": "Back"
+  },
+  "search": {
+    "placeholder": "Search player...",
+    "noResults": "No players found"
+  },
+  "empty": {
+    "ownerTitle": "Add your players",
+    "ownerDescription": "These are the players who usually play with you.\nFor each game you'll select who's coming and draft teams.",
+    "memberTitle": "No players yet",
+    "memberDescription": "The admin hasn't added players to the club yet."
+  },
+  "categories": {
+    "requested": "Requested invite",
+    "regular": "Regulars",
+    "occasional": "Occasional"
+  },
+  "playerType": {
+    "label": "Player type",
+    "regular": "Regular",
+    "occasional": "Occasional"
+  },
+  "status": {
+    "requestedInvite": "Requested invite",
+    "requestedToJoin": "This player requested to join the club",
+    "thisIsMe": "This is me",
+    "connected": "Connected",
+    "notConnected": "Not connected"
+  },
+  "actions": {
+    "addPlayer": "Add Player",
+    "editNameAndPhoto": "Edit name & photo",
+    "updatePhoto": "Update photo",
+    "addPhoto": "Add photo",
+    "savePhoto": "Save photo",
+    "inviteToJoin": "Invite to join",
+    "unlinkAccount": "Unlink account",
+    "deletePlayer": "Delete player",
+    "accountUnlinked": "Account unlinked"
+  },
+  "addDrawer": {
+    "title": "Add new player",
+    "nameLabel": "Name",
+    "namePlaceholder": "Player name",
+    "photoLabel": "Photo (optional)",
+    "choosePhoto": "Choose photo"
+  },
+  "permissions": {
+    "label": "Permissions",
+    "canCreateDrafts": "Can create drafts",
+    "canSendInvites": "Can send invites"
+  },
+  "invite": {
+    "message": "Hey {{name}}! 👋\nJoin our club on Draft Pick\n\n✓ View your draft history\n✓ Organize drafts yourself\n\n{{url}}",
+    "created": "Invite created",
+    "expiresIn": "Invite valid for 48 hours",
+    "error": "Couldn't create invite"
+  },
+  "delete": {
+    "confirmTitle": "Delete {{name}}?",
+    "confirmDescription": "This action cannot be undone",
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "success": "Player deleted"
+  },
+  "toast": {
+    "playerAdded": "Player added!",
+    "playerAddedDescription": "{{name}} added to library",
+    "playerUpdated": "Player updated",
+    "photoUpdated": "Photo updated",
+    "loadError": "Couldn't load players",
+    "addError": "Couldn't add player",
+    "updateError": "Couldn't update player",
+    "photoError": "Couldn't update photo",
+    "categoryError": "Couldn't update category",
+    "permissionError": "Couldn't update permission",
+    "unlinkError": "Couldn't unlink account",
+    "deleteError": "Couldn't delete player",
+    "duplicateName": "Player exists",
+    "duplicateNameDescription": "You already have a player with this name",
+    "nameDuplicate": "Name exists",
+    "nameDuplicateDescription": "You already have a player with this name",
+    "nameMissing": "Name missing",
+    "nameMissingDescription": "Enter a player name",
+    "nameTooLong": "Name too long",
+    "nameTooLongDescription": "Maximum 30 characters",
+    "fileTooLarge": "File too large",
+    "fileTooLargeDescription": "Maximum size: 5MB",
+    "photoProcessError": "Error processing photo",
+    "photoProcessErrorDescription": "Try a different photo",
+    "error": "Error"
+  }
+}

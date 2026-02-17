@@ -35,10 +35,10 @@ export function useAnnouncementQueue() {
       const delay = item.ttsDelay ?? 500;
       setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(item.ttsText!);
-        utterance.lang = "he-IL";
+        utterance.lang = "en";
         const voices = window.speechSynthesis.getVoices();
-        const hebrewVoice = voices.find((v) => v.lang.startsWith("he"));
-        if (hebrewVoice) utterance.voice = hebrewVoice;
+        const englishVoice = voices.find((v) => v.lang.startsWith("en"));
+        if (englishVoice) utterance.voice = englishVoice;
         utterance.onend = () => setTimeout(processNext, 300);
         utterance.onerror = () => setTimeout(processNext, 300);
         window.speechSynthesis.cancel();
@@ -53,10 +53,10 @@ export function useAnnouncementQueue() {
       setTimeout(processNext, 1000);
     } else if (item.ttsText) {
       const utterance = new SpeechSynthesisUtterance(item.ttsText);
-      utterance.lang = "he-IL";
+      utterance.lang = "en";
       const voices = window.speechSynthesis.getVoices();
-      const hebrewVoice = voices.find((v) => v.lang.startsWith("he"));
-      if (hebrewVoice) utterance.voice = hebrewVoice;
+      const englishVoice = voices.find((v) => v.lang.startsWith("en"));
+      if (englishVoice) utterance.voice = englishVoice;
       utterance.onend = () => setTimeout(processNext, 300);
       utterance.onerror = () => setTimeout(processNext, 300);
       window.speechSynthesis.cancel();

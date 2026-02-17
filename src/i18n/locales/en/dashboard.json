@@ -1,0 +1,91 @@
+{
+  "header": {
+    "myPlayers": "My Players",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "profile": {
+    "memberOf": "Member of {{clubName}}",
+    "autoIdentified": "Auto-identified",
+    "clubOwner": "Club owner",
+    "admin": "Admin",
+    "takePhoto": "Take a photo",
+    "defaultOwnerName": "Admin"
+  },
+  "memberGuidance": "When the admin creates a new draft, you'll get a notification to join",
+  "cta": {
+    "createDraft": "Create New Draft",
+    "managePlayers": "Manage Players",
+    "settings": "Settings"
+  },
+  "joinCode": {
+    "title": "Have a code?",
+    "placeholder": "Enter code",
+    "join": "Join",
+    "invalidCode": "Invalid code",
+    "invalidCodeDescription": "Room code must be 4 characters"
+  },
+  "drafts": {
+    "active": "Active Drafts",
+    "recent": "Recent Drafts",
+    "statusDrafting": "In Progress",
+    "statusWaiting": "Waiting",
+    "statusCompleted": "Completed",
+    "continue": "Continue",
+    "cannotDelete": "Cannot delete",
+    "cannotDeleteDescription": "Completed drafts cannot be deleted",
+    "confirmDelete": "Delete \"{{name}}\"?",
+    "deleted": "Deleted successfully",
+    "deleteError": "Error deleting"
+  },
+  "empty": {
+    "memberTitle": "No drafts in the club yet",
+    "ownerTitle": "You haven't created any drafts yet",
+    "memberDescription": "When the admin creates new drafts, they'll appear here",
+    "ownerDescription": "Click the button above to get started!",
+    "memberFallback": "When the admin creates new drafts, they'll appear here"
+  },
+  "photoUpdated": "Photo updated!",
+  "photoUploadError": "Error uploading photo",
+  "onboarding": {
+    "selfie": {
+      "title": "Take a Profile Photo",
+      "description": "Your photo will appear on your draft card",
+      "cta": "Let's take one!",
+      "skip": "Maybe later"
+    },
+    "welcome": {
+      "title": "Welcome to Draft Pick!",
+      "subtitle": "3 simple steps to get started",
+      "step1Title": "Create your club",
+      "step1Description": "We already created one for you! You can rename it in settings",
+      "step2Title": "Add your regular players",
+      "step2Description": "Save them to your library for repeated use",
+      "step3Title": "On game day, select who's coming and draft teams",
+      "step3Description": "3 captains, fair snake draft",
+      "cta": "Got it, let's start"
+    }
+  },
+  "footer": "Draft Pick — Fair draft, more time to play",
+  "connecting": "Connecting...",
+  "settings": {
+    "title": "Club Settings",
+    "clubName": "Club name",
+    "clubNamePlaceholder": "My Club",
+    "defaultLocation": "Default location",
+    "defaultLocationPlaceholder": "e.g. The soccer field near the mall",
+    "defaultLocationHint": "Shown on the results page and in WhatsApp messages",
+    "defaultNotes": "Default notes",
+    "defaultNotesPlaceholder": "e.g. Bring black and yellow shirts",
+    "whatsappTemplates": "WhatsApp Templates",
+    "reset": "Reset",
+    "inviteTemplate": "Draft invitation",
+    "inviteTemplateVars": "Variables: {draft_name}, {room_code}, {link}",
+    "resultsTemplate": "Share results",
+    "resultsTemplateVars": "Variables: {draft_name}, {teams}, {location}, {notes}, {link}",
+    "saveSettings": "Save Settings",
+    "saved": "Settings saved successfully",
+    "loadError": "Error loading settings",
+    "saveError": "Error saving settings"
+  }
+}

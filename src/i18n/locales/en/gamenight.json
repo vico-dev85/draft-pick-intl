@@ -1,0 +1,157 @@
+{
+  "title": "Game Night",
+  "timer": {
+    "title": "Game Timer",
+    "start": "Start Game",
+    "pause": "Pause",
+    "resume": "Resume",
+    "endGame": "End Game",
+    "minutes": "min",
+    "seconds": "sec",
+    "halfTime": "Half Time!",
+    "timeUp": "Time's Up!",
+    "warningOneMinute": "One minute remaining",
+    "warningThirtySeconds": "Thirty seconds",
+    "setDuration": "Game Duration",
+    "minutesLabel": "minutes"
+  },
+  "match": {
+    "vs": "vs",
+    "score": "Score",
+    "currentGame": "Current Game",
+    "nextGame": "Next Game",
+    "waiting": "Waiting to start...",
+    "winnerStays": "Winner stays on"
+  },
+  "goals": {
+    "title": "Goals",
+    "addGoal": "Goal!",
+    "scorer": "Scorer",
+    "selectScorer": "Who scored?",
+    "noGoals": "No goals yet",
+    "recorded": "Goal recorded!",
+    "undo": "Undo",
+    "undoLast": "Undo last goal",
+    "undone": "Goal undone",
+    "unknown": "Unknown",
+    "player": "Player"
+  },
+  "standings": {
+    "title": "Standings",
+    "team": "Team",
+    "wins": "W",
+    "draws": "D",
+    "losses": "L",
+    "goalsFor": "GF",
+    "goalsAgainst": "GA",
+    "points": "Pts"
+  },
+  "end": {
+    "endNight": "End Game Night",
+    "confirmEnd": "End game night?",
+    "confirmDescription": "This will finalize all results",
+    "confirm": "End Night",
+    "yesEnd": "Yes, end night",
+    "yesEndGame": "Yes, end",
+    "cancel": "Cancel",
+    "endGame": "End Game",
+    "errorTitle": "Error"
+  },
+  "preGame": {
+    "gameNumber": "Game {{number}}",
+    "home": "Home",
+    "away": "Away",
+    "resting": "Resting",
+    "autoRotation": "Press start — teams are auto-selected by rotation",
+    "startGame": "Start Game"
+  },
+  "activeGame": {
+    "gameNumber": "Game #{{number}}",
+    "extraTime": "Extra Time",
+    "goalButton": "+Goal {{team}}"
+  },
+  "penalties": {
+    "title": "Penalties!",
+    "teamWon": "{{team}} won"
+  },
+  "gameOver": {
+    "title": "Game #{{number}} ended",
+    "winner": "{{team}} won!",
+    "nextGame": "Next Game"
+  },
+  "summary": {
+    "title": "Night Summary",
+    "games": "Games",
+    "totalGoals": "Goals",
+    "results": "Results",
+    "penalties": "(pen)",
+    "topScorer": "Top Scorer",
+    "shareWhatsApp": "Share on WhatsApp",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "tts": {
+    "twoMinWarning": "Two minutes left",
+    "oneMinWarning": "One minute left",
+    "lastAttack": "Last attack!",
+    "drawExtraTime": "Draw! Two more minutes",
+    "penalties": "Penalties!",
+    "kickoff": "Kickoff!",
+    "goalScored": "Goal! {{player}}! {{score}}",
+    "gameEndWin": "Game over! {{score}}. {{winner}} won!",
+    "gameEndDraw": "Game over! Draw! {{score}}",
+    "errorStartGame": "Could not start game"
+  },
+  "nightResults": {
+    "title": "Game Night Summary",
+    "champion": "Champion!",
+    "topScorers": "Top Scorers",
+    "goals": "{{count}} goals",
+    "games": "Games Played",
+    "totalGoals": "Total Goals",
+    "backToResults": "Back to Results",
+    "share": "Share Summary",
+    "shareMessage": "Game Night Results\n\n{{summary}}",
+    "notFound": "Summary not found",
+    "invalidLink": "The link may be invalid",
+    "backToHome": "Back to Home",
+    "nightPlayers": "Night players"
+  },
+  "shareText": {
+    "nightSummary": "Night Summary — {{club}} | {{date}}",
+    "gamesAndGoals": "{{games}} games, {{goals}} goals",
+    "gameResult": "Game {{number}}: Team {{teamA}} {{scoreA}}-{{scoreB}} Team {{teamB}}",
+    "penaltyResult": "(pen {{scoreA}}-{{scoreB}})",
+    "standingsTitle": "Standings:",
+    "standingRow": "{{rank}}. Team {{name}} — {{wins}}W {{draws}}D {{losses}}L ({{points}} Pts)",
+    "topScorer": "Top Scorer: {{name}} ({{goals}} goals)",
+    "fairTeams": "Draft Pick — Fair teams in one click"
+  },
+  "footer": {
+    "brand": "Draft Pick"
+  },
+  "claim": {
+    "sheetTitle": "Who are you?",
+    "noPlayers": "No players available to select",
+    "alreadyLinked": "This player is already linked to an account",
+    "errorTitle": "Error",
+    "errorDescription": "Please try again later"
+  },
+  "member": {
+    "title": "You're a club member",
+    "subtitle": "Next time you'll be auto-identified in drafts"
+  },
+  "requestSent": {
+    "title": "Request sent!",
+    "subtitle": "The admin will receive a notification and send you an invite"
+  },
+  "visitor": {
+    "title": "Were you in this draft?",
+    "subtitle": "Request an invite to connect and enjoy the full experience",
+    "claimButton": "That's me — pick your name"
+  },
+  "growth": {
+    "title": "Have your own team?",
+    "subtitle": "Manage drafts and game nights — totally free",
+    "cta": "Get Started"
+  }
+}

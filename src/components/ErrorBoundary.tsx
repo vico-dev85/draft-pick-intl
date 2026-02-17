@@ -26,7 +26,6 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div
-          dir="rtl"
           style={{
             minHeight: "100vh",
             background: "linear-gradient(to bottom, #065f46, #064e3b, #065f46)",
@@ -58,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 marginBottom: "8px",
               }}
             >
-              משהו השתבש
+              Something went wrong
             </h1>
             <p
               style={{
@@ -68,7 +67,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 lineHeight: "1.5",
               }}
             >
-              קרתה שגיאה לא צפויה. לחץ לרענון.
+              An unexpected error occurred. Click to refresh.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -84,7 +83,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 width: "100%",
               }}
             >
-              רענן את הדף
+              Refresh Page
             </button>
           </div>
         </div>

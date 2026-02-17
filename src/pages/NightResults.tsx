@@ -7,7 +7,7 @@ import { useClubContext } from "@/hooks/useClubContext";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Crown, Trophy, Users, Check, X } from "lucide-react";
 import { format } from "date-fns";
-import { he } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 // --- Types ---
 
@@ -73,6 +73,7 @@ export default function NightResults() {
   const { nightId } = useParams<{ nightId: string }>();
   const { isMember } = useClubContext();
   const { toast } = useToast();
+  const { t } = useTranslation("gamenight");
 
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<NightSummary | null>(null);
@@ -152,14 +153,14 @@ export default function NightResults() {
       if (error) throw error;
       const result = data as { success?: boolean; already_linked?: boolean };
       if (result.already_linked) {
-        toast({ title: "שחקן זה כבר מחובר לחשבון" });
+        toast({ title: t("claim.alreadyLinked") });
       } else {
         setClaimSent(true);
       }
       setShowClaimSheet(false);
     } catch (err) {
       console.error("Error requesting invite:", err);
-      toast({ title: "שגיאה", description: "נסה שוב מאוחר יותר", variant: "destructive" });
+      toast({ title: t("claim.errorTitle"), description: t("claim.errorDescription"), variant: "destructive" });
     } finally {
       setClaimingId(null);
     }
@@ -182,13 +183,13 @@ export default function NightResults() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-white text-lg font-bold mb-2">לא נמצא סיכום</p>
-          <p className="text-white/60 text-sm mb-4">ייתכן שהקישור אינו תקין</p>
+          <p className="text-white text-lg font-bold mb-2">{t("nightResults.notFound")}</p>
+          <p className="text-white/60 text-sm mb-4">{t("nightResults.invalidLink")}</p>
           <Link
             to="/"
             className="text-emerald-400 hover:text-emerald-300 underline text-sm"
           >
-            חזרה לדף הבית
+            {t("nightResults.backToHome")}
           </Link>
         </div>
       </div>
@@ -214,15 +215,15 @@ export default function NightResults() {
         <div className="absolute top-3/4 left-0 right-0 h-px bg-white/5" />
       </div>
 
-      <div className="relative z-10" dir="rtl">
+      <div className="relative z-10">
         {/* Header */}
         <header className="px-4 py-4 flex flex-col items-center gap-1 bg-black/20 backdrop-blur-sm border-b border-white/10">
           <Trophy className="h-6 w-6 text-yellow-400" />
           <h1 className="text-lg font-bold text-white">
-            {summary.club_name || summary.draft_name || "סיכום ערב משחקים"}
+            {summary.club_name || summary.draft_name || t("nightResults.title")}
           </h1>
           <p className="text-white/50 text-xs">
-            {format(new Date(summary.started_at), "EEEE, d בMMMM yyyy", { locale: he })}
+            {format(new Date(summary.started_at), "EEEE, MMMM d, yyyy")}
           </p>
         </header>
 
@@ -232,11 +233,11 @@ export default function NightResults() {
             <div className="flex justify-center gap-8">
               <div>
                 <p className="text-3xl font-bold text-white">{summary.total_games}</p>
-                <p className="text-white/50 text-xs">משחקים</p>
+                <p className="text-white/50 text-xs">{t("summary.games")}</p>
               </div>
               <div>
                 <p className="text-3xl font-bold text-white">{summary.total_goals}</p>
-                <p className="text-white/50 text-xs">גולים</p>
+                <p className="text-white/50 text-xs">{t("summary.totalGoals")}</p>
               </div>
             </div>
           </div>
@@ -244,7 +245,7 @@ export default function NightResults() {
           {/* Game Results */}
           {completedGames.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-white/70 text-sm font-medium">תוצאות</h3>
+              <h3 className="text-white/70 text-sm font-medium">{t("summary.results")}</h3>
               {completedGames.map((g) => {
                 const isAWin = g.result === "team_a_win";
                 const isBWin = g.result === "team_b_win";
@@ -258,7 +259,7 @@ export default function NightResults() {
                       <span className={`text-sm font-medium ${isAWin ? "text-emerald-400" : "text-white/70"}`}>
                         {getCaptainName(g.team_a_captain_number)}
                       </span>
-                      <span className="text-white font-bold text-base" dir="ltr">
+                      <span className="text-white font-bold text-base">
                         {g.score_a} - {g.score_b}
                       </span>
                       <span className={`text-sm font-medium ${isBWin ? "text-emerald-400" : "text-white/70"}`}>
@@ -266,7 +267,7 @@ export default function NightResults() {
                       </span>
                     </div>
                     {g.penalty_score_a != null && (
-                      <span className="text-white/40 text-xs">(פנ')</span>
+                      <span className="text-white/40 text-xs">{t("summary.penalties")}</span>
                     )}
                     {g.goals && g.goals.length > 0 && (
                       <div className="w-full mt-2 pt-2 border-t border-white/5">
@@ -291,15 +292,15 @@ export default function NightResults() {
             <div className="space-y-2">
               <h3 className="text-white/70 text-sm font-medium flex items-center gap-1.5">
                 <Trophy className="h-4 w-4 text-yellow-400" />
-                טבלה
+                {t("standings.title")}
               </h3>
               <div className="bg-black/20 rounded-xl border border-white/10 overflow-hidden">
                 <div className="grid grid-cols-6 gap-1 px-3 py-2 text-white/40 text-xs border-b border-white/10">
                   <span className="col-span-2">#</span>
-                  <span className="text-center">נ</span>
-                  <span className="text-center">ת</span>
-                  <span className="text-center">ה</span>
-                  <span className="text-center font-bold">נק'</span>
+                  <span className="text-center">{t("standings.wins")}</span>
+                  <span className="text-center">{t("standings.draws")}</span>
+                  <span className="text-center">{t("standings.losses")}</span>
+                  <span className="text-center font-bold">{t("standings.points")}</span>
                 </div>
                 {summary.standings!.map((s, i) => (
                   <div
@@ -323,7 +324,7 @@ export default function NightResults() {
           {/* Top Scorers */}
           {(summary.top_scorers?.length ?? 0) > 0 && (
             <div className="space-y-2">
-              <h3 className="text-white/70 text-sm font-medium">מלך השערים</h3>
+              <h3 className="text-white/70 text-sm font-medium">{t("nightResults.topScorers")}</h3>
               <div className="space-y-2">
                 {summary.top_scorers!.slice(0, 3).map((scorer, i) => (
                   <div
@@ -362,10 +363,10 @@ export default function NightResults() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-emerald-400 font-bold text-sm">
-                      בקשה נשלחה!
+                      {t("requestSent.title")}
                     </p>
                     <p className="text-white/60 text-xs mt-0.5">
-                      המנהל יקבל הודעה וישלח לך הזמנה
+                      {t("requestSent.subtitle")}
                     </p>
                   </div>
                 </div>
@@ -376,16 +377,16 @@ export default function NightResults() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-bold text-sm">
-                      השתתפת בכוחות?
+                      {t("visitor.title")}
                     </p>
                     <p className="text-white/60 text-xs mt-0.5">
-                      בקש/י הזמנה להתחבר וליהנות מהחוויה המלאה
+                      {t("visitor.subtitle")}
                     </p>
                     <button
                       onClick={() => setShowClaimSheet(true)}
                       className="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
                     >
-                      זה אני — בחר/י את השם שלך
+                      {t("visitor.claimButton")}
                     </button>
                   </div>
                 </div>
@@ -402,10 +403,10 @@ export default function NightResults() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-emerald-400 font-bold text-sm">
-                    את/ה חבר/ה בקבוצה
+                    {t("member.title")}
                   </p>
                   <p className="text-white/60 text-xs mt-0.5">
-                    בפעם הבאה תזוהה אוטומטית בכוחות
+                    {t("member.subtitle")}
                   </p>
                 </div>
               </div>
@@ -415,16 +416,16 @@ export default function NightResults() {
           {/* Growth CTA */}
           <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
             <p className="text-white font-bold text-sm mb-1">
-              יש לך קבוצה משלך?
+              {t("growth.title")}
             </p>
             <p className="text-white/60 text-xs mb-3">
-              נהל דראפט וערב משחקים — חינם לגמרי
+              {t("growth.subtitle")}
             </p>
             <Link
               to="/auth"
               className="inline-block px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm rounded-lg transition-colors"
             >
-              התחל עכשיו
+              {t("growth.cta")}
             </Link>
           </div>
 
@@ -435,7 +436,7 @@ export default function NightResults() {
               className="inline-flex items-center gap-1.5 text-white/30 hover:text-white/50 transition-colors text-xs"
             >
               <img src="/favicon.ico" alt="" className="w-3.5 h-3.5 opacity-40" />
-              kohot.online
+              {t("footer.brand")}
             </Link>
           </div>
         </div>
@@ -450,11 +451,10 @@ export default function NightResults() {
           />
           <div
             className="fixed bottom-0 left-0 right-0 z-50 bg-emerald-900 border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col"
-            dir="rtl"
           >
             {/* Sheet header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <h3 className="text-lg font-bold text-white">מי את/ה?</h3>
+              <h3 className="text-lg font-bold text-white">{t("claim.sheetTitle")}</h3>
               <button
                 onClick={() => setShowClaimSheet(false)}
                 className="p-2 text-white/60 hover:text-white"
@@ -465,7 +465,7 @@ export default function NightResults() {
 
             {/* Player list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              <p className="text-white/40 text-xs mb-1">שחקני הערב</p>
+              <p className="text-white/40 text-xs mb-1">{t("nightResults.nightPlayers")}</p>
               {sortedClaimable.map((player) => {
                 const goals = player.player_id ? goalCountMap.get(player.player_id) : undefined;
                 const captainIds = [
@@ -480,7 +480,7 @@ export default function NightResults() {
                     key={player.player_id}
                     disabled={claimingId !== null}
                     onClick={() => player.player_id && handleClaim(player.player_id)}
-                    className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-right"
+                    className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-left"
                   >
                     <PlayerAvatar
                       name={player.display_name}
@@ -508,7 +508,7 @@ export default function NightResults() {
 
               {sortedClaimable.length === 0 && (
                 <p className="text-center text-white/50 text-sm py-4">
-                  אין שחקנים זמינים לבחירה
+                  {t("claim.noPlayers")}
                 </p>
               )}
             </div>

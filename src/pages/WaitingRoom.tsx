@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getSecureSessionId, getCaptainColor, generateRaffleOrder } from "@/lib/draftUtils";
 import {
-  ArrowRight,
+  ArrowLeft,
   Loader2,
   Crown,
   Copy,
@@ -24,6 +24,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { playSound, stopSound, preloadSounds, isMuted, toggleMute } from "@/lib/sounds";
+import { useTranslation } from "react-i18next";
 
 // Hand images for shuffle animation
 const HAND_IMAGES = [
@@ -74,6 +75,7 @@ export default function WaitingRoom() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation("draft");
   useWakeLock(true);
 
   const [room, setRoom] = useState<DraftRoom | null>(null);
@@ -157,7 +159,7 @@ export default function WaitingRoom() {
         .single();
 
       if (roomError || !roomData) {
-        toast({ title: "חדר לא נמצא", variant: "destructive" });
+        toast({ title: t("waiting.roomNotFound"), variant: "destructive" });
         navigate("/");
         return;
       }
@@ -188,7 +190,7 @@ export default function WaitingRoom() {
     } finally {
       setLoading(false);
     }
-  }, [roomCode, navigate, user, toast]);
+  }, [roomCode, navigate, user, toast, t]);
 
   useEffect(() => {
     fetchData();
@@ -319,13 +321,13 @@ export default function WaitingRoom() {
     await navigator.clipboard.writeText(room?.room_code || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast({ title: "הקוד הועתק!" });
+    toast({ title: t("waiting.codeCopied") });
   };
 
   const shareViaWhatsApp = () => {
     const baseUrl = window.location.origin;
     const joinUrl = `${baseUrl}/#/join/${room?.room_code}`;
-    const message = `הצטרפו לדראפט "${room?.draft_name}"!\n\nקוד החדר: ${room?.room_code}\n\nלחצו להצטרפות:\n${joinUrl}`;
+    const message = t("waiting.shareMessage", { name: room?.draft_name, code: room?.room_code, url: joinUrl });
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -335,7 +337,7 @@ export default function WaitingRoom() {
     const player = players.find((p) => p.player_id === captainPlayerId);
     const isConnected = connectedCaptainNumbers.has(captainNumber);
     return {
-      name: player?.display_name || "ממתין...",
+      name: player?.display_name || t("waiting.waiting"),
       photoUrl: player?.photo_url,
       isConnected,
       captainNumber,
@@ -360,7 +362,7 @@ export default function WaitingRoom() {
 
   const getCaptainName = (captainNumber: number) => {
     const captain = captainsInfo.find(c => c?.captainNumber === captainNumber);
-    return captain?.name || `קפטן ${captainNumber}`;
+    return captain?.name || `Captain ${captainNumber}`;
   };
 
   // Local animation - runs independently on each client with predetermined result
@@ -554,22 +556,22 @@ export default function WaitingRoom() {
       )}
 
       {/* Header */}
-      <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-50" dir="rtl">
+      <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-2 text-white/70 hover:text-white transition-colors">
-          <ArrowRight className="h-4 w-4" />
-          <span>חזרה</span>
+          <ArrowLeft className="h-4 w-4" />
+          <span>{t("waiting.back")}</span>
         </Link>
-        <img src="/logo.png" alt="kohot.online" className="h-8 w-auto" />
+        <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
         <button
           onClick={() => setSoundMuted(toggleMute())}
           className="text-white/60 hover:text-white transition-colors p-1"
-          title={soundMuted ? "הפעל צלילים" : "השתק צלילים"}
+          title={soundMuted ? t("waiting.enableSounds") : t("waiting.muteSounds")}
         >
           {soundMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
         </button>
       </header>
 
-      <main className="px-4 py-8 max-w-2xl mx-auto" dir="rtl">
+      <main className="px-4 py-8 max-w-2xl mx-auto">
         {/* Raffle Overlay */}
         <AnimatePresence>
           {rafflePhase !== "waiting" && (
@@ -589,8 +591,8 @@ export default function WaitingRoom() {
                 {rafflePhase === "countdown" && (
                   <>
                     <PartyPopper className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-green-500 mb-2">כל הקפטנים מחוברים!</h2>
-                    <p className="text-muted-foreground mb-6">מגרילים סדר בחירה...</p>
+                    <h2 className="text-2xl font-bold text-green-500 mb-2">{t("waiting.allConnected")}</h2>
+                    <p className="text-muted-foreground mb-6">{t("waiting.raffle.title")}</p>
                     <motion.div
                       key={countdown}
                       initial={{ scale: 0.5, opacity: 0 }}
@@ -625,7 +627,7 @@ export default function WaitingRoom() {
                         />
                       ))}
                     </div>
-                    <h2 className="text-2xl font-bold mb-6">מגריל סדר בחירה...</h2>
+                    <h2 className="text-2xl font-bold mb-6">{t("waiting.raffle.title")}</h2>
                     <div className="flex justify-center gap-3">
                       {shuffleDisplay.map((num, idx) => (
                         <motion.div
@@ -652,8 +654,8 @@ export default function WaitingRoom() {
                     >
                       <Trophy className="h-14 w-14 text-yellow-500 mx-auto" />
                     </motion.div>
-                    <h2 className="text-2xl font-bold mb-2">סדר הבחירה נקבע!</h2>
-                    <p className="text-muted-foreground text-sm mb-4">דראפט נחש - הסדר מתהפך בכל סיבוב</p>
+                    <h2 className="text-2xl font-bold mb-2">{t("waiting.raffle.result")}</h2>
+                    <p className="text-muted-foreground text-sm mb-4">{t("waiting.raffle.snakeDescription")}</p>
 
                     <div className="space-y-2 mb-4">
                       {raffleOrder.map((captainNum, idx) => (
@@ -667,25 +669,25 @@ export default function WaitingRoom() {
                           <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold">
                             {idx + 1}
                           </span>
-                          <span className="font-semibold flex-1 text-right">
+                          <span className="font-semibold flex-1 text-left">
                             {getCaptainName(captainNum)}
                           </span>
                           {idx === 0 && (
-                            <span className="text-xs bg-white/20 px-2 py-1 rounded-full">ראשון!</span>
+                            <span className="text-xs bg-white/20 px-2 py-1 rounded-full">{t("waiting.raffle.first")}</span>
                           )}
                         </motion.div>
                       ))}
                     </div>
 
                     <div className="bg-muted/30 rounded-lg p-3 text-xs text-muted-foreground">
-                      <p>סיבוב 1: {raffleOrder.join(" → ")}</p>
-                      <p>סיבוב 2: {[...raffleOrder].reverse().join(" → ")}</p>
+                      <p>{t("waiting.raffle.roundLabel", { round: 1 })}: {raffleOrder.join(" -> ")}</p>
+                      <p>{t("waiting.raffle.roundLabel", { round: 2 })}: {[...raffleOrder].reverse().join(" -> ")}</p>
                     </div>
 
                     {rafflePhase === "starting" && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 flex items-center justify-center gap-2 text-primary">
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        <span>מתחיל דראפט...</span>
+                        <span>{t("waiting.startingDraft")}</span>
                       </motion.div>
                     )}
                   </>
@@ -700,16 +702,16 @@ export default function WaitingRoom() {
           <div className="text-center space-y-4">
             <h1 className="text-2xl font-bold text-white">{room.draft_name}</h1>
             <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/10">
-              <span className="text-white/60">קוד:</span>
-              <span className="font-mono font-bold text-2xl text-white" dir="ltr">{room.room_code}</span>
+              <span className="text-white/60">{t("waiting.code")}:</span>
+              <span className="font-mono font-bold text-2xl text-white">{room.room_code}</span>
               <Button size="sm" onClick={copyRoomCode} className="bg-white/20 hover:bg-white/30 text-white">
                 {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
             <div>
               <Button onClick={shareViaWhatsApp} className="bg-[#25D366] hover:bg-[#128C7E] text-white">
-                <Share2 className="h-4 w-4 ml-2" />
-                שתף בוואטסאפ
+                <Share2 className="h-4 w-4 mr-2" />
+                {t("waiting.shareWhatsApp")}
               </Button>
             </div>
           </div>
@@ -720,12 +722,12 @@ export default function WaitingRoom() {
               {allCaptainsConnected ? (
                 <>
                   <Wifi className="h-5 w-5 text-emerald-400" />
-                  <span className="text-emerald-400">כל הקפטנים מחוברים!</span>
+                  <span className="text-emerald-400">{t("waiting.allConnected")}</span>
                 </>
               ) : (
                 <>
                   <WifiOff className="h-5 w-5 text-amber-400 animate-pulse" />
-                  <span className="text-white">ממתין לקפטנים... ({connectedCount}/3)</span>
+                  <span className="text-white">{t("waiting.waitingForCaptains", { connected: connectedCount })}</span>
                 </>
               )}
             </div>
@@ -735,7 +737,7 @@ export default function WaitingRoom() {
           <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
             <h2 className="font-semibold mb-4 flex items-center gap-2 text-white">
               <Crown className="h-5 w-5 text-amber-400" />
-              סטטוס קפטנים
+              {t("waiting.captainsStatus")}
             </h2>
             <div className="grid grid-cols-3 gap-4">
               {captainsInfo.map((captain) => (
@@ -748,7 +750,7 @@ export default function WaitingRoom() {
                   </div>
                   <p className="font-medium text-sm mt-2 text-white">{captain!.name}</p>
                   <span className={`text-xs ${captain!.isConnected ? "text-emerald-400" : "text-white/50"}`}>
-                    {captain!.isConnected ? "מחובר" : "ממתין..."}
+                    {captain!.isConnected ? t("waiting.captainReady") : t("waiting.captainWaiting")}
                   </span>
                   <div className={`mt-2 h-1 w-12 mx-auto rounded ${getCaptainColor(captain!.captainNumber)}`} />
                 </div>
@@ -761,14 +763,14 @@ export default function WaitingRoom() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-white/60" />
-                <span className="text-white/60">שחקנים:</span>
+                <span className="text-white/60">{t("waiting.playersLabel")}:</span>
               </div>
               <span className="font-bold text-lg text-white">{players.filter((p) => !p.is_captain).length}</span>
             </div>
           </div>
 
           {!allCaptainsConnected && (
-            <p className="text-center text-white/60">שתף את קוד החדר כדי שהקפטנים יצטרפו</p>
+            <p className="text-center text-white/60">{t("waiting.shareToJoin")}</p>
           )}
         </motion.div>
       </main>

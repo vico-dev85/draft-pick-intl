@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { getCaptainColor } from "@/lib/draftUtils";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface TurnBannerProps {
   captainNumber: number;
@@ -9,6 +10,8 @@ interface TurnBannerProps {
 }
 
 export function TurnBanner({ captainNumber, captainName, isMyTurn }: TurnBannerProps) {
+  const { t } = useTranslation("draft");
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -24,11 +27,11 @@ export function TurnBanner({ captainNumber, captainName, isMyTurn }: TurnBannerP
           transition={{ duration: 1.5, repeat: Infinity }}
           className="flex items-center justify-center gap-2"
         >
-          <span className="text-lg font-bold">👆 תורך לבחור!</span>
+          <span className="text-lg font-bold">{t("board.yourTurn")}</span>
         </motion.div>
       ) : (
         <div className="flex items-center justify-center gap-2">
-          <span>{captainName} בוחר...</span>
+          <span>{t("board.captainPicking", { captain: captainName })}</span>
         </div>
       )}
     </motion.div>

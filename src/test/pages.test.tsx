@@ -14,21 +14,21 @@ describe("Page smoke tests", () => {
 
   it("Auth renders login form", () => {
     renderWithProviders(<Auth />);
-    expect(screen.getByText("המשך עם Google")).toBeInTheDocument();
-    expect(screen.getByText("המשך עם אימייל")).toBeInTheDocument();
+    expect(screen.getByText("Continue with Google")).toBeInTheDocument();
+    expect(screen.getByText("Continue with email")).toBeInTheDocument();
   });
 
   it("AcceptInvite shows error when no token provided", async () => {
     renderWithProviders(<AcceptInvite />);
     // Without a token, page shows error state
     await waitFor(() => {
-      expect(screen.getByText("משהו השתבש")).toBeInTheDocument();
+      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
     });
-    expect(screen.getByText("קישור הזמנה חסר")).toBeInTheDocument();
+    expect(screen.getByText("Invite link is missing")).toBeInTheDocument();
   });
 
   it("QuickDraft renders name input", () => {
     renderWithProviders(<QuickDraft />);
-    expect(screen.getByPlaceholderText(/כוחות יום שישי/)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Friday/i)).toBeInTheDocument();
   });
 });

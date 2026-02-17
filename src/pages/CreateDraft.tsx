@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
 interface Player {
   id: string;
@@ -54,6 +55,7 @@ export default function CreateDraft() {
   const { toast } = useToast();
   const routerLocation = useLocation();
   const remakeState = routerLocation.state as RemakeState | null;
+  const { t } = useTranslation("draft");
 
   const [step, setStep] = useState<Step>("name");
   const [draftName, setDraftName] = useState("");
@@ -130,7 +132,7 @@ export default function CreateDraft() {
 
       // Apply remake state if available
       if (remakeState?.remake) {
-        if (remakeState.draftName) setDraftName(remakeState.draftName + " (חוזר)");
+        if (remakeState.draftName) setDraftName(remakeState.draftName + " (remake)");
         if (remakeState.location) setLocation(remakeState.location);
         if (remakeState.notes) setNotes(remakeState.notes);
 
@@ -185,8 +187,8 @@ export default function CreateDraft() {
     );
     if (exists) {
       toast({
-        title: "שחקן קיים",
-        description: "כבר יש שחקן עם שם זה",
+        title: t("create.guest.duplicate"),
+        description: t("create.guest.duplicateDescription"),
         variant: "destructive",
       });
       return;
@@ -317,16 +319,16 @@ export default function CreateDraft() {
       if (playersError) throw playersError;
 
       toast({
-        title: "הכוחות נוצרו!",
-        description: `קוד החדר: ${roomCode}`,
+        title: t("create.toast.created"),
+        description: t("create.toast.roomCode", { code: roomCode }),
       });
 
       navigate(`/room/${roomCode}`);
     } catch (err) {
       console.error("Error creating draft:", err);
       toast({
-        title: "שגיאה",
-        description: "לא הצלחנו ליצור את הדראפט",
+        title: t("create.errors.createError"),
+        description: t("create.errors.createFailed"),
         variant: "destructive",
       });
     } finally {
@@ -371,18 +373,18 @@ export default function CreateDraft() {
       {/* Content Layer */}
       <div className="relative z-10">
         {/* Header */}
-        <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm" dir="rtl">
+        <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm">
           <Link
             to="/dashboard"
             className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
           >
-            <ArrowRight className="h-4 w-4" />
-            <span>חזרה</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span>{t("create.back")}</span>
           </Link>
-          <img src="/logo.png" alt="kohot.online" className="h-8 w-auto" />
+          <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
         </header>
 
-      <main className="px-4 py-8 max-w-2xl mx-auto" dir="rtl">
+      <main className="px-4 py-8 max-w-2xl mx-auto">
         {/* Progress Steps */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center gap-2">
@@ -437,17 +439,17 @@ export default function CreateDraft() {
             >
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-2">
-                  צור כוחות חדשים
+                  {t("create.title")}
                 </h1>
-                <p className="text-white/60">תן שם ופרטים</p>
+                <p className="text-white/60">{t("create.nameStep.hint")}</p>
               </div>
 
               <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-4">
                 <div>
-                  <Label htmlFor="draftName" className="text-white/80">שם הכוחות</Label>
+                  <Label htmlFor="draftName" className="text-white/80">{t("create.nameStep.label")}</Label>
                   <Input
                     id="draftName"
-                    placeholder="לדוגמה: כוחות יום שישי"
+                    placeholder={t("create.nameStep.placeholder")}
                     value={draftName}
                     onChange={(e) => setDraftName(e.target.value)}
                     className="mt-2 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
@@ -461,7 +463,7 @@ export default function CreateDraft() {
                   onClick={() => setShowDetails(!showDetails)}
                   className="w-full flex items-center justify-between text-white/60 hover:text-white/80 transition-colors py-2"
                 >
-                  <span className="text-sm">הוסף פרטים נוספים</span>
+                  <span className="text-sm">{t("create.nameStep.addDetails")}</span>
                   {showDetails ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -479,11 +481,11 @@ export default function CreateDraft() {
                     <div>
                       <Label htmlFor="location" className="text-white/80 flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
-                        מיקום
+                        {t("create.nameStep.location")}
                       </Label>
                       <Input
                         id="location"
-                        placeholder="לדוגמה: מגרש הכדורגל ליד הקניון"
+                        placeholder={t("create.nameStep.locationPlaceholder")}
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         className="mt-2 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
@@ -492,11 +494,11 @@ export default function CreateDraft() {
                     <div>
                       <Label htmlFor="notes" className="text-white/80 flex items-center gap-2">
                         <FileText className="h-4 w-4" />
-                        הערות
+                        {t("create.nameStep.notes")}
                       </Label>
                       <Textarea
                         id="notes"
-                        placeholder="לדוגמה: להביא חולצות שחורות וצהובות"
+                        placeholder={t("create.nameStep.notesPlaceholder")}
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         className="mt-2 bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none"
@@ -512,8 +514,8 @@ export default function CreateDraft() {
                 disabled={!canProceedToPlayers}
                 className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
               >
-                המשך
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                {t("create.continue")}
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </motion.div>
           )}
@@ -529,11 +531,11 @@ export default function CreateDraft() {
             >
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-2">
-                  <Users className="inline h-6 w-6 ml-2" />
-                  בחר שחקנים
+                  <Users className="inline h-6 w-6 mr-2" />
+                  {t("create.playersStep.title")}
                 </h1>
                 <p className="text-white/60">
-                  בחרת {selectedPlayerIds.length} שחקנים (נדרש {MIN_PLAYERS}-{MAX_PLAYERS})
+                  {t("create.playersStep.selected", { count: selectedPlayerIds.length })} ({t("create.playersStep.required", { min: MIN_PLAYERS, max: MAX_PLAYERS })})
                 </p>
               </div>
 
@@ -541,20 +543,20 @@ export default function CreateDraft() {
                 <div className="bg-black/30 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center space-y-4">
                   <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-2">
-                    אין גישה לרשימת השחקנים
+                    {t("create.errors.noAccess")}
                   </h3>
                   <p className="text-white/60 mb-4">
-                    ייתכן שהקישור לקבוצה פג תוקף או שההצטרפות לא הושלמה. בקש מהמנהל לשלוח הזמנה חדשה.
+                    {t("create.errors.noAccessDescription")}
                   </p>
                   <div className="flex gap-3 justify-center flex-wrap">
                     <Button
                       onClick={() => { setLoading(true); fetchPlayers(); }}
                       className="bg-emerald-500 hover:bg-emerald-600 text-white"
                     >
-                      נסה שוב
+                      {t("create.errors.retry")}
                     </Button>
                     <Button asChild className="bg-white/20 hover:bg-white/30 text-white border-white/20">
-                      <Link to="/dashboard">חזרה לדשבורד</Link>
+                      <Link to="/dashboard">{t("create.errors.backToDashboard")}</Link>
                     </Button>
                   </div>
                 </div>
@@ -562,21 +564,21 @@ export default function CreateDraft() {
                 <div className="bg-black/30 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center space-y-4">
                   <AlertCircle className="h-12 w-12 text-amber-400 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-2">
-                    אין לך שחקנים עדיין
+                    {t("create.errors.noPlayers")}
                   </h3>
                   <p className="text-white/60 mb-4">
-                    הוסף שחקנים לספרייה או הוסף אורחים לכוחות הזה
+                    {t("create.errors.noPlayersDescription")}
                   </p>
                   <div className="flex gap-3 justify-center flex-wrap">
                     <Button asChild className="bg-white/20 hover:bg-white/30 text-white border-white/20">
-                      <Link to="/players">הוסף לספרייה</Link>
+                      <Link to="/players">{t("create.errors.addToLibrary")}</Link>
                     </Button>
                     <Button
                       onClick={() => setShowAddGuest(true)}
                       className="bg-amber-500 hover:bg-amber-600 text-white"
                     >
-                      <UserPlus className="h-4 w-4 ml-2" />
-                      הוסף אורחים
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      {t("create.guest.addGuests")}
                     </Button>
                   </div>
 
@@ -589,7 +591,7 @@ export default function CreateDraft() {
                     >
                       <div className="flex gap-2">
                         <Input
-                          placeholder="שם האורח"
+                          placeholder={t("create.guest.namePlaceholder")}
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && addGuest()}
@@ -612,7 +614,7 @@ export default function CreateDraft() {
                   {/* Show added guests */}
                   {guestPlayers.length > 0 && (
                     <div className="space-y-2 mt-4">
-                      <p className="text-white/60 text-sm">אורחים שנוספו: {guestPlayers.length}</p>
+                      <p className="text-white/60 text-sm">{t("create.guest.added", { count: guestPlayers.length })}</p>
                       <div className="flex flex-wrap gap-2 justify-center">
                         {guestPlayers.map((guest) => (
                           <span
@@ -633,21 +635,21 @@ export default function CreateDraft() {
                 <>
                   <div className="flex gap-2 justify-center flex-wrap">
                     <Button size="sm" onClick={selectRegulars} className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30">
-                      בחר קבועים
+                      {t("create.playersStep.selectRegulars")}
                     </Button>
                     <Button size="sm" onClick={selectAll} className="bg-white/20 hover:bg-white/30 text-white border-white/20">
-                      בחר הכל
+                      {t("create.playersStep.selectAll")}
                     </Button>
                     <Button size="sm" onClick={deselectAll} className="bg-white/20 hover:bg-white/30 text-white border-white/20">
-                      נקה בחירה
+                      {t("create.playersStep.deselectAll")}
                     </Button>
                     <Button
                       size="sm"
                       onClick={() => setShowAddGuest(true)}
                       className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/30"
                     >
-                      <UserPlus className="h-4 w-4 ml-1" />
-                      הוסף אורח
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      {t("create.guest.addGuest")}
                     </Button>
                   </div>
 
@@ -661,7 +663,7 @@ export default function CreateDraft() {
                     >
                       <div className="flex gap-2">
                         <Input
-                          placeholder="שם האורח"
+                          placeholder={t("create.guest.namePlaceholder")}
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && addGuest()}
@@ -689,7 +691,7 @@ export default function CreateDraft() {
                         </Button>
                       </div>
                       <p className="text-xs text-amber-300/70 mt-2">
-                        אורחים הם שחקנים חד-פעמיים לכוחות הזה בלבד
+                        {t("create.guest.oneTimeNote")}
                       </p>
                     </motion.div>
                   )}
@@ -703,7 +705,7 @@ export default function CreateDraft() {
                         <>
                           {regulars.length > 0 && (
                             <div>
-                              <p className="text-xs text-white/50 mb-2 font-medium">קבועים ({regulars.length})</p>
+                              <p className="text-xs text-white/50 mb-2 font-medium">{t("create.playersStep.regular")} ({regulars.length})</p>
                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {regulars.map((player) => (
                                   <label
@@ -734,7 +736,7 @@ export default function CreateDraft() {
 
                           {occasionals.length > 0 && (
                             <div>
-                              <p className="text-xs text-white/50 mb-2 font-medium">מזדמנים ({occasionals.length})</p>
+                              <p className="text-xs text-white/50 mb-2 font-medium">{t("create.playersStep.occasional")} ({occasionals.length})</p>
                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {occasionals.map((player) => (
                                   <label
@@ -769,7 +771,7 @@ export default function CreateDraft() {
                     {/* Guest Players */}
                     {guestPlayers.length > 0 && (
                       <div>
-                        <p className="text-xs text-amber-300/50 mb-2 font-medium">אורחים ({guestPlayers.length})</p>
+                        <p className="text-xs text-amber-300/50 mb-2 font-medium">{t("create.guest.guests")} ({guestPlayers.length})</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                           {guestPlayers.map((player) => (
                             <div
@@ -808,16 +810,16 @@ export default function CreateDraft() {
 
                   <div className="flex gap-3">
                     <Button onClick={goBack} className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20">
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                      חזרה
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      {t("create.back")}
                     </Button>
                     <Button
                       onClick={goNext}
                       disabled={!canProceedToCaptains}
                       className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
                     >
-                      המשך
-                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      {t("create.continue")}
+                      <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </div>
                 </>
@@ -836,11 +838,11 @@ export default function CreateDraft() {
             >
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-2">
-                  <Crown className="inline h-6 w-6 ml-2 text-amber-400" />
-                  בחר {NUM_TEAMS} קפטנים
+                  <Crown className="inline h-6 w-6 mr-2 text-amber-400" />
+                  {t("create.captainsStep.title")}
                 </h1>
                 <p className="text-white/60">
-                  בחרת {captainIds.length}/{NUM_TEAMS} קפטנים
+                  {t("create.captainsStep.selected", { count: captainIds.length })}
                 </p>
               </div>
 
@@ -870,7 +872,7 @@ export default function CreateDraft() {
                         </>
                       ) : (
                         <span className="text-white/50 text-xs">
-                          קפטן {num}
+                          {t("captain", { number: num })}
                         </span>
                       )}
                     </div>
@@ -881,7 +883,7 @@ export default function CreateDraft() {
               {/* Note about guests */}
               {guestPlayers.length > 0 && (
                 <p className="text-center text-white/50 text-sm">
-                  אורחים לא יכולים להיות קפטנים
+                  {t("create.captainsStep.guestsCannotBeCaptains")}
                 </p>
               )}
 
@@ -917,7 +919,7 @@ export default function CreateDraft() {
                           <Crown className="h-4 w-4 text-amber-400 ml-auto" />
                         )}
                         {isGuest && (
-                          <span className="text-xs text-amber-400/50 ml-auto">אורח</span>
+                          <span className="text-xs text-amber-400/50 ml-auto">{t("create.guest.guestLabel")}</span>
                         )}
                       </button>
                     );
@@ -927,16 +929,16 @@ export default function CreateDraft() {
 
               <div className="flex gap-3">
                 <Button onClick={goBack} className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20">
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                  חזרה
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t("create.back")}
                 </Button>
                 <Button
                   onClick={goNext}
                   disabled={!canProceedToConfirm}
                   className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
                 >
-                  המשך
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t("create.continue")}
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
             </motion.div>
@@ -953,29 +955,29 @@ export default function CreateDraft() {
             >
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-2">
-                  אישור הכוחות
+                  {t("create.confirmStep.title")}
                 </h1>
-                <p className="text-white/60">בדוק את הפרטים לפני היצירה</p>
+                <p className="text-white/60">{t("create.confirmStep.reviewDetails")}</p>
               </div>
 
               <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-white/60">שם הכוחות:</span>
+                  <span className="text-white/60">{t("create.confirmStep.draftName")}:</span>
                   <span className="font-semibold text-white">{draftName}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-white/60">מספר שחקנים:</span>
+                  <span className="text-white/60">{t("create.confirmStep.players")}:</span>
                   <span className="font-semibold text-white">
                     {selectedPlayerIds.length}
                     {guestPlayers.length > 0 && (
-                      <span className="text-amber-400 text-sm mr-2">
-                        ({guestPlayers.filter(g => selectedPlayerIds.includes(g.id)).length} אורחים)
+                      <span className="text-amber-400 text-sm ml-2">
+                        ({guestPlayers.filter(g => selectedPlayerIds.includes(g.id)).length} {t("create.guest.guests").toLowerCase()})
                       </span>
                     )}
                   </span>
                 </div>
                 <div className="border-t border-white/10 pt-4">
-                  <span className="text-white/60 block mb-3">קפטנים:</span>
+                  <span className="text-white/60 block mb-3">{t("create.confirmStep.captains")}:</span>
                   <div className="flex justify-center gap-4">
                     {captains.map((captain, idx) => (
                       <div key={captain.id} className="text-center">
@@ -986,7 +988,7 @@ export default function CreateDraft() {
                         />
                         <p className="text-sm font-medium mt-2 text-white">{captain.name}</p>
                         <span className="text-xs text-white/60">
-                          קפטן {idx + 1}
+                          {t("captain", { number: idx + 1 })}
                         </span>
                       </div>
                     ))}
@@ -996,8 +998,8 @@ export default function CreateDraft() {
 
               <div className="flex gap-3">
                 <Button onClick={goBack} className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20">
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                  חזרה
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t("create.back")}
                 </Button>
                 <Button
                   onClick={handleCreate}
@@ -1008,8 +1010,8 @@ export default function CreateDraft() {
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      צור כוחות
-                      <Check className="h-4 w-4 mr-2" />
+                      {t("create.confirmStep.startDraft")}
+                      <Check className="h-4 w-4 ml-2" />
                     </>
                   )}
                 </Button>

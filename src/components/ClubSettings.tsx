@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,20 +23,21 @@ interface ClubSettingsProps {
   onClose: () => void;
 }
 
-const DEFAULT_INVITE_TEMPLATE = `היי! הצטרפו לכוחות: {draft_name}
-קוד: {room_code}
+const DEFAULT_INVITE_TEMPLATE = `Hey! Join our draft: {draft_name}
+Code: {room_code}
 {link}`;
 
-const DEFAULT_RESULTS_TEMPLATE = `🏆 תוצאות כוחות: {draft_name}
+const DEFAULT_RESULTS_TEMPLATE = `🏆 Draft results: {draft_name}
 
 {teams}
 
 📍 {location}
 📝 {notes}
 
-לצפייה בתוצאות: {link}`;
+View results: {link}`;
 
 export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
+  const { t } = useTranslation("dashboard");
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -71,7 +73,7 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
     } catch (err) {
       console.error("Error fetching club:", err);
       toast({
-        title: "שגיאה בטעינת ההגדרות",
+        title: t("settings.loadError"),
         variant: "destructive",
       });
     } finally {
@@ -92,12 +94,12 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
 
       if (error) throw error;
 
-      toast({ title: "ההגדרות נשמרו בהצלחה" });
+      toast({ title: t("settings.saved") });
       onClose();
     } catch (err) {
       console.error("Error saving settings:", err);
       toast({
-        title: "שגיאה בשמירת ההגדרות",
+        title: t("settings.saveError"),
         variant: "destructive",
       });
     } finally {
@@ -130,11 +132,10 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed top-0 right-0 h-full w-full max-w-md bg-emerald-900 z-50 shadow-2xl overflow-hidden flex flex-col"
-            dir="rtl"
           >
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/20">
-              <h2 className="text-xl font-bold text-white">הגדרות הקבוצה</h2>
+              <h2 className="text-xl font-bold text-white">{t("settings.title")}</h2>
               <Button
                 variant="ghost"
                 size="icon"
@@ -155,36 +156,36 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
                 <>
                   {/* Club Name */}
                   <div className="space-y-2">
-                    <Label className="text-white/80">שם הקבוצה</Label>
+                    <Label className="text-white/80">{t("settings.clubName")}</Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="הקבוצה שלי"
+                      placeholder={t("settings.clubNamePlaceholder")}
                       className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
                     />
                   </div>
 
                   {/* Default Location */}
                   <div className="space-y-2">
-                    <Label className="text-white/80">מיקום ברירת מחדל</Label>
+                    <Label className="text-white/80">{t("settings.defaultLocation")}</Label>
                     <Input
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      placeholder="לדוגמה: מגרש הכדורגל ליד הקניון"
+                      placeholder={t("settings.defaultLocationPlaceholder")}
                       className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
                     />
                     <p className="text-xs text-white/40">
-                      יוצג בדף התוצאות ובהודעות וואטסאפ
+                      {t("settings.defaultLocationHint")}
                     </p>
                   </div>
 
                   {/* Default Notes */}
                   <div className="space-y-2">
-                    <Label className="text-white/80">הערות ברירת מחדל</Label>
+                    <Label className="text-white/80">{t("settings.defaultNotes")}</Label>
                     <Textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="לדוגמה: להביא חולצות שחורות וצהובות"
+                      placeholder={t("settings.defaultNotesPlaceholder")}
                       rows={2}
                       className="bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none"
                     />
@@ -193,45 +194,43 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
                   {/* WhatsApp Templates Section */}
                   <div className="pt-4 border-t border-white/10">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-white font-medium">תבניות וואטסאפ</h3>
+                      <h3 className="text-white font-medium">{t("settings.whatsappTemplates")}</h3>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={resetTemplates}
                         className="text-white/50 hover:text-white hover:bg-white/10"
                       >
-                        <RotateCcw className="h-4 w-4 ml-1" />
-                        איפוס
+                        <RotateCcw className="h-4 w-4 mr-1" />
+                        {t("settings.reset")}
                       </Button>
                     </div>
 
                     {/* Invite Template */}
                     <div className="space-y-2 mb-4">
-                      <Label className="text-white/80">הזמנה לכוחות</Label>
+                      <Label className="text-white/80">{t("settings.inviteTemplate")}</Label>
                       <Textarea
                         value={inviteTemplate}
                         onChange={(e) => setInviteTemplate(e.target.value)}
                         rows={4}
                         className="bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none font-mono text-sm"
-                        dir="rtl"
                       />
                       <p className="text-xs text-white/40">
-                        משתנים: {"{draft_name}"}, {"{room_code}"}, {"{link}"}
+                        {t("settings.inviteTemplateVars")}
                       </p>
                     </div>
 
                     {/* Results Template */}
                     <div className="space-y-2">
-                      <Label className="text-white/80">שיתוף תוצאות</Label>
+                      <Label className="text-white/80">{t("settings.resultsTemplate")}</Label>
                       <Textarea
                         value={resultsTemplate}
                         onChange={(e) => setResultsTemplate(e.target.value)}
                         rows={6}
                         className="bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none font-mono text-sm"
-                        dir="rtl"
                       />
                       <p className="text-xs text-white/40">
-                        משתנים: {"{draft_name}"}, {"{teams}"}, {"{location}"}, {"{notes}"}, {"{link}"}
+                        {t("settings.resultsTemplateVars")}
                       </p>
                     </div>
                   </div>
@@ -250,8 +249,8 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <>
-                    <Save className="h-5 w-5 ml-2" />
-                    שמור הגדרות
+                    <Save className="h-5 w-5 mr-2" />
+                    {t("settings.saveSettings")}
                   </>
                 )}
               </Button>

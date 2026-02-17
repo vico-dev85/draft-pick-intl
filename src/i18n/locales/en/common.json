@@ -1,0 +1,88 @@
+{
+  "nav": {
+    "myDrafts": "My Drafts",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "back": "Back",
+    "home": "Home"
+  },
+  "buttons": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "continue": "Continue",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "retry": "Try Again",
+    "share": "Share",
+    "copy": "Copy",
+    "done": "Done",
+    "start": "Start",
+    "add": "Add",
+    "remove": "Remove",
+    "yes": "Yes",
+    "no": "No",
+    "gotIt": "Got it",
+    "install": "Install"
+  },
+  "status": {
+    "loading": "Loading...",
+    "connecting": "Connecting...",
+    "saving": "Saving...",
+    "error": "Something went wrong",
+    "success": "Success!",
+    "noResults": "No results found"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Connection error. Check your internet and try again.",
+    "notFound": "Page not found",
+    "unauthorized": "You need to sign in to access this page.",
+    "forbidden": "You don't have permission to do this.",
+    "unexpectedError": "An unexpected error occurred. Click to refresh.",
+    "refreshPage": "Refresh Page",
+    "somethingWentWrong": "Something went wrong"
+  },
+  "time": {
+    "minutes": "min",
+    "seconds": "sec",
+    "minutesLong": "minutes",
+    "secondsLong": "seconds"
+  },
+  "app": {
+    "name": "Draft Pick",
+    "tagline": "Fair teams in one click"
+  },
+  "selfieEditor": {
+    "pickTitle": "Take a Profile Photo",
+    "takeSelfie": "Take a selfie",
+    "chooseFromGallery": "Choose from gallery",
+    "bestPhotoTip": "A front-facing face photo works best",
+    "positionTitle": "Position your face",
+    "confirm": "Confirm"
+  },
+  "installPrompt": {
+    "resultsTitle": "Install for quick access",
+    "resultsDescription": "Next game — draft teams in one click from your home screen",
+    "dashboardText": "Install for quick access from home screen",
+    "addToHomeScreen": "Add to Home Screen",
+    "installApp": "Install Draft Pick",
+    "iosTitle": "Add to Home Screen",
+    "iosStep1Title": "1. Tap the Share button",
+    "iosStep1Description": "The square with the arrow in Safari's navigation bar",
+    "iosStep2Title": "2. Scroll and tap \"Add to Home Screen\"",
+    "iosStep2Description": "In the share menu that opens",
+    "iosStep3Title": "3. Confirm — Draft Pick will appear on your home screen",
+    "iosStep3Description": "Next time you can open it directly from the icon"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Oops! Page not found",
+    "backHome": "Return to Home"
+  }
+}
