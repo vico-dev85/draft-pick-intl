@@ -1,157 +1,377 @@
-# Draft Soccer – Builder Instructions for Claude Code
+# Draft Pick — International Soccer Draft App
+
+## What This Is
+
+This is the **international LTR version** of [kohot.online](https://kohot.online), a Hebrew RTL soccer draft app. This codebase was copied from the Hebrew version and needs to be transformed into a **multi-language, LTR-first** app for global audiences.
+
+**Product name**: Draft Pick (working title — can be changed)
+**Target languages**: English (default), Spanish, French, German, Italian, Dutch
+**Direction**: LTR only (no RTL languages in v1)
+
+---
+
+## Reference: What This App Does
+
+The core loop (keep this identical to the Hebrew version):
+
+> Owner signs up → creates a club → adds player roster → on game day selects tonight's players → picks 3 captains → runs a live snake draft → shares final teams via WhatsApp → optionally runs a game night with timer, goals, and standings.
+
+### Routes & Pages
+
+| Route | Page | Purpose |
+|---|---|---|
+| `/` | Landing | Marketing homepage — explain product, CTA to sign up |
+| `/auth` | Auth | Login / signup (email + Google OAuth) |
+| `/dashboard` | Dashboard | Club hub — draft history, player card, create draft |
+| `/players` | Players | Manage player pool — add, edit, invite, permissions |
+| `/create-draft` | CreateDraft | Multi-step: name → select players → pick captains → confirm |
+| `/join/:roomCode` | JoinDraft | Captains claim identity before draft |
+| `/room/:roomCode` | WaitingRoom | Raffle animation, wait for 3 captains |
+| `/draft/:roomCode` | DraftBoard | Live snake draft — pick players in turn |
+| `/results/:roomCode` | Results | Final teams — share via WhatsApp, start game night |
+| `/night/:nightId` | GameNight | Live game tracking — timer, goals, rotation |
+| `/night-results/:nightId` | NightResults | Game night summary — standings, top scorers |
+| `/quick-draft` | QuickDraft | Anonymous draft (no signup required) |
+| `/accept-invite` | AcceptInvite | Player invite acceptance flow |
+| `/privacy` | Privacy | Privacy policy |
+| `/terms` | Terms | Terms of service |
+
+### Key Flows
+
+**Draft flow**: CreateDraft → WaitingRoom → DraftBoard → Results
+**Game night flow**: Results → GameNight → NightResults
+**Invite flow**: Player gets WhatsApp link → AcceptInvite → Auth → Dashboard (as member)
+**Quick draft**: Landing → QuickDraft → WaitingRoom → DraftBoard → Results (no signup)
+
+---
 
 ## Git Workflow
 
-**Repository:** https://github.com/vico-dev85/kohot.online
-
-**IMPORTANT:** When the user says something is "working", "good", "save this", "commit", or similar:
+**IMPORTANT:** When the user says "working", "good", "save this", "commit", or similar:
 1. Stage all changes: `git add -A`
 2. Create a descriptive commit explaining what was fixed/added
 3. Push to origin: `git push`
 4. Confirm to the user what was committed
 
-**IMPORTANT:** When the user says "deploy", "build", "ship it", or after committing changes:
-1. Run `npm run deploy` (runs tests + build)
-2. Tell the user: "dist/ is ready — upload to FastPanel"
-3. Server path: `/var/www/kohot_online_usr41/data/www/kohot.online`
+**IMPORTANT:** When the user says "deploy", "build", "ship it":
+1. Run `npm run build` (outputs to `dist/`)
+2. Tell the user: "dist/ is ready for deployment"
 
 ---
 
-## What you are doing in this repo
+## Tech Stack
 
-Stabilize and restructure the Draft Soccer app into a **working MVP** around one core loop:
-
-> Owner logs in → creates first club → adds player list → before each game selects tonight’s players → runs a 3-captain snake draft → shares final teams via WhatsApp.
-
-**Frontend**: keep and improve the existing React/TypeScript/Vite/Tailwind app.  
-**Backend/DB**: you are allowed (and expected) to design a **new Supabase/Postgres schema from scratch** that matches the model below.  
-You do NOT need to keep compatibility with the old Lovable database; treat previous tables as disposable.
-
-If PocketBase is already wired in and easier, you may design an equivalent clean schema there, but pick **one primary backend** for MVP (no mixing).
-
----
-
-## Accounts & Roles (MVP)
-
-- **Who needs an account**
-  - Owner / future managers: must log in (Supabase Auth with email/password + Google login).
-  - Captains / players / viewers: join drafts/results via link without account.
-
-- For now, treat the logged-in user as the **single owner/manager** of the (single) club in the UI, but design DB tables so one user can own multiple clubs in future.
+| Layer | Technology |
+|---|---|
+| Framework | React 18 + TypeScript |
+| Build | Vite 5 |
+| Styling | Tailwind CSS + shadcn/ui components |
+| Auth | Supabase Auth (email/password + Google OAuth) |
+| Database | Supabase (Postgres) |
+| Realtime | Supabase Realtime (presence + postgres_changes) |
+| Storage | Supabase Storage (`player-photos` bucket) |
+| Routing | React Router v6 with **HashRouter** |
+| Animation | Framer Motion |
+| Testing | Vitest + React Testing Library |
+| PWA | vite-plugin-pwa |
 
 ---
 
-## Core Data Model (for new DB)
+## The Transformation: Hebrew → International
 
-Design tables/collections approximately around:
+### Current State
 
-- **User**
-  - Auth via Supabase (email + Google OAuth).
-  - Can own multiple **clubs** in the schema, even if UI shows only one for now.
+The codebase is a **working Hebrew RTL app**. Every page, component, hook, and utility has hardcoded Hebrew strings and `dir="rtl"` attributes. There are **~44 source files** with Hebrew text and **61 `dir="rtl"` usages**.
 
-- **Club**
-  - Fields: id, owner_id, name, default_location, created_at.
-  - Each club has:
-    - Player pool
-    - Sessions/Games
-    - Drafts
+### What Must Change
 
-- **ClubPlayer**
-  - Fields: id, club_id, name, photo_url, is_member (optional flag), is_guest_flag (optional), created_at.
-  - UI must remain clear even if owner ignores member/guest flags.
+#### 1. i18n System — `react-i18next`
 
-- **Session/Game**
-  - Fields: id, club_id, date, optional start_time, location (default to club default, editable), created_at.
+Set up `react-i18next` with:
+- **Namespace-per-page** structure for lazy loading
+- **English as default/fallback** language
+- Browser language detection on first visit
+- Language stored in `localStorage` (key: `draftpick_lang`)
+- Language picker in app header/settings
 
-- **Draft**
-  - Fields: id, session_id, room_code, status (`waiting`, `drafting`, `completed`), raffle_order, snake_order, created_at, completed_at.
-  - MVP: always 3 captains, 3 teams.
+**Directory structure:**
+```
+src/
+  i18n/
+    index.ts              ← i18next init config
+    locales/
+      en/
+        common.json       ← shared: nav, buttons, errors, toasts
+        landing.json      ← Landing page copy
+        auth.json         ← Auth page copy
+        dashboard.json    ← Dashboard page copy
+        players.json      ← Players page copy
+        draft.json        ← CreateDraft, WaitingRoom, DraftBoard
+        results.json      ← Results, sharing templates
+        gamenight.json    ← GameNight, NightResults
+        legal.json        ← Privacy, Terms
+      es/
+        common.json
+        landing.json
+        ... (same structure)
+      fr/
+      de/
+      it/
+      nl/
+```
 
-- **DraftPlayer**
-  - Fields: id, draft_id, player_name, optional club_player_id, is_captain, picked_by_captain_number, pick_number.
-  - Arriving players (12–15 non-captains) + captains are represented here for that draft.
+**Translation key convention:**
+```json
+{
+  "landing.hero.title": "Fair Teams in One Click",
+  "landing.hero.subtitle": "Pick 3 captains. Run a live snake draft. Share teams on WhatsApp.",
+  "draft.turn.yourTurn": "Your turn to pick",
+  "draft.turn.captainPicking": "{{captain}} is picking...",
+  "common.buttons.confirm": "Confirm",
+  "common.buttons.cancel": "Cancel"
+}
+```
 
-You can choose exact table/field names, but keep this structure.
+#### 2. Remove All RTL
+
+- `index.html`: Change `<html lang="he" dir="rtl">` → `<html lang="en" dir="ltr">`
+- Remove every `dir="rtl"` from JSX (61 occurrences across all pages/components)
+- Remove Heebo font from `tailwind.config.ts` — use system font stack or Inter/Poppins
+- Check all `ml-*` / `mr-*` / `pl-*` / `pr-*` / `text-right` / `text-left` classes — some were intentionally flipped for RTL and need to be un-flipped
+- Check Framer Motion animations — any `x: -100` slide-ins may need direction reversal
+
+#### 3. TTS Language
+
+`src/lib/sounds.ts` has:
+```typescript
+utterance.lang = "he-IL";  // ← Must become dynamic
+```
+
+Change `speak()` to accept a language parameter or read from i18n:
+```typescript
+export function speak(text: string, lang?: string): void {
+  // ...
+  utterance.lang = lang || i18next.language || "en";
+  const voice = voices.find(v => v.lang.startsWith(utterance.lang));
+  // ...
+}
+```
+
+TTS is used in:
+- **WaitingRoom**: Raffle announcements
+- **DraftBoard**: Turn notifications, pick announcements, draft complete
+- **GameNight**: Timer warnings
+
+All TTS text strings must come from i18n translation files, not hardcoded.
+
+#### 4. WhatsApp Share Templates
+
+Currently hardcoded Hebrew in:
+- `Results.tsx` — `shareViaWhatsApp()` function
+- `WaitingRoom.tsx` — captain invite message
+- `Players.tsx` — player invite message
+- `ClubSettings.tsx` — default invite/results templates
+
+All must use `t()` translation keys. The `ClubSettings` default templates should be language-aware.
+
+#### 5. Draft Utility Labels
+
+`src/lib/draftUtils.ts` has:
+```typescript
+getCaptainLabel(1) → "קפטן 1"  // ← Must be "Captain 1" (from i18n)
+```
+
+#### 6. Meta Tags & PWA
+
+`index.html` needs:
+- English title, description, OG tags
+- New OG image (English)
+- New PWA manifest name
+- New favicon/icons (if rebranding)
+
+#### 7. Legal Pages
+
+`Privacy.tsx` and `Terms.tsx` have full Hebrew legal text. Need English versions. Other languages can be added later or auto-translated.
 
 ---
 
-## MVP Flows (implement end-to-end with new DB)
+## Implementation Phases
 
-### 1. Owner onboarding
+### Phase 1: i18n Infrastructure (do this first)
 
-First login:
+1. `npm install react-i18next i18next i18next-browser-languagedetector`
+2. Create `src/i18n/index.ts` with i18next config
+3. Create `src/i18n/locales/en/common.json` with shared strings
+4. Wrap app in `I18nextProvider` in `main.tsx`
+5. Convert ONE page (Landing) to use `t()` as proof of concept
+6. Verify build passes
 
-- Short popup (<10 seconds to read) explains:
-  1. Create your club
-  2. Add your usual players
-  3. On game day, choose who arrives and run a draft
-- Then: create club → add players to the club’s pool.
+### Phase 2: Strip Hebrew from All Pages
 
-### 2. Select tonight’s players & captains (Session + Draft creation)
+Go page by page, extracting every Hebrew string into translation keys:
 
-- Create Session: set date/time, confirm/edit location (prefill last used for club).
-- From club pool:
-  - “Select all members” / “Unselect all”.
-  - Tap players (member or guest) to mark as **arriving tonight**.
-  - Add “other guest” by typing their name.
-- Enforce **12–15 arriving non-captain players** before continuing.
-- From the arriving list, pick **exactly 3 captains**.
-- Create Draft:
-  - Store captains as `is_captain = true`.
-  - Only non-captain arriving players are in the draftable pool.
+**Priority order** (most user-facing first):
+1. `Landing.tsx` — marketing copy, CTA buttons
+2. `Auth.tsx` — form labels, errors, buttons
+3. `Dashboard.tsx` — headers, cards, onboarding walkthrough, selfie editor
+4. `Players.tsx` — player management, invite generation
+5. `CreateDraft.tsx` — multi-step form, validation messages
+6. `WaitingRoom.tsx` — captain status, raffle, TTS
+7. `DraftBoard.tsx` — turn banners, pick confirmation, TTS
+8. `Results.tsx` — team display, sharing, game night button
+9. `GameNight.tsx` — timer, scoring, matchup display
+10. `NightResults.tsx` — standings, top scorers
+11. `JoinDraft.tsx` — identity claiming
+12. `AcceptInvite.tsx` — invite acceptance
+13. `QuickDraft.tsx` — anonymous draft setup
+14. `NotFound.tsx` — 404 page
+15. `Privacy.tsx` + `Terms.tsx` — legal
 
-### 3. Waiting room & raffle
+Also extract from components:
+- `ClubSettings.tsx` — settings form, WhatsApp templates
+- `ErrorBoundary.tsx` — error messages
+- `InstallPromptBanner.tsx` — PWA install prompts
+- `SelfieAvatarEditor.tsx` — photo editor labels
+- `CaptainWheel.tsx` — raffle animation
+- `PalmRaffleGame.tsx` — raffle game
+- Draft components: `ConfirmPickModal`, `PickAnnouncement`, `TeamColumn`, `TurnBanner`
 
-- Captains join via WhatsApp invite link (room_code based).
-- Each captain chooses “I am Player X” from arriving players → mark with **C** and exclude from draftable list.
-- Run a random raffle to determine captain pick order and show a short snake-draft explanation.
-- Draft cannot start until 3 captains claimed.
-- After **90 seconds** with at least 1 but not all 3 connected:
-  - Show WhatsApp share/remind button to invite missing captains.
+And from libs:
+- `sounds.ts` — TTS text
+- `draftUtils.ts` — captain labels
+- `photoUpload.ts` — error messages
 
-### 4. Live snake draft
+### Phase 3: Remove RTL
 
-- Generate full snake order from raffle (1,2,3,3,2,1,1,2,3,...).
-- On captain’s turn:
-  - Highlight current captain and available pool.
-  - When they click a player, ask: “Do you pick PlayerName this turn?” Yes/No.
-  - On Yes:
-    - Save pick (no undo).
-    - Animate player moving from pool to under that captain.
-- When the pool is empty:
-  - Draft is final, even if team sizes are uneven (4 vs 5, etc.).
-  - Optionally show helper text like “Team A has one fewer player”.
+1. Change `index.html` root to `lang="en" dir="ltr"`
+2. Remove all `dir="rtl"` from JSX
+3. Replace Heebo font with a Latin font (Inter or system stack)
+4. Audit Tailwind classes: fix any margin/padding that was intentionally swapped
+5. Test every page visually — buttons, text alignment, animations
 
-Short disconnects:
+### Phase 4: Add Language Picker
 
-- Same browser session auto-rejoins as same captain.
-- For MVP, don’t implement replacement captains; just pause on their turn until reconnect.
+1. Language selector component (dropdown or flag icons) in app header
+2. Store preference in `localStorage`
+3. Update `<html lang="">` when language changes
+4. Sound system reads language for TTS
 
-### 5. Results & sharing
+### Phase 5: Translate to Other Languages
 
-- After draft completes:
-  - Create public results page:
-    - Club name, date/time, 3 teams, captains with C.
-  - WhatsApp share:
-    - Prefer sharing the link, plus a simple text fallback.
-- Link should **appear valid for 12 hours**:
-  - After 12 hours, show “This draft has expired” but keep data stored for future history.
+Create translation files for: `es`, `fr`, `de`, `it`, `nl`
+- Start with machine translation (DeepL/GPT) for speed
+- Mark as "needs review" — have native speakers refine later
+- Legal pages can stay English-only initially
+
+### Phase 6: Branding & Polish
+
+1. New app name, logo, color scheme (or keep emerald green)
+2. New OG image for social sharing
+3. New PWA icons and manifest
+4. New domain setup
+5. Deploy pipeline
 
 ---
 
-## Constraints & Non-goals (MVP)
+## Supabase Setup (New Project)
 
-- UI: mobile-first, Hebrew + RTL only; keep text separate from logic for future multi-language.
-- Business rules:
-  - 3 captains, 3 teams.
-  - 12–15 arriving non-captain players.
-- Do **not** build yet:
-  - Multi-club UI, 2-captain mode, in-app attendance, game timers/announcements, stats/history pages.
+Create a **separate Supabase project** for this app. Do NOT share with kohot.online.
 
-Focus on:  
-1) clean new DB schema that fits this model,  
-2) stable flows end-to-end,  
-3) smooth live draft experience and WhatsApp sharing.
+1. Create project at [supabase.com](https://supabase.com)
+2. Run all migrations from `supabase/migrations/` in order on the SQL Editor
+3. Enable Google OAuth in Auth → Providers
+4. Create `player-photos` storage bucket (public read, authenticated write)
+5. Set env vars in `.env.local`:
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+The Supabase client is in `src/integrations/supabase/client.ts`.
+
+---
+
+## Architecture & Known Gotchas
+
+These carry over from the Hebrew version — **do not change** these patterns:
+
+- **HashRouter + PKCE flow** — The app uses `HashRouter` for static hosting. All routes are `/#/path`. Supabase Auth uses `flowType: 'pkce'` because implicit flow puts `#access_token=` in the URL hash, which overwrites the HashRouter route. **Never switch to implicit flow.**
+
+- **OAuthCallbackHandler** — In `App.tsx`, detects both implicit and PKCE tokens. After processing, cleans up the query string and checks for pending invite tokens.
+
+- **Dual storage for invite tokens** — `pendingInviteToken` is stored in both `sessionStorage` and `localStorage` because email confirmation opens a new tab where `sessionStorage` is empty.
+
+- **RLS + SECURITY DEFINER RPCs** — Most data access goes through RPCs to avoid RLS recursion. Direct table queries work only for owners. Members must use RPCs.
+
+- **DraftBoard uses light theme** — `bg-gray-100` for readability during draft, unlike the rest of the dark emerald theme.
+
+- **Secure session IDs** — `getSecureSessionId()` generates browser session IDs for captain identity claiming (separate from Supabase auth).
+
+- **Sound system** — `src/lib/sounds.ts` plays sound effects and browser TTS. Sound files in `public/sounds/`. Mute toggle persisted in `sessionStorage`.
+
+- **Selfie Avatar Editor** — Camera/gallery capture with oval face crop guide. Outputs PNG with transparent corners.
+
+- **Oval avatars** — `PlayerAvatar` renders photos as ovals (~1:1.35 ratio). Initials fallback stays circular.
+
+- **Photo upload** — `compressPhoto()` (500KB, 400px, WebP) + `uploadPlayerPhoto()` to Supabase storage.
+
+---
+
+## Key Supabase RPCs
+
+These RPCs exist in the migrations and are called from the frontend:
+
+| RPC | Used By | Purpose |
+|---|---|---|
+| `get_user_club` | Dashboard, CreateDraft, ClubSettings | Get user's club |
+| `get_club_players` | CreateDraft, Players | Get player pool |
+| `get_club_drafts` | Dashboard | Get draft history |
+| `get_my_linked_clubs` | useClubContext | Get clubs user belongs to |
+| `get_room_players_public` | Multiple pages | Get players for a draft (public) |
+| `get_draft_state` | DraftBoard | Get current draft turn |
+| `pick_player_atomic` | DraftBoard | Atomic player pick |
+| `claim_player_identity` | JoinDraft | Claim captain identity |
+| `auto_identify_player` | JoinDraft | Auto-identify linked user |
+| `start_draft_if_ready` | WaitingRoom | Start draft when ready |
+| `peek_invite` | AcceptInvite | Preview invite (anon, read-only) |
+| `accept_player_invite` | AcceptInvite | Accept invite + link user |
+| `generate_player_invite` | Players | Create 48h invite token |
+| `create_quick_draft` | QuickDraft | Anonymous draft (SECURITY DEFINER) |
+| `start_game_night` | Results | Create game night from draft |
+| `start_game` | GameNight | Start a game in night |
+| `record_goal` | GameNight | Record goal |
+| `end_game` | GameNight | End game, calc winner |
+| `end_game_night` | GameNight | End entire night |
+| `get_game_night_summary` | GameNight, NightResults | Full night data |
+| `update_club_settings` | ClubSettings | Update club config |
+| `update_player_category` | Players | Set player type |
+| `update_player_permissions` | Players | Grant permissions |
+| `toggle_reaction` | Results | Emoji reactions |
+| `get_reaction_counts` | Results | Reaction counts |
+| `request_player_invite` | Results, NightResults | Request to join club |
+
+---
+
+## Realtime Subscriptions
+
+| Channel | Page | Purpose |
+|---|---|---|
+| `presence-room-${id}` | WaitingRoom | Track connected captains |
+| `room-status-${id}` | WaitingRoom | Watch draft status changes |
+| `draft-room-${id}` | DraftBoard | Live pick updates |
+
+---
+
+## Key Hooks
+
+| Hook | Purpose |
+|---|---|
+| `useAuth()` | Supabase auth state, signIn/signOut/signUp, Google OAuth |
+| `useClubContext()` | Club membership: `{ currentClub, isOwner, isMember, permissions, playerId, playerName }` |
+| `useGameTimer()` | Game night countdown timer with audio warnings |
+| `useWakeLock()` | Prevent screen sleep during drafts/games |
+| `useAnnouncementQueue()` | Queue TTS + sound announcements |
+| `useInstallPrompt()` | PWA install prompt detection |
 
 ---
 
@@ -159,103 +379,63 @@ Focus on:
 
 **Before every commit, run:**
 ```bash
-npm test        # Vitest — 22 tests covering pages, invite flow, and security
+npm test        # Vitest — all tests must pass
 npm run build   # Vite production build — catches TypeScript errors
 ```
 
-**Test files:**
-- `src/test/pages.test.tsx` — smoke tests for Landing, Auth, AcceptInvite, QuickDraft (4 tests)
-- `src/test/invite-flow.test.tsx` — OAuth redirect logic, sessionStorage/localStorage invite token handling, dual-storage cleanup (8 tests)
-- `src/test/security.test.ts` — open redirect prevention, invite token validation, URL encoding (10 tests)
+**Existing test files** (update Hebrew assertions as you translate):
+- `src/test/pages.test.tsx` — smoke tests for Landing, Auth, AcceptInvite, QuickDraft
+- `src/test/invite-flow.test.tsx` — OAuth redirect logic, invite token handling
+- `src/test/security.test.ts` — open redirect prevention, token validation
 - `src/test/setup.tsx` — mocks for Supabase, framer-motion, matchMedia
-- `src/test/test-utils.tsx` — `renderWithProviders()` helper wrapping all providers
+- `src/test/test-utils.tsx` — `renderWithProviders()` helper
 
-**When adding new pages or flows**, add a smoke test that renders the component and checks key UI elements are present.
+When translating pages, update test assertions to match new English text.
+
+---
+
+## Security
+
+These patterns must be preserved:
+
+- **Open redirect prevention**: `src/lib/safeRedirect.ts` validates all redirect paths
+- **Invite tokens**: UUID format only, validated server-side, expire after 48 hours
+- **SECURITY DEFINER RPCs**: `peek_invite` (read-only, anon) and `create_quick_draft` (write, anon) both have `SET search_path TO 'public'`
+- **No secrets in git**: `.env.local` is in `.gitignore`
+- **All redirect targets** go through `getSafeRedirectPath()`
 
 ---
 
 ## Deploy
 
 1. `npm run build` — outputs to `dist/`
-2. Upload contents of `dist/` to web hosting root
-3. Static hosting with HashRouter — no server-side config needed
+2. Upload contents of `dist/` to hosting (static hosting, no SSR needed)
+3. HashRouter means all routes work without server-side rewrite rules
 
 ---
 
-## Database Migrations
+## Files That Can Be Deleted
 
-Migrations live in `supabase/migrations/` and must be run manually on the **Supabase SQL Editor** in order:
-
-| # | File | Status |
-|---|------|--------|
-| 1 | `20260209_player_identity_linking.sql` | Applied |
-| 2 | `20260209_fix_user_players_rls.sql` | Applied |
-| 3 | `20260209_linked_member_rls.sql` | Applied |
-| 4 | `20260209_fix_default_permissions.sql` | Applied |
-| 5 | `20260213_peek_invite.sql` | Applied |
-| 6 | `20260213_create_quick_draft.sql` | Applied |
-| 7 | `20260213_fix_ambiguous_columns.sql` | Applied |
-| 8 | `20260213_fix_captain_fk.sql` | Applied |
-| 9 | `20260213_invite_permission_default.sql` | Applied |
-| 10 | `20260213_invite_request.sql` | Applied |
-| 11 | `20260214_game_night.sql` | Applied |
-
-When creating new migrations, add them to this table.
+These are Hebrew-specific or cancelled features:
+- `docs/legacy-handover.md` — old Lovable handover doc
+- `docs/COPYWRITING-GUIDE.md` — Hebrew copywriting guide
+- `docs/PROJECT-STATUS.md` — Hebrew project status
+- Any `.png` screenshots in root
+- Old Hebrew-specific docs
 
 ---
 
-## Architecture & Known Gotchas
+## Summary: What Makes This App Special
 
-- **HashRouter + PKCE flow** — The app uses `HashRouter` (not `BrowserRouter`) for static hosting. All routes are `/#/path`. Supabase Auth is configured with `flowType: 'pkce'` (in `src/integrations/supabase/client.ts`) because the default implicit flow puts `#access_token=` in the URL hash, which **overwrites the HashRouter route**. PKCE uses `?code=` in the query string instead, preserving the hash. **Never switch back to implicit flow.**
-- **OAuthCallbackHandler** — In `App.tsx`, detects both implicit (`#access_token=`) and PKCE (`?code=`) tokens. After processing, cleans up the query string and checks for pending invite tokens. Uses a 1000ms timeout to allow PKCE code exchange to complete.
-- **Dual storage for invite tokens** — Invite tokens (`pendingInviteToken`) are stored in **both** `sessionStorage` and `localStorage`. This is because email confirmation opens in a new browser tab where `sessionStorage` is empty. `OAuthCallbackHandler` checks both and cleans both after use.
-- **OAuth + invite flow** — When a user opens an invite link, the token is saved to both storages. After Google OAuth redirect or email confirmation, `OAuthCallbackHandler` finds the token and redirects to `/accept-invite?token=...` (not Dashboard).
-- **AcceptInvite is self-contained** — The invite page has inline auth (Google OAuth + email signup/login). Users never navigate to the separate Auth page during the invite flow. The page calls `peek_invite` RPC for a personalized greeting but falls back gracefully if the RPC returns 404 (migration not applied).
-- **RLS + SECURITY DEFINER** — Most data access goes through RPCs (`get_club_players`, `get_club_drafts`, etc.) to avoid RLS recursion. Direct table queries are used as fallbacks **only for owners** — members must use RPCs since RLS filters by `auth.uid() = user_id` which only matches the owner.
-- **QuickDraft uses RPC** — Anonymous quick drafts go through the `create_quick_draft` SECURITY DEFINER RPC because RLS policies on `draft_rooms` require `auth.uid() = creator_user_id`. The `creator_user_id` column is nullable to support anonymous drafts.
-- **Permissions** — `can_create_drafts` defaults to `true`. `can_send_invites` defaults to `false` (migration #9). Owner grants invite permission explicitly via Players page toggle.
-- **DraftBoard uses light theme** — `bg-gray-100` for readability during the draft, unlike the rest of the app which uses the emerald dark theme.
-- **Session IDs** — `getSecureSessionId()` generates a persistent browser session ID used for captain identity claiming. This is separate from Supabase auth.
+Focus on preserving these differentiators during translation:
 
-- **Sound system** — `src/lib/sounds.ts` provides `playSound`, `speak` (Hebrew TTS), `playRandomCrowd`, and mute toggle (persisted in sessionStorage). Used in WaitingRoom (captain-enter, drumroll, reveal) and DraftBoard (ding+TTS on turn, crowd+TTS on picks, whistle+TTS on complete). Sound files are in `public/sounds/`. Mute toggle in header of both pages.
-- **Photo upload** — `src/lib/photoUpload.ts` provides shared `compressPhoto` (500KB, 400px, WebP) and `uploadPlayerPhoto` (to `player-photos` bucket). Used by Players.tsx and Dashboard.tsx. Owner photo stored via `supabase.auth.updateUser({ data: { avatar_url } })`.
-- **Selfie Avatar Editor** — `src/components/SelfieAvatarEditor.tsx` is a Drawer-based selfie capture tool. Two steps: pick source (camera/gallery) → drag/zoom face into oval guide → canvas crop → returns File. Used on Dashboard for both owner and member cards. Camera input uses `capture="user"` to trigger front camera on mobile. Crop utility in `src/lib/cropFace.ts` (pure function, no React).
-- **Oval avatars** — `PlayerAvatar` renders photos in oval shape (taller than wide, ~1:1.35 ratio) and initials in circular shape. Oval propagates to all usages: draft chips, waiting room, results, etc.
-- **Dashboard cards** — Members see a profile card with oval avatar (tap → selfie editor). Owners see a card with Crown badge + "מנהל הקבוצה". Members do NOT see the "שחקנים" header button. Member name comes from `user_players.name` (pool name), NOT from auth metadata.
-- **Bobblehead cancelled** — `BobbleheadAvatar.tsx` exists but is NOT used. The soccer player body composite feature was cancelled. Oval face photos are used directly without body template.
-- **Google OAuth consent screen** — Shows "המשך אל ntpowzcvjkgtdbasjqjq.supabase.co" because the OAuth callback redirects through Supabase. Only fixable with Supabase Custom Domain (Pro plan, $25/month). Not a code issue.
+1. **Zero-friction draft**: 3 captains join via WhatsApp link, pick players live on their phones
+2. **Snake draft fairness**: Randomized order + snake pattern = balanced teams
+3. **WhatsApp-native sharing**: Results shared as formatted text + link
+4. **Game night mode**: Timer, live scoring, winner-stays rotation, goal tracking
+5. **Club management**: Persistent player pool, invite members, permissions
+6. **PWA**: Install on home screen, works offline-ish, push-ready
+7. **Sound & TTS**: Crowd effects + voice announcements during draft
+8. **Selfie avatars**: Camera capture with oval face crop for player identity
 
----
-
-## Key Hooks
-
-- `useAuth()` — Supabase auth state (user, session, signIn, signOut, signInWithGoogle). `signUp` accepts optional `redirectTo` param for custom email confirmation redirect URLs.
-- `useClubContext()` — Single source of truth for owner/member state. Returns `{ currentClub, isOwner, isMember, permissions, playerId, playerName, playerPhoto }`
-
----
-
-## Security
-
-- **Open redirect prevention**: `src/lib/safeRedirect.ts` validates all redirect paths. Used in `App.tsx`, `Auth.tsx`, `AcceptInvite.tsx`.
-- **Invite tokens**: UUID format only, validated in RPCs. Expire after 48 hours. `peek_invite` is read-only and returns only player_name + club_name (no IDs, no emails).
-- **No secrets in git**: `.env.local` is in `.gitignore`.
-- **All redirect targets** go through `getSafeRedirectPath()` before navigation.
-- **SECURITY DEFINER RPCs** for anonymous access: `peek_invite` (read-only, anon), `create_quick_draft` (write, anon). Both have `SET search_path TO 'public'` to prevent schema injection.
-
----
-
-## Planned: International LTR Fork
-
-User wants to keep Hebrew kohot.online separate and create a new LTR-only international version:
-- Languages: English, Spanish, French, German, Italian, Dutch
-- Approach: Fork codebase, strip RTL/Hebrew, add react-i18next
-- **Not yet started** — waiting for user to initiate
-
----
-
-## Other docs in this repo
-
-There is a file at `docs/legacy-handover.md` describing the original Lovable implementation and its Supabase schema.
-
-Use it **only** to understand the current code and tables.
-For all new work (flows, DB design, behavior), follow **this `CLAUDE.md`**, even if it contradicts the legacy handover.
+The Hebrew version is live and working. The goal is to replicate the exact same experience in English and other languages, not to redesign or add features.
