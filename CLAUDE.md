@@ -273,21 +273,16 @@ Create translation files for: `es`, `fr`, `de`, `it`, `nl`
 
 ---
 
-## Supabase Setup (New Project)
+## Supabase Setup (Shared with kohot.online)
 
-Create a **separate Supabase project** for this app. Do NOT share with kohot.online.
+This app shares the **same Supabase project** as kohot.online during development. Same database, same RPCs, same auth, same storage. The `.env.local` is already configured.
 
-1. Create project at [supabase.com](https://supabase.com)
-2. Run all migrations from `supabase/migrations/` in order on the SQL Editor
-3. Enable Google OAuth in Auth → Providers
-4. Create `player-photos` storage bucket (public read, authenticated write)
-5. Set env vars in `.env.local`:
-```
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
+- **Project**: `ntpowzcvjkgtdbasjqjq`
+- **Dashboard**: https://supabase.com/dashboard/project/ntpowzcvjkgtdbasjqjq
+- **Client**: `src/integrations/supabase/client.ts`
+- **Migrations**: Already applied on this project (from kohot.online development)
 
-The Supabase client is in `src/integrations/supabase/client.ts`.
+When ready to launch for real users, create a separate Supabase project and run all migrations from `supabase/migrations/` in order.
 
 ---
 
