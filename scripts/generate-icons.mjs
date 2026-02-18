@@ -8,16 +8,16 @@ const outDir = join(__dirname, "..", "public", "icons");
 
 await mkdir(outDir, { recursive: true });
 
-// Standard icon SVG — "כ" centered on emerald circle
+// Standard icon SVG — "DP" initials on emerald circle
 const standardSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <circle cx="256" cy="256" r="256" fill="#10b981"/>
-  <text x="256" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="280" font-weight="bold" fill="white">כ</text>
+  <text x="256" y="310" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="220" font-weight="800" fill="white" letter-spacing="-10">DP</text>
 </svg>`;
 
-// Maskable icon SVG — 20% safe-zone padding (smaller "כ", full background)
+// Maskable icon SVG — 20% safe-zone padding (smaller text, full background)
 const maskableSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#10b981"/>
-  <text x="256" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="220" font-weight="bold" fill="white">כ</text>
+  <text x="256" y="315" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="180" font-weight="800" fill="white" letter-spacing="-8">DP</text>
 </svg>`;
 
 const sizes = [

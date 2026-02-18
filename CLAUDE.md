@@ -2,19 +2,47 @@
 
 ## What This Is
 
-This is the **international LTR version** of [kohot.online](https://kohot.online), a Hebrew RTL soccer draft app. This codebase was copied from the Hebrew version and needs to be transformed into a **multi-language, LTR-first** app for global audiences.
+An **international, English-first** soccer/football draft app for pickup groups. Forked from [kohot.online](https://kohot.online) (Hebrew RTL version) and fully transformed to LTR with i18n support.
 
-**Product name**: Draft Pick (working title — can be changed)
+**Product name**: Draft Pick (working title — see `docs/research/01-naming.md`)
 **Target languages**: English (default), Spanish, French, German, Italian, Dutch
 **Direction**: LTR only (no RTL languages in v1)
 
 ---
 
+## Current State (as of Feb 2026)
+
+The app is **functional in English** and nearly launch-ready.
+
+**Completed:**
+- Full i18n system (react-i18next, namespace-per-page, language picker)
+- All pages translated to English
+- All RTL removed, LTR-first
+- TTS reads language dynamically from `localStorage` key `draftpick_lang`
+- Multi-team support (2-3 teams, expandable to 4-5)
+- PWA icons replaced (Hebrew → "DP" initials)
+- 24 tests passing, production build clean
+
+**Not yet done:**
+- OG image (needs design, not code generation)
+- Logo component still uses emoji placeholder (⚽ in `src/components/ui/logo.tsx`)
+- English legal pages (Privacy.tsx, Terms.tsx still have Hebrew text)
+- Production domain not set up
+- Brand identity decisions open (name, colors, logo, typography, visual language)
+- Translations for ES, FR, DE, IT, NL
+
+**Docs:**
+- `docs/ROADMAP.md` — product roadmap with launch checklist and 5 phases
+- `docs/BRAND-GUIDE.md` — current visual state + brand direction
+- `docs/research/01-06` — self-contained research prompts for each brand decision
+
+---
+
 ## Reference: What This App Does
 
-The core loop (keep this identical to the Hebrew version):
+The core loop:
 
-> Owner signs up → creates a club → adds player roster → on game day selects tonight's players → picks 3 captains → runs a live snake draft → shares final teams via WhatsApp → optionally runs a game night with timer, goals, and standings.
+> Owner signs up → creates a club → adds player roster → on game day selects tonight's players → picks 2-3 captains → runs a live snake draft → shares final teams via WhatsApp → optionally runs a game night with timer, goals, and standings.
 
 ### Routes & Pages
 
@@ -26,7 +54,7 @@ The core loop (keep this identical to the Hebrew version):
 | `/players` | Players | Manage player pool — add, edit, invite, permissions |
 | `/create-draft` | CreateDraft | Multi-step: name → select players → pick captains → confirm |
 | `/join/:roomCode` | JoinDraft | Captains claim identity before draft |
-| `/room/:roomCode` | WaitingRoom | Raffle animation, wait for 3 captains |
+| `/room/:roomCode` | WaitingRoom | Raffle animation, wait for captains |
 | `/draft/:roomCode` | DraftBoard | Live snake draft — pick players in turn |
 | `/results/:roomCode` | Results | Final teams — share via WhatsApp, start game night |
 | `/night/:nightId` | GameNight | Live game tracking — timer, goals, rotation |
@@ -66,6 +94,7 @@ The core loop (keep this identical to the Hebrew version):
 | Framework | React 18 + TypeScript |
 | Build | Vite 5 |
 | Styling | Tailwind CSS + shadcn/ui components |
+| i18n | react-i18next + i18next-browser-languagedetector |
 | Auth | Supabase Auth (email/password + Google OAuth) |
 | Database | Supabase (Postgres) |
 | Realtime | Supabase Realtime (presence + postgres_changes) |
@@ -77,210 +106,69 @@ The core loop (keep this identical to the Hebrew version):
 
 ---
 
-## The Transformation: Hebrew → International
+## i18n System
 
-### Current State
-
-The codebase is a **working Hebrew RTL app**. Every page, component, hook, and utility has hardcoded Hebrew strings and `dir="rtl"` attributes. There are **~44 source files** with Hebrew text and **61 `dir="rtl"` usages**.
-
-### What Must Change
-
-#### 1. i18n System — `react-i18next`
-
-Set up `react-i18next` with:
-- **Namespace-per-page** structure for lazy loading
-- **English as default/fallback** language
-- Browser language detection on first visit
-- Language stored in `localStorage` (key: `draftpick_lang`)
-- Language picker in app header/settings
+Fully set up with `react-i18next`. All pages use `t()` for translations.
 
 **Directory structure:**
 ```
-src/
-  i18n/
-    index.ts              ← i18next init config
-    locales/
-      en/
-        common.json       ← shared: nav, buttons, errors, toasts
-        landing.json      ← Landing page copy
-        auth.json         ← Auth page copy
-        dashboard.json    ← Dashboard page copy
-        players.json      ← Players page copy
-        draft.json        ← CreateDraft, WaitingRoom, DraftBoard
-        results.json      ← Results, sharing templates
-        gamenight.json    ← GameNight, NightResults
-        legal.json        ← Privacy, Terms
-      es/
-        common.json
-        landing.json
-        ... (same structure)
-      fr/
-      de/
-      it/
-      nl/
+src/i18n/
+  index.ts              ← i18next init config
+  locales/
+    en/
+      common.json       ← shared: nav, buttons, errors, toasts
+      landing.json      ← Landing page
+      auth.json         ← Auth page
+      dashboard.json    ← Dashboard page
+      players.json      ← Players page
+      draft.json        ← CreateDraft, WaitingRoom, DraftBoard
+      results.json      ← Results, sharing templates
+      gamenight.json    ← GameNight, NightResults
 ```
 
-**Translation key convention:**
-```json
-{
-  "landing.hero.title": "Fair Teams in One Click",
-  "landing.hero.subtitle": "Pick 3 captains. Run a live snake draft. Share teams on WhatsApp.",
-  "draft.turn.yourTurn": "Your turn to pick",
-  "draft.turn.captainPicking": "{{captain}} is picking...",
-  "common.buttons.confirm": "Confirm",
-  "common.buttons.cancel": "Cancel"
-}
-```
-
-#### 2. Remove All RTL
-
-- `index.html`: Change `<html lang="he" dir="rtl">` → `<html lang="en" dir="ltr">`
-- Remove every `dir="rtl"` from JSX (61 occurrences across all pages/components)
-- Remove Heebo font from `tailwind.config.ts` — use system font stack or Inter/Poppins
-- Check all `ml-*` / `mr-*` / `pl-*` / `pr-*` / `text-right` / `text-left` classes — some were intentionally flipped for RTL and need to be un-flipped
-- Check Framer Motion animations — any `x: -100` slide-ins may need direction reversal
-
-#### 3. TTS Language
-
-`src/lib/sounds.ts` has:
-```typescript
-utterance.lang = "he-IL";  // ← Must become dynamic
-```
-
-Change `speak()` to accept a language parameter or read from i18n:
-```typescript
-export function speak(text: string, lang?: string): void {
-  // ...
-  utterance.lang = lang || i18next.language || "en";
-  const voice = voices.find(v => v.lang.startsWith(utterance.lang));
-  // ...
-}
-```
-
-TTS is used in:
-- **WaitingRoom**: Raffle announcements
-- **DraftBoard**: Turn notifications, pick announcements, draft complete
-- **GameNight**: Timer warnings
-
-All TTS text strings must come from i18n translation files, not hardcoded.
-
-#### 4. WhatsApp Share Templates
-
-Currently hardcoded Hebrew in:
-- `Results.tsx` — `shareViaWhatsApp()` function
-- `WaitingRoom.tsx` — captain invite message
-- `Players.tsx` — player invite message
-- `ClubSettings.tsx` — default invite/results templates
-
-All must use `t()` translation keys. The `ClubSettings` default templates should be language-aware.
-
-#### 5. Draft Utility Labels
-
-`src/lib/draftUtils.ts` has:
-```typescript
-getCaptainLabel(1) → "קפטן 1"  // ← Must be "Captain 1" (from i18n)
-```
-
-#### 6. Meta Tags & PWA
-
-`index.html` needs:
-- English title, description, OG tags
-- New OG image (English)
-- New PWA manifest name
-- New favicon/icons (if rebranding)
-
-#### 7. Legal Pages
-
-`Privacy.tsx` and `Terms.tsx` have full Hebrew legal text. Need English versions. Other languages can be added later or auto-translated.
+- Language stored in `localStorage` key: `draftpick_lang`
+- Language picker in app header (`LanguagePicker` component)
+- TTS in `src/lib/sounds.ts` reads language dynamically from localStorage
+- `<html lang="">` attribute updated on language change
 
 ---
 
-## Implementation Phases
+## Multi-Team Architecture
 
-### Phase 1: i18n Infrastructure (do this first)
+The app supports **2-3 teams** (expandable to 4-5). This is a recent addition built on top of the original 3-captain-only system.
 
-1. `npm install react-i18next i18next i18next-browser-languagedetector`
-2. Create `src/i18n/index.ts` with i18next config
-3. Create `src/i18n/locales/en/common.json` with shared strings
-4. Wrap app in `I18nextProvider` in `main.tsx`
-5. Convert ONE page (Landing) to use `t()` as proof of concept
-6. Verify build passes
+### Database Schema
 
-### Phase 2: Strip Hebrew from All Pages
+- `draft_rooms.num_teams` — integer, defaults to 3
+- `draft_rooms.captains` — JSONB array of player UUIDs (`["uuid1", "uuid2", ...]`)
+- Legacy columns preserved: `captain1_player_id`, `captain2_player_id`, `captain3_player_id`
 
-Go page by page, extracting every Hebrew string into translation keys:
+### Captain Resolution: `src/lib/captainHelpers.ts`
 
-**Priority order** (most user-facing first):
-1. `Landing.tsx` — marketing copy, CTA buttons
-2. `Auth.tsx` — form labels, errors, buttons
-3. `Dashboard.tsx` — headers, cards, onboarding walkthrough, selfie editor
-4. `Players.tsx` — player management, invite generation
-5. `CreateDraft.tsx` — multi-step form, validation messages
-6. `WaitingRoom.tsx` — captain status, raffle, TTS
-7. `DraftBoard.tsx` — turn banners, pick confirmation, TTS
-8. `Results.tsx` — team display, sharing, game night button
-9. `GameNight.tsx` — timer, scoring, matchup display
-10. `NightResults.tsx` — standings, top scorers
-11. `JoinDraft.tsx` — identity claiming
-12. `AcceptInvite.tsx` — invite acceptance
-13. `QuickDraft.tsx` — anonymous draft setup
-14. `NotFound.tsx` — 404 page
-15. `Privacy.tsx` + `Terms.tsx` — legal
+All captain logic flows through this single module:
 
-Also extract from components:
-- `ClubSettings.tsx` — settings form, WhatsApp templates
-- `ErrorBoundary.tsx` — error messages
-- `InstallPromptBanner.tsx` — PWA install prompts
-- `SelfieAvatarEditor.tsx` — photo editor labels
-- `CaptainWheel.tsx` — raffle animation
-- `PalmRaffleGame.tsx` — raffle game
-- Draft components: `ConfirmPickModal`, `PickAnnouncement`, `TeamColumn`, `TurnBanner`
+| Function | Purpose |
+|---|---|
+| `getNumTeams(room)` | Returns `num_teams` or 3 for legacy rooms |
+| `getCaptainPlayerId(room, n)` | Gets captain N's player ID (JSONB first, legacy fallback) |
+| `resolveCaptainNumber(room, playerId)` | Which captain number is this player? |
+| `getAllCaptains(room)` | Array of all `{ captainNumber, playerId }` |
 
-And from libs:
-- `sounds.ts` — TTS text
-- `draftUtils.ts` — captain labels
-- `photoUpload.ts` — error messages
+**Every page uses these helpers** instead of hardcoding captain1/2/3. Pages updated: CreateDraft, WaitingRoom, DraftBoard, Results, GameNight, NightResults, JoinDraft, QuickDraft.
 
-### Phase 3: Remove RTL
+### Database Migration
 
-1. Change `index.html` root to `lang="en" dir="ltr"`
-2. Remove all `dir="rtl"` from JSX
-3. Replace Heebo font with a Latin font (Inter or system stack)
-4. Audit Tailwind classes: fix any margin/padding that was intentionally swapped
-5. Test every page visually — buttons, text alignment, animations
-
-### Phase 4: Add Language Picker
-
-1. Language selector component (dropdown or flag icons) in app header
-2. Store preference in `localStorage`
-3. Update `<html lang="">` when language changes
-4. Sound system reads language for TTS
-
-### Phase 5: Translate to Other Languages
-
-Create translation files for: `es`, `fr`, `de`, `it`, `nl`
-- Start with machine translation (DeepL/GPT) for speed
-- Mark as "needs review" — have native speakers refine later
-- Legal pages can stay English-only initially
-
-### Phase 6: Branding & Polish
-
-1. New app name, logo, color scheme (or keep emerald green)
-2. New OG image for social sharing
-3. New PWA icons and manifest
-4. New domain setup
-5. Deploy pipeline
+`supabase/migrations/20260219_multi_team_support.sql` — comprehensive migration that updates schema + all RPCs (`pick_player_atomic`, `start_draft_if_ready`, `create_quick_draft`, `start_game`, `get_game_night_summary`).
 
 ---
 
-## Supabase Setup (Shared with kohot.online)
+## Supabase Setup
 
-This app shares the **same Supabase project** as kohot.online during development. Same database, same RPCs, same auth, same storage. The `.env.local` is already configured.
+Currently shares the **same Supabase project** as kohot.online during development.
 
 - **Project**: `ntpowzcvjkgtdbasjqjq`
 - **Dashboard**: https://supabase.com/dashboard/project/ntpowzcvjkgtdbasjqjq
 - **Client**: `src/integrations/supabase/client.ts`
-- **Migrations**: Already applied on this project (from kohot.online development)
 
 When ready to launch for real users, create a separate Supabase project and run all migrations from `supabase/migrations/` in order.
 
@@ -288,7 +176,7 @@ When ready to launch for real users, create a separate Supabase project and run 
 
 ## Architecture & Known Gotchas
 
-These carry over from the Hebrew version — **do not change** these patterns:
+**Do not change** these patterns:
 
 - **HashRouter + PKCE flow** — The app uses `HashRouter` for static hosting. All routes are `/#/path`. Supabase Auth uses `flowType: 'pkce'` because implicit flow puts `#access_token=` in the URL hash, which overwrites the HashRouter route. **Never switch to implicit flow.**
 
@@ -302,7 +190,7 @@ These carry over from the Hebrew version — **do not change** these patterns:
 
 - **Secure session IDs** — `getSecureSessionId()` generates browser session IDs for captain identity claiming (separate from Supabase auth).
 
-- **Sound system** — `src/lib/sounds.ts` plays sound effects and browser TTS. Sound files in `public/sounds/`. Mute toggle persisted in `sessionStorage`.
+- **Sound system** — `src/lib/sounds.ts` plays sound effects and browser TTS. Sound files in `public/sounds/`. Mute toggle persisted in `sessionStorage`. TTS language reads from `localStorage` key `draftpick_lang`.
 
 - **Selfie Avatar Editor** — Camera/gallery capture with oval face crop guide. Outputs PNG with transparent corners.
 
@@ -310,11 +198,11 @@ These carry over from the Hebrew version — **do not change** these patterns:
 
 - **Photo upload** — `compressPhoto()` (500KB, 400px, WebP) + `uploadPlayerPhoto()` to Supabase storage.
 
+- **Captain helpers** — All captain resolution goes through `src/lib/captainHelpers.ts`. Never hardcode captain1/2/3 logic in pages.
+
 ---
 
 ## Key Supabase RPCs
-
-These RPCs exist in the migrations and are called from the frontend:
 
 | RPC | Used By | Purpose |
 |---|---|---|
@@ -324,20 +212,20 @@ These RPCs exist in the migrations and are called from the frontend:
 | `get_my_linked_clubs` | useClubContext | Get clubs user belongs to |
 | `get_room_players_public` | Multiple pages | Get players for a draft (public) |
 | `get_draft_state` | DraftBoard | Get current draft turn |
-| `pick_player_atomic` | DraftBoard | Atomic player pick |
+| `pick_player_atomic` | DraftBoard | Atomic player pick (N-team aware) |
 | `claim_player_identity` | JoinDraft | Claim captain identity |
 | `auto_identify_player` | JoinDraft | Auto-identify linked user |
-| `start_draft_if_ready` | WaitingRoom | Start draft when ready |
+| `start_draft_if_ready` | WaitingRoom | Start draft when all captains ready (N-team aware) |
 | `peek_invite` | AcceptInvite | Preview invite (anon, read-only) |
 | `accept_player_invite` | AcceptInvite | Accept invite + link user |
 | `generate_player_invite` | Players | Create 48h invite token |
-| `create_quick_draft` | QuickDraft | Anonymous draft (SECURITY DEFINER) |
+| `create_quick_draft` | QuickDraft | Anonymous draft (SECURITY DEFINER, N-team aware) |
 | `start_game_night` | Results | Create game night from draft |
-| `start_game` | GameNight | Start a game in night |
+| `start_game` | GameNight | Start a game (N-team aware) |
 | `record_goal` | GameNight | Record goal |
 | `end_game` | GameNight | End game, calc winner |
 | `end_game_night` | GameNight | End entire night |
-| `get_game_night_summary` | GameNight, NightResults | Full night data |
+| `get_game_night_summary` | GameNight, NightResults | Full night data (N-team aware) |
 | `update_club_settings` | ClubSettings | Update club config |
 | `update_player_category` | Players | Set player type |
 | `update_player_permissions` | Players | Grant permissions |
@@ -374,18 +262,16 @@ These RPCs exist in the migrations and are called from the frontend:
 
 **Before every commit, run:**
 ```bash
-npm test        # Vitest — all tests must pass
+npm test        # Vitest — all tests must pass (24 tests currently)
 npm run build   # Vite production build — catches TypeScript errors
 ```
 
-**Existing test files** (update Hebrew assertions as you translate):
+**Test files:**
 - `src/test/pages.test.tsx` — smoke tests for Landing, Auth, AcceptInvite, QuickDraft
 - `src/test/invite-flow.test.tsx` — OAuth redirect logic, invite token handling
 - `src/test/security.test.ts` — open redirect prevention, token validation
 - `src/test/setup.tsx` — mocks for Supabase, framer-motion, matchMedia
 - `src/test/test-utils.tsx` — `renderWithProviders()` helper
-
-When translating pages, update test assertions to match new English text.
 
 ---
 
@@ -409,28 +295,26 @@ These patterns must be preserved:
 
 ---
 
-## Files That Can Be Deleted
+## PWA Icons
 
-These are Hebrew-specific or cancelled features:
-- `docs/legacy-handover.md` — old Lovable handover doc
-- `docs/COPYWRITING-GUIDE.md` — Hebrew copywriting guide
-- `docs/PROJECT-STATUS.md` — Hebrew project status
-- Any `.png` screenshots in root
-- Old Hebrew-specific docs
+Generated via `scripts/generate-icons.mjs` using the `sharp` library. Currently shows "DP" initials on emerald circle. To regenerate after brand changes:
+
+```bash
+node scripts/generate-icons.mjs
+```
+
+Outputs: `favicon.ico`, `logo.png`, and all icons in `public/icons/`.
 
 ---
 
 ## Summary: What Makes This App Special
 
-Focus on preserving these differentiators during translation:
-
-1. **Zero-friction draft**: 3 captains join via WhatsApp link, pick players live on their phones
+1. **Zero-friction draft**: 2-3 captains join via WhatsApp link, pick players live on their phones
 2. **Snake draft fairness**: Randomized order + snake pattern = balanced teams
-3. **WhatsApp-native sharing**: Results shared as formatted text + link
-4. **Game night mode**: Timer, live scoring, winner-stays rotation, goal tracking
-5. **Club management**: Persistent player pool, invite members, permissions
-6. **PWA**: Install on home screen, works offline-ish, push-ready
-7. **Sound & TTS**: Crowd effects + voice announcements during draft
-8. **Selfie avatars**: Camera capture with oval face crop for player identity
-
-The Hebrew version is live and working. The goal is to replicate the exact same experience in English and other languages, not to redesign or add features.
+3. **Flexible team count**: 2-3 teams supported (expandable to 4-5)
+4. **WhatsApp-native sharing**: Results shared as formatted text + link
+5. **Game night mode**: Timer, live scoring, winner-stays rotation, goal tracking
+6. **Club management**: Persistent player pool, invite members, permissions
+7. **PWA**: Install on home screen, works offline-ish, push-ready
+8. **Sound & TTS**: Crowd effects + voice announcements during draft (language-aware)
+9. **Selfie avatars**: Camera capture with oval face crop for player identity
