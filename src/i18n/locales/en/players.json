@@ -1,6 +1,6 @@
 {
   "header": {
-    "title": "Players",
+    "title": "Squad",
     "back": "Back"
   },
   "search": {
@@ -8,20 +8,20 @@
     "noResults": "No players found"
   },
   "empty": {
-    "ownerTitle": "Add your players",
-    "ownerDescription": "These are the players who usually play with you.\nFor each game you'll select who's coming and draft teams.",
+    "ownerTitle": "Build your squad",
+    "ownerDescription": "These are the players who usually play with you.\nFor each match you'll select who's playing and draft teams.",
     "memberTitle": "No players yet",
-    "memberDescription": "The admin hasn't added players to the club yet."
+    "memberDescription": "The organizer hasn't added players to the club yet."
   },
   "categories": {
     "requested": "Requested invite",
     "regular": "Regulars",
-    "occasional": "Occasional"
+    "occasional": "Drop-ins"
   },
   "playerType": {
     "label": "Player type",
     "regular": "Regular",
-    "occasional": "Occasional"
+    "occasional": "Drop-in"
   },
   "status": {
     "requestedInvite": "Requested invite",
@@ -68,7 +68,7 @@
   },
   "toast": {
     "playerAdded": "Player added!",
-    "playerAddedDescription": "{{name}} added to library",
+    "playerAddedDescription": "{{name}} added to squad",
     "playerUpdated": "Player updated",
     "photoUpdated": "Photo updated",
     "loadError": "Couldn't load players",

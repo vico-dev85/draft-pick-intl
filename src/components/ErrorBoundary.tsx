@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react";
+import i18next from "i18next";
 
 interface Props {
   children: ReactNode;
@@ -57,7 +58,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 marginBottom: "8px",
               }}
             >
-              Something went wrong
+              {i18next.t("common:errors.somethingWentWrong", "Something went wrong")}
             </h1>
             <p
               style={{
@@ -67,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 lineHeight: "1.5",
               }}
             >
-              An unexpected error occurred. Click to refresh.
+              {i18next.t("common:errors.unexpectedError", "An unexpected error occurred. Click to refresh.")}
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -83,7 +84,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 width: "100%",
               }}
             >
-              Refresh Page
+              {i18next.t("common:errors.refreshPage", "Refresh Page")}
             </button>
           </div>
         </div>

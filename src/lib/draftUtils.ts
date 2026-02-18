@@ -1,3 +1,5 @@
+import i18next from "i18next";
+
 // Generate a random 4-character room code
 export function generateRoomCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -89,18 +91,12 @@ export function getCaptainBorderColor(captainNumber: number): string {
   }
 }
 
-// Get captain label
+// Get captain label — uses i18n when available, falls back to English
 export function getCaptainLabel(captainNumber: number): string {
-  switch (captainNumber) {
-    case 1:
-      return "Captain 1";
-    case 2:
-      return "Captain 2";
-    case 3:
-      return "Captain 3";
-    default:
-      return "Captain";
+  if (i18next.isInitialized) {
+    return i18next.t("draft:captain", { number: captainNumber, defaultValue: `Captain ${captainNumber}` });
   }
+  return `Captain ${captainNumber}`;
 }
 
 // Re-export session management from secure session manager

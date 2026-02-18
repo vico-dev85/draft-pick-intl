@@ -9,15 +9,15 @@
     "title": "Draft Results: {{name}}",
     "teamHeader": "{{captain}}:",
     "viewResults": "View results:",
-    "fairTeams": "Fair teams in one click — Draft Pick",
+    "fairTeams": "Fair teams. No arguments. — Draft Pick",
     "copy": "Copy"
   },
   "gameNight": {
-    "start": "Start Game Night",
-    "continue": "Continue Game Night",
-    "viewSummary": "View Night Summary",
+    "start": "Start Football Night",
+    "continue": "Continue Football Night",
+    "viewSummary": "View Football Night Summary",
     "errorTitle": "Error",
-    "errorDescription": "Could not start game night"
+    "errorDescription": "Could not start football night"
   },
   "reactions": {
     "loved": "Loved it",
@@ -42,7 +42,7 @@
   },
   "requestSent": {
     "title": "Request sent!",
-    "subtitle": "The admin will receive a notification and send you an invite"
+    "subtitle": "The organizer will receive a notification and send you an invite"
   },
   "visitor": {
     "title": "Were you in this draft?",
@@ -51,7 +51,7 @@
   },
   "growth": {
     "title": "Have your own team?",
-    "subtitle": "Manage drafts and game nights — totally free",
+    "subtitle": "Manage drafts and football nights — totally free",
     "cta": "Get Started"
   },
   "footer": {

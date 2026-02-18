@@ -11,11 +11,11 @@
     },
     "nameStep": {
       "label": "Draft Name",
-      "placeholder": "e.g. Tuesday Night Football",
+      "placeholder": "e.g. Thursday 5-a-Side",
       "hint": "Give this draft a name and details",
       "addDetails": "Add more details",
       "location": "Location",
-      "locationPlaceholder": "e.g. The soccer field near the mall",
+      "locationPlaceholder": "e.g. 23 Park Lane, Pitch 2",
       "notes": "Notes",
       "notesPlaceholder": "e.g. Bring black and yellow shirts"
     },
@@ -28,7 +28,7 @@
       "required": "{{min}}-{{max}} required",
       "minimum": "Select at least 6 players",
       "regular": "Regulars",
-      "occasional": "Occasional"
+      "occasional": "Drop-ins"
     },
     "captainsStep": {
       "title": "Pick 3 Captains",
@@ -44,7 +44,7 @@
       "players": "Players",
       "captains": "Captains",
       "startDraft": "Start Draft",
-      "shareCode": "Share this code with captains"
+      "shareCode": "Share this game code with captains"
     },
     "guest": {
       "addGuest": "Add Guest",
@@ -59,18 +59,18 @@
     },
     "errors": {
       "noPlayers": "No players yet",
-      "noPlayersDescription": "Add players to your library or add guests for this draft",
-      "addToLibrary": "Add to Library",
+      "noPlayersDescription": "Add players to your squad or add guests for this draft",
+      "addToLibrary": "Add to Squad",
       "createError": "Error",
       "createFailed": "Could not create the draft",
       "noAccess": "No access to player list",
-      "noAccessDescription": "The club link may have expired or the join was not completed. Ask the admin to send a new invite.",
+      "noAccessDescription": "The club link may have expired or the join was not completed. Ask the organizer for a new invite.",
       "retry": "Try Again",
       "backToDashboard": "Back to Dashboard"
     },
     "toast": {
       "created": "Draft created!",
-      "roomCode": "Room code: {{code}}",
+      "roomCode": "Game code: {{code}}",
       "copied": "Code copied!"
     }
   },
@@ -80,7 +80,7 @@
     "roomNotFound": "Room not found",
     "code": "Code",
     "codeCopied": "Code copied!",
-    "roomCode": "Room Code",
+    "roomCode": "Game Code",
     "copyCode": "Copy",
     "shareWhatsApp": "Share on WhatsApp",
     "captainsStatus": "Captains Status",
@@ -91,15 +91,15 @@
     "startDraft": "Start Draft",
     "waitingForCaptains": "Waiting for captains... ({{connected}}/3)",
     "playersLabel": "Players",
-    "shareToJoin": "Share the room code so captains can join",
+    "shareToJoin": "Share the game code so captains can join",
     "startingDraft": "Starting draft...",
     "enableSounds": "Enable sounds",
     "muteSounds": "Mute sounds",
-    "shareMessage": "Join our draft \"{{name}}\"!\n\nRoom code: {{code}}\n\nClick to join:\n{{url}}",
+    "shareMessage": "Join our draft \"{{name}}\"!\n\nGame code: {{code}}\n\nClick to join:\n{{url}}",
     "raffle": {
       "title": "Drawing draft order...",
       "result": "Draft Order Set!",
-      "snakeDescription": "Snake draft — order reverses each round",
+      "snakeDescription": "Balanced pick order — reverses each round",
       "first": "1st Pick!",
       "second": "2nd Pick",
       "third": "3rd Pick",
@@ -114,12 +114,12 @@
   "join": {
     "title": "Join Draft",
     "back": "Back",
-    "roomCode": "Room Code",
+    "roomCode": "Game Code",
     "subtitle": "Select your identity",
     "selectIdentity": "Select your name",
     "joining": "Joining...",
     "error": "Error",
-    "checkCode": "Check the room code",
+    "checkCode": "Check the game code",
     "loadError": "Could not load the room",
     "sessionError": "Session ID not loaded, try refreshing the page",
     "cannotSelect": "Cannot select",
@@ -191,7 +191,7 @@
     "continue": "Continue",
     "nameDraft": "Name your draft",
     "draftNameLabel": "Draft Name",
-    "draftNamePlaceholder": "e.g. Friday Night Football",
+    "draftNamePlaceholder": "e.g. Friday 5-a-Side",
     "addPlayersTitle": "Add Players",
     "playersAdded": "{{count}} players added ({{min}}-{{max}} required)",
     "playerPlaceholder": "Player name",
@@ -209,7 +209,7 @@
     "playerNames": "Player Names",
     "toast": {
       "created": "Draft created!",
-      "roomCode": "Room code: {{code}}",
+      "roomCode": "Game code: {{code}}",
       "error": "Error",
       "errorDescription": "Could not create the draft"
     }

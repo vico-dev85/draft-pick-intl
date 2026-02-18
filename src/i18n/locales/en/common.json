@@ -56,7 +56,7 @@
   },
   "app": {
     "name": "Draft Pick",
-    "tagline": "Fair teams in one click"
+    "tagline": "Fair teams. No arguments."
   },
   "selfieEditor": {
     "pickTitle": "Take a Profile Photo",
@@ -68,7 +68,7 @@
   },
   "installPrompt": {
     "resultsTitle": "Install for quick access",
-    "resultsDescription": "Next game — draft teams in one click from your home screen",
+    "resultsDescription": "Next match — draft teams in one tap from your home screen",
     "dashboardText": "Install for quick access from home screen",
     "addToHomeScreen": "Add to Home Screen",
     "installApp": "Install Draft Pick",

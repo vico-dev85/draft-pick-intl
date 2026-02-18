@@ -35,10 +35,11 @@ export function useAnnouncementQueue() {
       const delay = item.ttsDelay ?? 500;
       setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(item.ttsText!);
-        utterance.lang = "en";
+        const lang = localStorage.getItem("draftpick_lang") || "en";
+        utterance.lang = lang;
         const voices = window.speechSynthesis.getVoices();
-        const englishVoice = voices.find((v) => v.lang.startsWith("en"));
-        if (englishVoice) utterance.voice = englishVoice;
+        const matchedVoice = voices.find((v) => v.lang.startsWith(lang));
+        if (matchedVoice) utterance.voice = matchedVoice;
         utterance.onend = () => setTimeout(processNext, 300);
         utterance.onerror = () => setTimeout(processNext, 300);
         window.speechSynthesis.cancel();
@@ -53,10 +54,11 @@ export function useAnnouncementQueue() {
       setTimeout(processNext, 1000);
     } else if (item.ttsText) {
       const utterance = new SpeechSynthesisUtterance(item.ttsText);
-      utterance.lang = "en";
+      const lang = localStorage.getItem("draftpick_lang") || "en";
+      utterance.lang = lang;
       const voices = window.speechSynthesis.getVoices();
-      const englishVoice = voices.find((v) => v.lang.startsWith("en"));
-      if (englishVoice) utterance.voice = englishVoice;
+      const matchedVoice = voices.find((v) => v.lang.startsWith(lang));
+      if (matchedVoice) utterance.voice = matchedVoice;
       utterance.onend = () => setTimeout(processNext, 300);
       utterance.onerror = () => setTimeout(processNext, 300);
       window.speechSynthesis.cancel();

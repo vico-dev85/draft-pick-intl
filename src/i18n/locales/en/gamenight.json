@@ -1,27 +1,27 @@
 {
-  "title": "Game Night",
+  "title": "Football Night",
   "timer": {
-    "title": "Game Timer",
-    "start": "Start Game",
+    "title": "Match Timer",
+    "start": "Start Match",
     "pause": "Pause",
     "resume": "Resume",
-    "endGame": "End Game",
+    "endGame": "End Match",
     "minutes": "min",
     "seconds": "sec",
     "halfTime": "Half Time!",
     "timeUp": "Time's Up!",
     "warningOneMinute": "One minute remaining",
     "warningThirtySeconds": "Thirty seconds",
-    "setDuration": "Game Duration",
+    "setDuration": "Match Duration",
     "minutesLabel": "minutes"
   },
   "match": {
     "vs": "vs",
     "score": "Score",
-    "currentGame": "Current Game",
-    "nextGame": "Next Game",
+    "currentGame": "Current Match",
+    "nextGame": "Next Match",
     "waiting": "Waiting to start...",
-    "winnerStays": "Winner stays on"
+    "winnerStays": "Winner stays on!"
   },
   "goals": {
     "title": "Goals",
@@ -47,26 +47,26 @@
     "points": "Pts"
   },
   "end": {
-    "endNight": "End Game Night",
-    "confirmEnd": "End game night?",
+    "endNight": "End Football Night",
+    "confirmEnd": "End football night?",
     "confirmDescription": "This will finalize all results",
     "confirm": "End Night",
     "yesEnd": "Yes, end night",
     "yesEndGame": "Yes, end",
     "cancel": "Cancel",
-    "endGame": "End Game",
+    "endGame": "End Match",
     "errorTitle": "Error"
   },
   "preGame": {
-    "gameNumber": "Game {{number}}",
+    "gameNumber": "Match {{number}}",
     "home": "Home",
     "away": "Away",
     "resting": "Resting",
     "autoRotation": "Press start — teams are auto-selected by rotation",
-    "startGame": "Start Game"
+    "startGame": "Start Match"
   },
   "activeGame": {
-    "gameNumber": "Game #{{number}}",
+    "gameNumber": "Match #{{number}}",
     "extraTime": "Extra Time",
     "goalButton": "+Goal {{team}}"
   },
@@ -75,13 +75,13 @@
     "teamWon": "{{team}} won"
   },
   "gameOver": {
-    "title": "Game #{{number}} ended",
+    "title": "Match #{{number}} ended",
     "winner": "{{team}} won!",
-    "nextGame": "Next Game"
+    "nextGame": "Next Match"
   },
   "summary": {
-    "title": "Night Summary",
-    "games": "Games",
+    "title": "Football Night Summary",
+    "games": "Matches",
     "totalGoals": "Goals",
     "results": "Results",
     "penalties": "(pen)",
@@ -92,39 +92,39 @@
   "tts": {
     "twoMinWarning": "Two minutes left",
     "oneMinWarning": "One minute left",
-    "lastAttack": "Last attack!",
+    "lastAttack": "Last chance!",
     "drawExtraTime": "Draw! Two more minutes",
     "penalties": "Penalties!",
     "kickoff": "Kickoff!",
     "goalScored": "Goal! {{player}}! {{score}}",
-    "gameEndWin": "Game over! {{score}}. {{winner}} won!",
-    "gameEndDraw": "Game over! Draw! {{score}}",
-    "errorStartGame": "Could not start game"
+    "gameEndWin": "Full time! {{score}}. {{winner}} won!",
+    "gameEndDraw": "Full time! Draw! {{score}}",
+    "errorStartGame": "Could not start match"
   },
   "nightResults": {
-    "title": "Game Night Summary",
+    "title": "Football Night Summary",
     "champion": "Champion!",
     "topScorers": "Top Scorers",
     "goals": "{{count}} goals",
-    "games": "Games Played",
+    "games": "Matches Played",
     "totalGoals": "Total Goals",
     "backToResults": "Back to Results",
     "share": "Share Summary",
-    "shareMessage": "Game Night Results\n\n{{summary}}",
+    "shareMessage": "Football Night Results\n\n{{summary}}",
     "notFound": "Summary not found",
     "invalidLink": "The link may be invalid",
     "backToHome": "Back to Home",
-    "nightPlayers": "Night players"
+    "nightPlayers": "Players"
   },
   "shareText": {
-    "nightSummary": "Night Summary — {{club}} | {{date}}",
-    "gamesAndGoals": "{{games}} games, {{goals}} goals",
-    "gameResult": "Game {{number}}: Team {{teamA}} {{scoreA}}-{{scoreB}} Team {{teamB}}",
+    "nightSummary": "Football Night Summary — {{club}} | {{date}}",
+    "gamesAndGoals": "{{games}} matches, {{goals}} goals",
+    "gameResult": "Match {{number}}: Team {{teamA}} {{scoreA}}-{{scoreB}} Team {{teamB}}",
     "penaltyResult": "(pen {{scoreA}}-{{scoreB}})",
     "standingsTitle": "Standings:",
     "standingRow": "{{rank}}. Team {{name}} — {{wins}}W {{draws}}D {{losses}}L ({{points}} Pts)",
     "topScorer": "Top Scorer: {{name}} ({{goals}} goals)",
-    "fairTeams": "Draft Pick — Fair teams in one click"
+    "fairTeams": "Draft Pick — Fair teams. No arguments."
   },
   "footer": {
     "brand": "Draft Pick"
@@ -142,7 +142,7 @@
   },
   "requestSent": {
     "title": "Request sent!",
-    "subtitle": "The admin will receive a notification and send you an invite"
+    "subtitle": "The organizer will receive a notification and send you an invite"
   },
   "visitor": {
     "title": "Were you in this draft?",
@@ -151,7 +151,7 @@
   },
   "growth": {
     "title": "Have your own team?",
-    "subtitle": "Manage drafts and game nights — totally free",
+    "subtitle": "Manage drafts and football nights — totally free",
     "cta": "Get Started"
   }
 }
