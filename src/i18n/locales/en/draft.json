@@ -9,6 +9,13 @@
       "pickCaptains": "Pick Captains",
       "confirm": "Confirm"
     },
+    "teamCount": {
+      "title": "Number of Teams",
+      "two": "2 Teams",
+      "three": "3 Teams",
+      "twoDescription": "Head-to-head — two captains draft their squads",
+      "threeDescription": "Three-way — classic rotation with a resting team"
+    },
     "nameStep": {
       "label": "Draft Name",
       "placeholder": "e.g. Thursday 5-a-Side",
@@ -31,10 +38,10 @@
       "occasional": "Drop-ins"
     },
     "captainsStep": {
-      "title": "Pick 3 Captains",
+      "title": "Pick {{total}} Captains",
       "description": "These players will draft their teams",
-      "selected": "{{count}}/3 captains selected",
-      "needThree": "Select exactly 3 captains",
+      "selected": "{{count}}/{{total}} captains selected",
+      "needExact": "Select exactly {{total}} captains",
       "guestsCannotBeCaptains": "Guests cannot be captains"
     },
     "confirmStep": {
@@ -89,7 +96,7 @@
     "waiting": "Waiting...",
     "allConnected": "All captains connected!",
     "startDraft": "Start Draft",
-    "waitingForCaptains": "Waiting for captains... ({{connected}}/3)",
+    "waitingForCaptains": "Waiting for captains... ({{connected}}/{{total}})",
     "playersLabel": "Players",
     "shareToJoin": "Share the game code so captains can join",
     "startingDraft": "Starting draft...",

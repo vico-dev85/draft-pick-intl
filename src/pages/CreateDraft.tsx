@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClubContext } from "@/hooks/useClubContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { generateRoomCode, generateRaffleOrder, generateSnakeDraftOrder } from "@/lib/draftUtils";
+import { generateRoomCode, generateRaffleOrder, generateSnakeDraftOrder, getTeamConfig } from "@/lib/draftUtils";
 import {
   ArrowRight,
   ArrowLeft,
@@ -58,6 +58,7 @@ export default function CreateDraft() {
   const { t } = useTranslation("draft");
 
   const [step, setStep] = useState<Step>("name");
+  const [numTeams, setNumTeams] = useState(3);
   const [draftName, setDraftName] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
@@ -254,10 +255,9 @@ export default function CreateDraft() {
     setCaptainIds([]);
   };
 
-  // Draft configuration - ready for future 2-team mode
-  const NUM_TEAMS = 3; // TODO: make configurable (2 or 3)
-  const MIN_PLAYERS = 12; // For 3 teams: 12-15 total (including 3 captains)
-  const MAX_PLAYERS = 15; // For 2 teams: might be 8-12 total (including 2 captains)
+  // Draft configuration based on team count
+  const { minPlayers: MIN_PLAYERS, maxPlayers: MAX_PLAYERS } = getTeamConfig(numTeams);
+  const NUM_TEAMS = numTeams;
 
   const canProceedToPlayers = draftName.trim().length >= 2;
   const canProceedToCaptains = selectedPlayerIds.length >= MIN_PLAYERS && selectedPlayerIds.length <= MAX_PLAYERS;
@@ -273,7 +273,7 @@ export default function CreateDraft() {
 
       // Pre-generate raffle order and snake draft order BEFORE any captains connect
       // This ensures all clients read the same predetermined order from the database
-      const raffleOrder = generateRaffleOrder();
+      const raffleOrder = generateRaffleOrder(numTeams);
       const totalPicks = selectedPlayerIds.length - NUM_TEAMS; // Non-captain players
       const draftOrder = generateSnakeDraftOrder(totalPicks, raffleOrder);
 
@@ -284,9 +284,11 @@ export default function CreateDraft() {
           creator_user_id: user.id,
           draft_name: draftName.trim(),
           room_code: roomCode,
-          captain1_player_id: captainIds[0],
-          captain2_player_id: captainIds[1],
-          captain3_player_id: captainIds[2],
+          captain1_player_id: captainIds[0] || null,
+          captain2_player_id: captainIds[1] || null,
+          captain3_player_id: captainIds[2] || null,
+          num_teams: numTeams,
+          captains: captainIds,
           status: "waiting",
           draft_order: draftOrder,
           raffle_order: raffleOrder,
@@ -442,6 +444,36 @@ export default function CreateDraft() {
                   {t("create.title")}
                 </h1>
                 <p className="text-white/60">{t("create.nameStep.hint")}</p>
+              </div>
+
+              {/* Team Count Selector */}
+              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-3">
+                <Label className="text-white/80">{t("create.teamCount.title")}</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[2, 3].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => {
+                        setNumTeams(n);
+                        // Reset captains if we reduced team count
+                        if (n < numTeams) setCaptainIds((prev) => prev.slice(0, n));
+                      }}
+                      className={`p-4 rounded-xl border-2 transition-all text-center ${
+                        numTeams === n
+                          ? "border-emerald-400 bg-emerald-500/20"
+                          : "border-white/20 bg-white/5 hover:bg-white/10"
+                      }`}
+                    >
+                      <span className="text-lg font-bold text-white">
+                        {t(`create.teamCount.${n === 2 ? "two" : "three"}`)}
+                      </span>
+                      <p className="text-xs text-white/50 mt-1">
+                        {t(`create.teamCount.${n === 2 ? "twoDescription" : "threeDescription"}`)}
+                      </p>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-4">
@@ -839,10 +871,10 @@ export default function CreateDraft() {
               <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-2">
                   <Crown className="inline h-6 w-6 mr-2 text-amber-400" />
-                  {t("create.captainsStep.title")}
+                  {t("create.captainsStep.title", { total: numTeams })}
                 </h1>
                 <p className="text-white/60">
-                  {t("create.captainsStep.selected", { count: captainIds.length })}
+                  {t("create.captainsStep.selected", { count: captainIds.length, total: numTeams })}
                 </p>
               </div>
 

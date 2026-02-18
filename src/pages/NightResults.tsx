@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getCaptainColor, getCaptainLabel } from "@/lib/draftUtils";
+import { getCaptainPlayerId, getAllCaptains } from "@/lib/captainHelpers";
+import type { Json } from "@/integrations/supabase/types";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { useClubContext } from "@/hooks/useClubContext";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +24,8 @@ interface NightSummary {
   captain1_player_id: string | null;
   captain2_player_id: string | null;
   captain3_player_id: string | null;
+  num_teams: number | null;
+  captains: Json | null;
   total_games: number;
   total_goals: number;
   games: GameData[];
@@ -96,12 +100,7 @@ export default function NightResults() {
   const getCaptainName = useCallback(
     (captainNum: number) => {
       if (!summary) return getCaptainLabel(captainNum);
-      const captainIds = [
-        summary.captain1_player_id,
-        summary.captain2_player_id,
-        summary.captain3_player_id,
-      ];
-      const captainPlayerId = captainIds[captainNum - 1];
+      const captainPlayerId = getCaptainPlayerId(summary, captainNum);
       if (!captainPlayerId) return getCaptainLabel(captainNum);
       const player = players.find((p) => p.player_id === captainPlayerId);
       return player?.display_name || getCaptainLabel(captainNum);
@@ -468,12 +467,8 @@ export default function NightResults() {
               <p className="text-white/40 text-xs mb-1">{t("nightResults.nightPlayers")}</p>
               {sortedClaimable.map((player) => {
                 const goals = player.player_id ? goalCountMap.get(player.player_id) : undefined;
-                const captainIds = [
-                  summary.captain1_player_id,
-                  summary.captain2_player_id,
-                  summary.captain3_player_id,
-                ];
-                const isCaptain = captainIds.includes(player.player_id);
+                const captainPlayerIds = getAllCaptains(summary).map(c => c.playerId).filter(Boolean);
+                const isCaptain = captainPlayerIds.includes(player.player_id);
 
                 return (
                   <button

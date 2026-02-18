@@ -11,12 +11,13 @@ interface Player {
 }
 
 interface TeamColumnProps {
-  captainNumber: 1 | 2 | 3;
+  captainNumber: number;
   captainName: string;
   captainPhotoUrl?: string | null;
   players: Player[];
   isActive: boolean;
   totalPlayersInDraft: number;
+  numTeams?: number;
 }
 
 export function TeamColumn({
@@ -26,9 +27,10 @@ export function TeamColumn({
   players,
   isActive,
   totalPlayersInDraft,
+  numTeams = 3,
 }: TeamColumnProps) {
   const { t } = useTranslation("draft");
-  const expectedTeamSize = Math.ceil(totalPlayersInDraft / 3);
+  const expectedTeamSize = Math.ceil(totalPlayersInDraft / numTeams);
   const pickCount = players.length;
 
   return (

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { getCaptainColor, getCaptainLabel, getSecureSessionId } from "@/lib/draftUtils";
+import { getCaptainColor, getCaptainLabel, getSecureSessionId, getTeamGridClass } from "@/lib/draftUtils";
+import { getCaptainPlayerId, getNumTeams, getAllCaptains } from "@/lib/captainHelpers";
 import {
   Loader2,
   Crown,
@@ -44,6 +45,8 @@ interface DraftRoom {
   captain1_player_id: string | null;
   captain2_player_id: string | null;
   captain3_player_id: string | null;
+  num_teams: number | null;
+  captains: unknown[] | null;
   location: string | null;
   notes: string | null;
 }
@@ -323,18 +326,16 @@ export default function Results() {
 
   if (!room) return null;
 
-  const teams = [
-    { number: 1, playerId: room.captain1_player_id },
-    { number: 2, playerId: room.captain2_player_id },
-    { number: 3, playerId: room.captain3_player_id },
-  ].map((c) => {
+  const numTeams = getNumTeams(room);
+  const teams = getAllCaptains(room).map((c) => {
     const captainPlayer = players.find((p) => p.player_id === c.playerId);
     const teamPlayers = players.filter(
-      (p) => p.picked_by_captain_number === c.number
+      (p) => p.picked_by_captain_number === c.captainNumber
     );
     return {
-      ...c,
-      name: captainPlayer?.display_name || getCaptainLabel(c.number),
+      number: c.captainNumber,
+      playerId: c.playerId,
+      name: captainPlayer?.display_name || getCaptainLabel(c.captainNumber),
       photoUrl: captainPlayer?.photo_url,
       players: teamPlayers.sort(
         (a, b) => (a.pick_number || 0) - (b.pick_number || 0)
@@ -388,12 +389,12 @@ export default function Results() {
           </div>
         )}
 
-        {/* 3-Column Teams Grid - Always 3 columns */}
+        {/* Teams Grid */}
         <div className="px-2 py-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="grid grid-cols-3 gap-2"
+            className={`grid ${getTeamGridClass(numTeams)} gap-2`}
           >
           {teams.map((team, teamIdx) => (
             <motion.div
@@ -538,11 +539,7 @@ export default function Results() {
                   location: room?.location,
                   notes: room?.notes,
                   playerIds: players.filter(p => p.player_id).map(p => p.player_id),
-                  captainIds: [
-                    room?.captain1_player_id,
-                    room?.captain2_player_id,
-                    room?.captain3_player_id,
-                  ].filter(Boolean),
+                  captainIds: getAllCaptains(room).map(c => c.playerId).filter(Boolean),
                 },
               });
             }}

@@ -8,7 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useGameTimer } from "@/hooks/useGameTimer";
 import { useAnnouncementQueue } from "@/hooks/useAnnouncementQueue";
-import { getCaptainColor, getCaptainLabel } from "@/lib/draftUtils";
+import { getCaptainColor, getCaptainLabel, getTeamGridClass } from "@/lib/draftUtils";
+import { getCaptainPlayerId, getNumTeams } from "@/lib/captainHelpers";
 import { toggleMute, isMuted } from "@/lib/sounds";
 import {
   Loader2,
@@ -42,6 +43,8 @@ interface NightSummary {
   captain1_player_id: string | null;
   captain2_player_id: string | null;
   captain3_player_id: string | null;
+  num_teams: number | null;
+  captains: unknown[] | null;
   total_games: number;
   total_goals: number;
   games: GameData[];
@@ -54,7 +57,7 @@ interface GameData {
   game_number: number;
   team_a_captain_number: number;
   team_b_captain_number: number;
-  resting_captain_number: number;
+  resting_captain_number: number | null;
   score_a: number;
   score_b: number;
   result: string | null;
@@ -105,33 +108,34 @@ interface TeamInfo {
 type View = "pre_game" | "active_game" | "goal_picker" | "game_over" | "penalties" | "summary";
 
 // --- Rotation logic ---
-// Default rotation for first game or fallback
-const DEFAULT_MATCHUPS = [
+// Default rotation for first game or fallback (3-team)
+const DEFAULT_MATCHUPS_3 = [
   { teamA: 1, teamB: 2, resting: 3 },
   { teamA: 1, teamB: 3, resting: 2 },
   { teamA: 2, teamB: 3, resting: 1 },
 ];
 
-function getNextMatchup(games: GameData[]): { teamA: number; teamB: number; resting: number } {
+function getNextMatchup(games: GameData[], numTeams: number): { teamA: number; teamB: number; resting: number | null } {
+  // 2-team mode: always same two teams, no resting
+  if (numTeams === 2) {
+    return { teamA: 1, teamB: 2, resting: null };
+  }
+
   const completed = games.filter((g) => g.ended_at && g.result);
   if (completed.length === 0) {
-    return DEFAULT_MATCHUPS[0];
+    return DEFAULT_MATCHUPS_3[0];
   }
 
   const lastGame = completed[completed.length - 1];
-  const resting = lastGame.resting_captain_number;
+  const resting = lastGame.resting_captain_number ?? 3;
 
   // Determine winner — winner stays, loser gets replaced by resting team
   if (lastGame.result === "team_a_win") {
-    // Team A won — stays. Team B lost — replaced by resting.
     return { teamA: lastGame.team_a_captain_number, teamB: resting, resting: lastGame.team_b_captain_number };
   } else if (lastGame.result === "team_b_win") {
-    // Team B won — stays. Team A lost — replaced by resting.
     return { teamA: lastGame.team_b_captain_number, teamB: resting, resting: lastGame.team_a_captain_number };
   } else {
-    // Draw (shouldn't happen since draws go to extra time/penalties, but fallback)
-    // Cycle: both out, resting comes in with team A
-    return DEFAULT_MATCHUPS[completed.length % 3];
+    return DEFAULT_MATCHUPS_3[completed.length % 3];
   }
 }
 
@@ -155,7 +159,7 @@ export default function GameNight() {
   const [activeGameNumber, setActiveGameNumber] = useState(0);
   const [teamA, setTeamA] = useState(1);
   const [teamB, setTeamB] = useState(2);
-  const [resting, setResting] = useState(3);
+  const [resting, setResting] = useState<number | null>(3);
   const [scoreA, setScoreA] = useState(0);
   const [scoreB, setScoreB] = useState(0);
   const [goalPickerTeam, setGoalPickerTeam] = useState<number | null>(null);
@@ -261,10 +265,12 @@ export default function GameNight() {
           const ps = playersData as RoomPlayer[];
           setAllPlayers(ps);
 
-          // Build teams
-          const captainIds = [s.captain1_player_id, s.captain2_player_id, s.captain3_player_id];
-          const builtTeams: TeamInfo[] = [1, 2, 3].map((num) => {
-            const captainPlayer = ps.find((p) => p.player_id === captainIds[num - 1]);
+          // Build teams dynamically based on num_teams
+          const nTeams = getNumTeams(s);
+          const builtTeams: TeamInfo[] = Array.from({ length: nTeams }, (_, i) => {
+            const num = i + 1;
+            const captainPlayerId = getCaptainPlayerId(s, num);
+            const captainPlayer = ps.find((p) => p.player_id === captainPlayerId);
             const teamPlayers = ps.filter(
               (p) => p.picked_by_captain_number === num && !p.is_captain
             );
@@ -286,7 +292,7 @@ export default function GameNight() {
             setScoreB(activeGame.score_b);
             setTeamA(activeGame.team_a_captain_number);
             setTeamB(activeGame.team_b_captain_number);
-            setResting(activeGame.resting_captain_number);
+            setResting(activeGame.resting_captain_number ?? null);
 
             // Recover timer from DB
             if (activeGame.timer_start_at && !activeGame.timer_paused_at) {
@@ -304,8 +310,8 @@ export default function GameNight() {
 
             setView("active_game");
           } else {
-            // Auto-suggest next matchup (winner stays)
-            const next = getNextMatchup(s.games || []);
+            // Auto-suggest next matchup (winner stays for 3-team, rematch for 2-team)
+            const next = getNextMatchup(s.games || [], nTeams);
             setTeamA(next.teamA);
             setTeamB(next.teamB);
             setResting(next.resting);
@@ -346,7 +352,7 @@ export default function GameNight() {
         p_night_id: nightId,
         p_team_a: teamA,
         p_team_b: teamB,
-        p_resting: resting,
+        ...(resting !== null ? { p_resting: resting } : {}),
       });
 
       if (error) throw error;
@@ -630,8 +636,9 @@ export default function GameNight() {
     const team = teams.find((t) => t.captainNumber === captainNumber);
     if (!team) return [];
     // Include captain + team members
+    const captainPlayerId = getCaptainPlayerId(summary, captainNumber);
     const captain = allPlayers.find(
-      (p) => p.is_captain && p.player_id === [summary.captain1_player_id, summary.captain2_player_id, summary.captain3_player_id][captainNumber - 1]
+      (p) => p.is_captain && p.player_id === captainPlayerId
     );
     return captain ? [captain, ...team.players] : [...team.players];
   };
@@ -687,10 +694,10 @@ export default function GameNight() {
               </h2>
 
               {/* Team cards */}
-              <div className="grid grid-cols-3 gap-3">
-                {[teamA, teamB, resting].map((captainNum, idx) => {
+              <div className={`grid ${resting !== null ? "grid-cols-3" : "grid-cols-2"} gap-3`}>
+                {[teamA, teamB, ...(resting !== null ? [resting] : [])].map((captainNum, idx) => {
                   const team = teams.find((t) => t.captainNumber === captainNum);
-                  const isResting = idx === 2;
+                  const isResting = resting !== null && idx === 2;
                   return (
                     <motion.div
                       key={captainNum}

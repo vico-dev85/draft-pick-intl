@@ -118,6 +118,7 @@ export type Database = {
           captain1_player_id: string | null
           captain2_player_id: string | null
           captain3_player_id: string | null
+          captains: Json | null
           completed_at: string | null
           created_at: string
           creator_user_id: string
@@ -126,6 +127,7 @@ export type Database = {
           draft_name: string
           draft_order: Json | null
           id: string
+          num_teams: number | null
           room_code: string
           started_at: string | null
           status: string
@@ -134,6 +136,7 @@ export type Database = {
           captain1_player_id?: string | null
           captain2_player_id?: string | null
           captain3_player_id?: string | null
+          captains?: Json | null
           completed_at?: string | null
           created_at?: string
           creator_user_id: string
@@ -142,6 +145,7 @@ export type Database = {
           draft_name: string
           draft_order?: Json | null
           id?: string
+          num_teams?: number | null
           room_code: string
           started_at?: string | null
           status?: string
@@ -150,6 +154,7 @@ export type Database = {
           captain1_player_id?: string | null
           captain2_player_id?: string | null
           captain3_player_id?: string | null
+          captains?: Json | null
           completed_at?: string | null
           created_at?: string
           creator_user_id?: string
@@ -158,6 +163,7 @@ export type Database = {
           draft_name?: string
           draft_order?: Json | null
           id?: string
+          num_teams?: number | null
           room_code?: string
           started_at?: string | null
           status?: string
@@ -191,6 +197,7 @@ export type Database = {
           captain1_player_id: string | null
           captain2_player_id: string | null
           captain3_player_id: string | null
+          captains: Json | null
           completed_at: string | null
           created_at: string
           current_pick_number: number | null
@@ -198,6 +205,7 @@ export type Database = {
           draft_name: string
           draft_order: Json | null
           id: string
+          num_teams: number | null
           room_code: string
           started_at: string | null
           status: string
@@ -206,6 +214,7 @@ export type Database = {
           captain1_player_id?: string | null
           captain2_player_id?: string | null
           captain3_player_id?: string | null
+          captains?: Json | null
           completed_at?: string | null
           created_at: string
           current_pick_number?: number | null
@@ -213,6 +222,7 @@ export type Database = {
           draft_name: string
           draft_order?: Json | null
           id: string
+          num_teams?: number | null
           room_code: string
           started_at?: string | null
           status: string
@@ -221,6 +231,7 @@ export type Database = {
           captain1_player_id?: string | null
           captain2_player_id?: string | null
           captain3_player_id?: string | null
+          captains?: Json | null
           completed_at?: string | null
           created_at?: string
           current_pick_number?: number | null
@@ -228,6 +239,7 @@ export type Database = {
           draft_name?: string
           draft_order?: Json | null
           id?: string
+          num_teams?: number | null
           room_code?: string
           started_at?: string | null
           status?: string

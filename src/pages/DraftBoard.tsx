@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { getSecureSessionId } from "@/lib/draftUtils";
+import { getSecureSessionId, getTeamGridClass } from "@/lib/draftUtils";
+import { getCaptainPlayerId, resolveCaptainNumber, getNumTeams } from "@/lib/captainHelpers";
 import { ArrowLeft, Loader2, Volume2, VolumeX } from "lucide-react";
 import {
   playSound,
@@ -35,6 +36,8 @@ interface DraftRoom {
   captain1_player_id: string | null;
   captain2_player_id: string | null;
   captain3_player_id: string | null;
+  num_teams: number | null;
+  captains: unknown[] | null;
 }
 
 interface RoomPlayer {
@@ -150,11 +153,7 @@ export default function DraftBoard() {
     (p) => p.is_captain && p.claimed_by_session_id === sessionId
   );
   const myCaptainNumber = myCaptainPlayer
-    ? room?.captain1_player_id === myCaptainPlayer.player_id
-      ? 1
-      : room?.captain2_player_id === myCaptainPlayer.player_id
-      ? 2
-      : 3
+    ? resolveCaptainNumber(room, myCaptainPlayer.player_id)
     : null;
 
   const isMyTurn = myCaptainNumber === room?.current_turn_captain_number;
@@ -189,11 +188,7 @@ export default function DraftBoard() {
 
   // Get captain name by number
   const getCaptainNameByNumber = useCallback((captainNum: number): string => {
-    const captainPlayerId =
-      captainNum === 1 ? room?.captain1_player_id :
-      captainNum === 2 ? room?.captain2_player_id :
-      room?.captain3_player_id;
-
+    const captainPlayerId = getCaptainPlayerId(room, captainNum);
     const captain = players.find(p => p.player_id === captainPlayerId);
     return captain?.display_name || `Captain ${captainNum}`;
   }, [room, players]);
@@ -554,24 +549,22 @@ export default function DraftBoard() {
 
   const totalNonCaptainPlayers = players.filter(p => !p.is_captain).length;
 
+  const numTeams = getNumTeams(room);
+
   // Order columns by raffle result (first picker on the left in LTR)
   const raffleOrder = room.draft_order
-    ? (room.draft_order as number[]).slice(0, 3)
-    : [1, 2, 3];
+    ? (room.draft_order as number[]).slice(0, numTeams)
+    : Array.from({ length: numTeams }, (_, i) => i + 1);
 
   const teams = raffleOrder.map((num) => {
-    const captainPlayerId =
-      num === 1 ? room.captain1_player_id :
-      num === 2 ? room.captain2_player_id :
-      room.captain3_player_id;
-
+    const captainPlayerId = getCaptainPlayerId(room, num);
     const captainPlayer = players.find(p => p.player_id === captainPlayerId);
     const pickedPlayers = players
       .filter(p => p.picked_by_captain_number === num)
       .sort((a, b) => (a.pick_number || 0) - (b.pick_number || 0));
 
     return {
-      number: num as 1 | 2 | 3,
+      number: num,
       captainName: captainPlayer?.display_name || `Captain ${num}`,
       captainPhotoUrl: captainPlayer?.photo_url,
       players: pickedPlayers.map(p => ({
@@ -630,8 +623,8 @@ export default function DraftBoard() {
           isMyTurn={isMyTurn}
         />
 
-        {/* Teams Grid - 3 columns */}
-        <div className="grid grid-cols-3 gap-2 mt-3">
+        {/* Teams Grid */}
+        <div className={`grid ${getTeamGridClass(numTeams)} gap-2 mt-3`}>
           {teams.map((team) => (
             <TeamColumn
               key={team.number}
@@ -641,6 +634,7 @@ export default function DraftBoard() {
               players={team.players}
               isActive={room.current_turn_captain_number === team.number}
               totalPlayersInDraft={totalNonCaptainPlayers}
+              numTeams={numTeams}
             />
           ))}
         </div>

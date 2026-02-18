@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   generateRaffleOrder,
   generateSnakeDraftOrder,
+  getTeamConfig,
 } from "@/lib/draftUtils";
 import {
   ArrowRight,
@@ -37,6 +38,7 @@ export default function QuickDraft() {
   const { t } = useTranslation("draft");
 
   const [step, setStep] = useState<Step>("name");
+  const [numTeams, setNumTeams] = useState(3);
   const [draftName, setDraftName] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
@@ -81,10 +83,9 @@ export default function QuickDraft() {
 
   const captains = players.filter((p) => captainIds.includes(p.id));
 
-  // Draft configuration - ready for future 2-team mode
-  const NUM_TEAMS = 3; // TODO: make configurable (2 or 3)
-  const MIN_PLAYERS = 12; // For 3 teams: 12-15 total (including 3 captains)
-  const MAX_PLAYERS = 15; // For 2 teams: might be 8-12 total (including 2 captains)
+  // Draft configuration based on team count
+  const { minPlayers: MIN_PLAYERS, maxPlayers: MAX_PLAYERS } = getTeamConfig(numTeams);
+  const NUM_TEAMS = numTeams;
 
   const canProceedToPlayers = draftName.trim().length >= 2;
   const canProceedToCaptains = players.length >= MIN_PLAYERS && players.length <= MAX_PLAYERS;
@@ -94,7 +95,7 @@ export default function QuickDraft() {
     setCreating(true);
 
     try {
-      const raffleOrder = generateRaffleOrder();
+      const raffleOrder = generateRaffleOrder(numTeams);
       const totalPicks = players.length - NUM_TEAMS;
       const draftOrder = generateSnakeDraftOrder(totalPicks, raffleOrder);
 
@@ -114,6 +115,7 @@ export default function QuickDraft() {
         p_players: allPlayers,
         p_raffle_order: raffleOrder,
         p_draft_order: draftOrder,
+        p_num_teams: numTeams,
       });
 
       if (error) throw error;
@@ -243,6 +245,35 @@ export default function QuickDraft() {
                     {t("quick.title")}
                   </h1>
                   <p className="text-white/60">{t("quick.nameDraft")}</p>
+                </div>
+
+                {/* Team Count Selector */}
+                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-3">
+                  <Label className="text-white/80">{t("create.teamCount.title")}</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[2, 3].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => {
+                          setNumTeams(n);
+                          if (n < numTeams) setCaptainIds((prev) => prev.slice(0, n));
+                        }}
+                        className={`p-4 rounded-xl border-2 transition-all text-center ${
+                          numTeams === n
+                            ? "border-amber-400 bg-amber-500/20"
+                            : "border-white/20 bg-white/5 hover:bg-white/10"
+                        }`}
+                      >
+                        <span className="text-lg font-bold text-white">
+                          {t(`create.teamCount.${n === 2 ? "two" : "three"}`)}
+                        </span>
+                        <p className="text-xs text-white/50 mt-1">
+                          {t(`create.teamCount.${n === 2 ? "twoDescription" : "threeDescription"}`)}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">

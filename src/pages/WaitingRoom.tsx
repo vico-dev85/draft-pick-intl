@@ -7,7 +7,8 @@ import { useWakeLock } from "@/hooks/useWakeLock";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { getSecureSessionId, getCaptainColor, generateRaffleOrder } from "@/lib/draftUtils";
+import { getSecureSessionId, getCaptainColor, generateRaffleOrder, getTeamGridClass } from "@/lib/draftUtils";
+import { getCaptainPlayerId, resolveCaptainNumber, getNumTeams, getAllCaptains } from "@/lib/captainHelpers";
 import {
   ArrowLeft,
   Loader2,
@@ -49,6 +50,8 @@ interface DraftRoomPublic {
   captain1_player_id: string | null;
   captain2_player_id: string | null;
   captain3_player_id: string | null;
+  num_teams: number | null;
+  captains: unknown[] | null;
 }
 
 interface DraftRoom extends DraftRoomPublic {
@@ -89,8 +92,8 @@ export default function WaitingRoom() {
 
   // Raffle state
   const [rafflePhase, setRafflePhase] = useState<RafflePhase>("waiting");
-  const [raffleOrder, setRaffleOrder] = useState<number[]>([1, 2, 3]);
-  const [shuffleDisplay, setShuffleDisplay] = useState<number[]>([1, 2, 3]);
+  const [raffleOrder, setRaffleOrder] = useState<number[]>([]);
+  const [shuffleDisplay, setShuffleDisplay] = useState<number[]>([]);
   const [countdown, setCountdown] = useState<number>(3);
   const [pendingRaffleOrder, setPendingRaffleOrder] = useState<number[] | null>(null);
   const [shuffleHands, setShuffleHands] = useState<string[]>([
@@ -212,9 +215,7 @@ export default function WaitingRoom() {
     let myCaptainNumber: number | null = null;
 
     if (isCaptain && myPlayer.player_id) {
-      if (currentRoom.captain1_player_id === myPlayer.player_id) myCaptainNumber = 1;
-      else if (currentRoom.captain2_player_id === myPlayer.player_id) myCaptainNumber = 2;
-      else if (currentRoom.captain3_player_id === myPlayer.player_id) myCaptainNumber = 3;
+      myCaptainNumber = resolveCaptainNumber(currentRoom, myPlayer.player_id);
     }
 
     console.log("[Presence] Tracking as:", isCaptain ? `Captain ${myCaptainNumber}` : "Viewer", "- channel subscribed:", isSubscribedRef.current);
@@ -344,13 +345,13 @@ export default function WaitingRoom() {
     };
   };
 
-  const captain1 = getCaptainInfo(room?.captain1_player_id || null, 1);
-  const captain2 = getCaptainInfo(room?.captain2_player_id || null, 2);
-  const captain3 = getCaptainInfo(room?.captain3_player_id || null, 3);
-  const captainsInfo = [captain1, captain2, captain3].filter(Boolean);
+  const numTeams = getNumTeams(room);
+  const captainsInfo = getAllCaptains(room).map(({ captainNumber, playerId }) =>
+    getCaptainInfo(playerId, captainNumber)
+  ).filter(Boolean);
 
   const connectedCount = connectedCaptainNumbers.size;
-  const allCaptainsConnected = connectedCount === 3;
+  const allCaptainsConnected = connectedCount === numTeams;
 
   // Play captain-enter sound when a new captain connects
   useEffect(() => {
@@ -385,7 +386,7 @@ export default function WaitingRoom() {
     const totalIterations = 20;
     for (let i = 0; i < totalIterations; i++) {
       if (!isMountedRef.current) { stopSound("drumroll.mp3"); return; }
-      const tempDisplay = generateRaffleOrder();
+      const tempDisplay = generateRaffleOrder(finalOrder.length);
       setRafflePhase("shuffling");
       setShuffleDisplay(tempDisplay);
       // Accelerate: lerp from 250ms to 100ms
@@ -413,7 +414,7 @@ export default function WaitingRoom() {
 
   // Trigger animation when pendingRaffleOrder is set (from broadcast)
   useEffect(() => {
-    if (pendingRaffleOrder && pendingRaffleOrder.length === 3) {
+    if (pendingRaffleOrder && pendingRaffleOrder.length >= 2) {
       console.log("[Effect] Pending order detected, starting animation");
       runLocalRaffleAnimation(pendingRaffleOrder);
       setPendingRaffleOrder(null); // Clear to prevent re-trigger
@@ -455,12 +456,13 @@ export default function WaitingRoom() {
           console.error("[Client] Error fetching draft_order:", error);
         }
 
-        if (data?.draft_order && data.draft_order.length >= 3) {
+        const nTeams = getNumTeams(roomRef.current);
+        if (data?.draft_order && data.draft_order.length >= nTeams) {
           if (raffleStartedRef.current) return; // Another effect already started
           raffleStartedRef.current = true;
 
-          // Extract raffle order (first 3 elements = first round picks)
-          const raffleOrder = data.draft_order.slice(0, 3) as number[];
+          // Extract raffle order (first N elements = first round picks)
+          const raffleOrder = data.draft_order.slice(0, nTeams) as number[];
           console.log("[Client] Got pre-generated order:", JSON.stringify(raffleOrder), "Full draft_order:", JSON.stringify(data.draft_order));
 
           // Run animation (same on all clients with same predetermined result)
@@ -727,7 +729,7 @@ export default function WaitingRoom() {
               ) : (
                 <>
                   <WifiOff className="h-5 w-5 text-amber-400 animate-pulse" />
-                  <span className="text-white">{t("waiting.waitingForCaptains", { connected: connectedCount })}</span>
+                  <span className="text-white">{t("waiting.waitingForCaptains", { connected: connectedCount, total: numTeams })}</span>
                 </>
               )}
             </div>
@@ -739,7 +741,7 @@ export default function WaitingRoom() {
               <Crown className="h-5 w-5 text-amber-400" />
               {t("waiting.captainsStatus")}
             </h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className={`grid ${getTeamGridClass(numTeams)} gap-4`}>
               {captainsInfo.map((captain) => (
                 <div key={captain!.captainNumber} className="text-center">
                   <div className="relative inline-block">

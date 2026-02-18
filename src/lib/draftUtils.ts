@@ -12,8 +12,8 @@ export function generateRoomCode(): string {
 
 // Generate a random raffle order for captains
 // Returns an array like [2, 3, 1] meaning captain 2 picks first, then 3, then 1
-export function generateRaffleOrder(): number[] {
-  const captains = [1, 2, 3];
+export function generateRaffleOrder(numTeams: number = 3): number[] {
+  const captains = Array.from({ length: numTeams }, (_, i) => i + 1);
   // Fisher-Yates shuffle
   for (let i = captains.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -22,7 +22,7 @@ export function generateRaffleOrder(): number[] {
   return captains;
 }
 
-// Generate snake draft order for 3 captains
+// Generate snake draft order for N captains
 // Pattern with default order [1,2,3]: 1,2,3,3,2,1,1,2,3,3,2,1...
 // Pattern with raffle order [2,3,1]: 2,3,1,1,3,2,2,3,1,1,3,2...
 export function generateSnakeDraftOrder(totalPicks: number, raffleOrder?: number[]): number[] {
@@ -49,45 +49,45 @@ export function generateSnakeDraftOrder(totalPicks: number, raffleOrder?: number
   return order;
 }
 
+// Color arrays indexed by captain number (1-based, index 0 is unused fallback)
+const BG_COLORS = ["bg-muted", "bg-primary", "bg-secondary", "bg-accent", "bg-orange-600", "bg-pink-600"];
+const TEXT_COLORS = ["text-muted-foreground", "text-primary", "text-secondary", "text-accent", "text-orange-600", "text-pink-600"];
+const BORDER_COLORS = ["border-muted", "border-primary", "border-secondary", "border-accent", "border-orange-600", "border-pink-600"];
+
 // Get captain color class
 export function getCaptainColor(captainNumber: number): string {
-  switch (captainNumber) {
-    case 1:
-      return "bg-primary";
-    case 2:
-      return "bg-secondary";
-    case 3:
-      return "bg-accent";
-    default:
-      return "bg-muted";
-  }
+  return BG_COLORS[captainNumber] ?? BG_COLORS[0];
 }
 
 // Get captain text color class
 export function getCaptainTextColor(captainNumber: number): string {
-  switch (captainNumber) {
-    case 1:
-      return "text-primary";
-    case 2:
-      return "text-secondary";
-    case 3:
-      return "text-accent";
-    default:
-      return "text-muted-foreground";
-  }
+  return TEXT_COLORS[captainNumber] ?? TEXT_COLORS[0];
 }
 
 // Get captain border color class
 export function getCaptainBorderColor(captainNumber: number): string {
-  switch (captainNumber) {
-    case 1:
-      return "border-primary";
-    case 2:
-      return "border-secondary";
-    case 3:
-      return "border-accent";
-    default:
-      return "border-muted";
+  return BORDER_COLORS[captainNumber] ?? BORDER_COLORS[0];
+}
+
+// Get team configuration based on number of teams
+export function getTeamConfig(numTeams: number): { minPlayers: number; maxPlayers: number } {
+  switch (numTeams) {
+    case 2: return { minPlayers: 6, maxPlayers: 30 };
+    case 3: return { minPlayers: 9, maxPlayers: 30 };
+    case 4: return { minPlayers: 12, maxPlayers: 40 };
+    case 5: return { minPlayers: 15, maxPlayers: 50 };
+    default: return { minPlayers: numTeams * 3, maxPlayers: numTeams * 10 };
+  }
+}
+
+// Get grid columns class for N teams
+export function getTeamGridClass(numTeams: number): string {
+  switch (numTeams) {
+    case 2: return "grid-cols-2";
+    case 3: return "grid-cols-3";
+    case 4: return "grid-cols-4";
+    case 5: return "grid-cols-5";
+    default: return "grid-cols-3";
   }
 }
 

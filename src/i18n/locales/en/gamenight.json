@@ -21,7 +21,9 @@
     "currentGame": "Current Match",
     "nextGame": "Next Match",
     "waiting": "Waiting to start...",
-    "winnerStays": "Winner stays on!"
+    "winnerStays": "Winner stays on!",
+    "rematch": "Rematch!",
+    "rematchDescription": "Same two teams — play again"
   },
   "goals": {
     "title": "Goals",
