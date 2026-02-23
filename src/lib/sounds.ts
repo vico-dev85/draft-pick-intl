@@ -29,14 +29,14 @@ export function toggleMute(): boolean {
 // Volume levels per sound category (0.0–1.0)
 // Keeps crowd sounds subtle even when the phone is loud
 const VOLUME_MAP: Record<string, number> = {
-  crowd: 0.25,
-  "captain-enter": 0.5,
-  drumroll: 0.5,
-  reveal: 0.6,
-  whistle: 0.65,
-  ding: 0.75,
+  crowd: 0.15,
+  "captain-enter": 0.4,
+  drumroll: 0.4,
+  reveal: 0.5,
+  whistle: 0.35,
+  ding: 0.6,
 };
-const DEFAULT_VOLUME = 0.8;
+const DEFAULT_VOLUME = 0.5;
 
 function getVolume(name: string): number {
   for (const [key, vol] of Object.entries(VOLUME_MAP)) {
@@ -106,7 +106,56 @@ export function playRandomCrowd(): void {
   playSound(`crowd${idx}.mp3`);
 }
 
-// TTS — reads language from i18next so voice matches the active locale
+// Detect dominant script in text to pick the right TTS language.
+// If player names are Hebrew but UI is English, TTS needs "he" for names.
+export function detectTtsLang(text: string, fallback: string): string {
+  const hebrewChars = (text.match(/[\u0590-\u05FF]/g) || []).length;
+  const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
+  const latinChars = (text.match(/[a-zA-Z]/g) || []).length;
+
+  const total = hebrewChars + arabicChars + latinChars;
+  if (total === 0) return fallback;
+
+  if (hebrewChars / total > 0.3) return "he";
+  if (arabicChars / total > 0.3) return "ar";
+  return fallback;
+}
+
+// Split text into segments by script so each part gets the right TTS voice.
+// e.g. "דוד picked יוסי" → [{text:"דוד", lang:"he"}, {text:"picked", lang:"en"}, {text:"יוסי", lang:"he"}]
+export function splitByScript(text: string, fallbackLang: string): Array<{ text: string; lang: string }> {
+  const segments: Array<{ text: string; lang: string }> = [];
+  let current = "";
+  let currentLang = fallbackLang;
+
+  for (const char of text) {
+    let charLang: string;
+    if (/[\u0590-\u05FF]/.test(char)) charLang = "he";
+    else if (/[\u0600-\u06FF]/.test(char)) charLang = "ar";
+    else if (/[a-zA-Z]/.test(char)) charLang = fallbackLang;
+    else {
+      // spaces, punctuation — stay with current segment
+      current += char;
+      continue;
+    }
+
+    if (charLang !== currentLang && current.trim()) {
+      segments.push({ text: current.trim(), lang: currentLang });
+      current = char;
+      currentLang = charLang;
+    } else {
+      current += char;
+      currentLang = charLang;
+    }
+  }
+  if (current.trim()) {
+    segments.push({ text: current.trim(), lang: currentLang });
+  }
+  return segments;
+}
+
+// TTS — splits mixed-script text so Hebrew names get a Hebrew voice
+// and English template words get an English voice.
 export function speak(text: string, lang?: string): void {
   if (isMuted()) return;
   if (!("speechSynthesis" in window)) return;
@@ -114,30 +163,42 @@ export function speak(text: string, lang?: string): void {
   // Cancel any ongoing speech
   window.speechSynthesis.cancel();
 
-  // Resolve language: explicit param → i18next → fallback "en"
-  let activeLang = lang || "en";
+  // Resolve UI language: explicit param → i18next → fallback "en"
+  let uiLang = lang || "en";
   try {
-    // Dynamic import avoidance: read from localStorage directly
-    // to keep sounds.ts free of React/i18n imports
     const stored = localStorage.getItem("draftpick_lang");
-    if (!lang && stored) activeLang = stored;
+    if (!lang && stored) uiLang = stored;
   } catch {
     // localStorage unavailable — keep fallback
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = activeLang;
-  utterance.rate = 1.0;
-  utterance.pitch = 1.0;
-
-  // Try to find a matching voice
   const voices = window.speechSynthesis.getVoices();
-  const matchedVoice = voices.find((v) => v.lang.startsWith(activeLang));
-  if (matchedVoice) {
-    utterance.voice = matchedVoice;
+  const segments = splitByScript(text, uiLang);
+
+  // If all segments are the same language, speak as one utterance
+  const uniqueLangs = new Set(segments.map((s) => s.lang));
+  if (uniqueLangs.size <= 1) {
+    const activeLang = segments[0]?.lang || uiLang;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = activeLang;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    const matchedVoice = voices.find((v) => v.lang.startsWith(activeLang));
+    if (matchedVoice) utterance.voice = matchedVoice;
+    window.speechSynthesis.speak(utterance);
+    return;
   }
 
-  window.speechSynthesis.speak(utterance);
+  // Mixed scripts — chain utterances so each segment uses the right voice
+  for (const seg of segments) {
+    const utterance = new SpeechSynthesisUtterance(seg.text);
+    utterance.lang = seg.lang;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    const matchedVoice = voices.find((v) => v.lang.startsWith(seg.lang));
+    if (matchedVoice) utterance.voice = matchedVoice;
+    window.speechSynthesis.speak(utterance);
+  }
 }
 
 // Combined: play sound, then TTS after a delay

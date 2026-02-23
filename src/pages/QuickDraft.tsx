@@ -22,6 +22,8 @@ import {
   Plus,
   X,
   Zap,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -44,6 +46,7 @@ export default function QuickDraft() {
   const [newPlayerName, setNewPlayerName] = useState("");
   const [captainIds, setCaptainIds] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
+  const [draftMode, setDraftMode] = useState<"all" | "even">("all");
 
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
@@ -95,16 +98,30 @@ export default function QuickDraft() {
     setCreating(true);
 
     try {
+      // When "even" mode is selected, drop the last non-captain player
+      let effectivePlayers = [...players];
+      if (draftMode === "even" && numTeams === 2) {
+        const lastNonCaptainIndex = [...effectivePlayers]
+          .reverse()
+          .findIndex((p) => !captainIds.includes(p.id));
+        if (lastNonCaptainIndex >= 0) {
+          effectivePlayers.splice(
+            effectivePlayers.length - 1 - lastNonCaptainIndex,
+            1
+          );
+        }
+      }
+
       const raffleOrder = generateRaffleOrder(numTeams);
-      const totalPicks = players.length - NUM_TEAMS;
+      const totalPicks = effectivePlayers.length - NUM_TEAMS;
       const draftOrder = generateSnakeDraftOrder(totalPicks, raffleOrder);
 
       // Build players array with captain flags (captains first to preserve order)
       const captainPlayers = captainIds.map((cid) => {
-        const p = players.find((pl) => pl.id === cid);
+        const p = effectivePlayers.find((pl) => pl.id === cid);
         return { name: p!.name, is_captain: true };
       });
-      const nonCaptainPlayers = players
+      const nonCaptainPlayers = effectivePlayers
         .filter((p) => !captainIds.includes(p.id))
         .map((p) => ({ name: p.name, is_captain: false }));
       const allPlayers = [...captainPlayers, ...nonCaptainPlayers];
@@ -151,10 +168,10 @@ export default function QuickDraft() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
+    <div className="min-h-screen relative overflow-hidden bg-purple-900">
       {/* Background Layer */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 to-purple-950" />
         <div
           className="absolute inset-0"
           style={{
@@ -550,6 +567,65 @@ export default function QuickDraft() {
                     </div>
                   </div>
                 </div>
+
+                {/* Fairness warning */}
+                {(() => {
+                  const nonCaptainCount = players.length - numTeams;
+                  if (numTeams === 2 && nonCaptainCount % 2 !== 0) {
+                    return (
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="h-5 w-5 text-amber-400 mt-0.5 shrink-0" />
+                          <p className="text-sm text-amber-200 font-medium">
+                            {t("create.fairness.unevenTeams2")}
+                          </p>
+                        </div>
+                        <div className="space-y-2 ml-7">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="draftMode"
+                              checked={draftMode === "all"}
+                              onChange={() => setDraftMode("all")}
+                              className="accent-amber-400"
+                            />
+                            <span className="text-sm text-amber-300/80">
+                              {t("create.fairness.unevenOption", { playerCount: players.length })}
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="draftMode"
+                              checked={draftMode === "even"}
+                              onChange={() => setDraftMode("even")}
+                              className="accent-amber-400"
+                            />
+                            <span className="text-sm text-amber-300/80">
+                              {t("create.fairness.evenOption", {
+                                playerCount: players.length,
+                                evenCount: players.length - 1,
+                              })}
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (numTeams === 3 && nonCaptainCount % 3 !== 0) {
+                    return (
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                        <div className="flex items-start gap-2">
+                          <Info className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
+                          <p className="text-sm text-blue-300/80">
+                            {t("create.fairness.unevenTeams3", { teams: numTeams })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
 
                 <div className="flex gap-3">
                   <Button

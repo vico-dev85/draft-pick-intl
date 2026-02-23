@@ -3,9 +3,11 @@ import i18next from "i18next";
 // Generate a random 4-character room code
 export function generateRoomCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const array = new Uint8Array(4);
+  crypto.getRandomValues(array);
   let code = "";
   for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(array[i] % chars.length);
   }
   return code;
 }
@@ -16,7 +18,9 @@ export function generateRaffleOrder(numTeams: number = 3): number[] {
   const captains = Array.from({ length: numTeams }, (_, i) => i + 1);
   // Fisher-Yates shuffle
   for (let i = captains.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    const j = array[0] % (i + 1);
     [captains[i], captains[j]] = [captains[j], captains[i]];
   }
   return captains;
@@ -25,34 +29,66 @@ export function generateRaffleOrder(numTeams: number = 3): number[] {
 // Generate snake draft order for N captains
 // Pattern with default order [1,2,3]: 1,2,3,3,2,1,1,2,3,3,2,1...
 // Pattern with raffle order [2,3,1]: 2,3,1,1,3,2,2,3,1,1,3,2...
+//
+// Split-tail fix: when the final round is incomplete, it continues in the
+// SAME direction as the previous round instead of reversing. This prevents
+// the "double bottom" where one captain gets consecutive last picks.
+// Example (13 picks, 2 teams [A,B]):
+//   Before: A B | B A | A B | B A | A B | B A | A   → A gets picks 12 AND 13
+//   After:  A B | B A | A B | B A | A B | B A | B   → split across captains
 export function generateSnakeDraftOrder(totalPicks: number, raffleOrder?: number[]): number[] {
   const captainOrder = raffleOrder || [1, 2, 3];
+  const numTeams = captainOrder.length;
   const order: number[] = [];
-  let round = 0;
 
-  while (order.length < totalPicks) {
-    const isEvenRound = round % 2 === 0;
-    if (isEvenRound) {
-      // Forward order
-      for (let i = 0; i < captainOrder.length && order.length < totalPicks; i++) {
+  const fullRounds = Math.floor(totalPicks / numTeams);
+  const remainder = totalPicks % numTeams;
+
+  // Generate full rounds with normal snake alternation
+  for (let round = 0; round < fullRounds; round++) {
+    if (round % 2 === 0) {
+      for (let i = 0; i < numTeams; i++) {
         order.push(captainOrder[i]);
       }
     } else {
-      // Reverse order
-      for (let i = captainOrder.length - 1; i >= 0 && order.length < totalPicks; i--) {
+      for (let i = numTeams - 1; i >= 0; i--) {
         order.push(captainOrder[i]);
       }
     }
-    round++;
+  }
+
+  // Handle partial last round — continue same direction as previous round
+  // to avoid "double bottom" where one captain gets consecutive last picks
+  if (remainder > 0) {
+    if (fullRounds === 0) {
+      // No previous round — just use forward direction
+      for (let i = 0; i < remainder; i++) {
+        order.push(captainOrder[i]);
+      }
+    } else {
+      const prevRoundWasForward = (fullRounds - 1) % 2 === 0;
+      if (prevRoundWasForward) {
+        // Continue forward
+        for (let i = 0; i < remainder; i++) {
+          order.push(captainOrder[i]);
+        }
+      } else {
+        // Continue reverse
+        for (let i = numTeams - 1; i >= numTeams - remainder; i--) {
+          order.push(captainOrder[i]);
+        }
+      }
+    }
   }
 
   return order;
 }
 
-// Color arrays indexed by captain number (1-based, index 0 is unused fallback)
-const BG_COLORS = ["bg-muted", "bg-primary", "bg-secondary", "bg-accent", "bg-orange-600", "bg-pink-600"];
-const TEXT_COLORS = ["text-muted-foreground", "text-primary", "text-secondary", "text-accent", "text-orange-600", "text-pink-600"];
-const BORDER_COLORS = ["border-muted", "border-primary", "border-secondary", "border-accent", "border-orange-600", "border-pink-600"];
+// Team colors — high-contrast, instantly distinguishable jersey colors
+// Index 0 = unused fallback, 1-5 = captain numbers
+const BG_COLORS = ["bg-muted", "bg-blue-600", "bg-red-600", "bg-amber-600", "bg-emerald-600", "bg-pink-600"];
+const TEXT_COLORS = ["text-muted-foreground", "text-blue-600", "text-red-600", "text-amber-600", "text-emerald-600", "text-pink-600"];
+const BORDER_COLORS = ["border-muted", "border-blue-600", "border-red-600", "border-amber-600", "border-emerald-600", "border-pink-600"];
 
 // Get captain color class
 export function getCaptainColor(captainNumber: number): string {

@@ -18,6 +18,8 @@ import {
   Users,
   Crown,
   AlertCircle,
+  AlertTriangle,
+  Info,
   ChevronDown,
   ChevronUp,
   MapPin,
@@ -28,6 +30,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
+import { Logo } from "@/components/ui/logo";
 
 interface Player {
   id: string;
@@ -72,6 +75,7 @@ export default function CreateDraft() {
   const [guestName, setGuestName] = useState("");
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [draftMode, setDraftMode] = useState<"all" | "even">("all");
 
   useEffect(() => {
     if (!authLoading && !clubLoading) {
@@ -271,10 +275,24 @@ export default function CreateDraft() {
     try {
       const roomCode = generateRoomCode();
 
+      // When "even" mode is selected, drop the last non-captain player
+      let effectivePlayerIds = [...selectedPlayerIds];
+      if (draftMode === "even" && numTeams === 2) {
+        const lastNonCaptainIndex = [...effectivePlayerIds]
+          .reverse()
+          .findIndex((id) => !captainIds.includes(id));
+        if (lastNonCaptainIndex >= 0) {
+          effectivePlayerIds.splice(
+            effectivePlayerIds.length - 1 - lastNonCaptainIndex,
+            1
+          );
+        }
+      }
+
       // Pre-generate raffle order and snake draft order BEFORE any captains connect
       // This ensures all clients read the same predetermined order from the database
       const raffleOrder = generateRaffleOrder(numTeams);
-      const totalPicks = selectedPlayerIds.length - NUM_TEAMS; // Non-captain players
+      const totalPicks = effectivePlayerIds.length - NUM_TEAMS; // Non-captain players
       const draftOrder = generateSnakeDraftOrder(totalPicks, raffleOrder);
 
       // Create draft room with pre-generated draft order and raffle order
@@ -302,7 +320,7 @@ export default function CreateDraft() {
 
       // Add all players to draft room
       // Handle both pool players (with player_id) and guests (with guest_name)
-      const draftPlayers = selectedPlayerIds.map((playerId) => {
+      const draftPlayers = effectivePlayerIds.map((playerId) => {
         const player = combinedPlayers.find((p) => p.id === playerId);
         const isGuest = player?.isGuest || false;
 
@@ -352,38 +370,25 @@ export default function CreateDraft() {
 
   if (authLoading || clubLoading || loading) {
     return (
-      <div className="min-h-screen bg-emerald-900 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-white" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
-      {/* Background Layer */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)",
-          }}
-        />
-      </div>
-
-      {/* Content Layer */}
-      <div className="relative z-10">
+    <div className="min-h-screen bg-background bg-mesh-light">
+      <div>
         {/* Header */}
-        <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm">
+        <header className="p-4 flex items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm">
           <Link
             to="/dashboard"
-            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>{t("create.back")}</span>
           </Link>
-          <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
+          <Logo size="md" />
         </header>
 
       <main className="px-4 py-8 max-w-2xl mx-auto">
@@ -396,12 +401,12 @@ export default function CreateDraft() {
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                       step === s
-                        ? "bg-emerald-500 text-white"
+                        ? "bg-primary text-primary-foreground"
                         : (["name", "players", "captains", "confirm"] as Step[]).indexOf(
                             step
                           ) > i
-                        ? "bg-emerald-600 text-white"
-                        : "bg-white/20 text-white/50"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {(["name", "players", "captains", "confirm"] as Step[]).indexOf(
@@ -418,8 +423,8 @@ export default function CreateDraft() {
                         (["name", "players", "captains", "confirm"] as Step[]).indexOf(
                           step
                         ) > i
-                          ? "bg-emerald-600"
-                          : "bg-white/20"
+                          ? "bg-primary"
+                          : "bg-border"
                       }`}
                     />
                   )}
@@ -440,15 +445,15 @@ export default function CreateDraft() {
               className="space-y-6"
             >
               <div className="text-center">
-                <h1 className="text-2xl font-bold text-white mb-2">
+                <h1 className="text-2xl font-bold text-foreground mb-2">
                   {t("create.title")}
                 </h1>
-                <p className="text-white/60">{t("create.nameStep.hint")}</p>
+                <p className="text-muted-foreground">{t("create.nameStep.hint")}</p>
               </div>
 
               {/* Team Count Selector */}
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-3">
-                <Label className="text-white/80">{t("create.teamCount.title")}</Label>
+              <div className="bg-card shadow-card rounded-xl p-6 border border-border space-y-3">
+                <Label className="text-foreground/80">{t("create.teamCount.title")}</Label>
                 <div className="grid grid-cols-2 gap-3">
                   {[2, 3].map((n) => (
                     <button
@@ -461,14 +466,14 @@ export default function CreateDraft() {
                       }}
                       className={`p-4 rounded-xl border-2 transition-all text-center ${
                         numTeams === n
-                          ? "border-emerald-400 bg-emerald-500/20"
-                          : "border-white/20 bg-white/5 hover:bg-white/10"
+                          ? "border-primary bg-primary/15"
+                          : "border-border bg-card hover:bg-muted"
                       }`}
                     >
-                      <span className="text-lg font-bold text-white">
+                      <span className="text-lg font-bold text-foreground">
                         {t(`create.teamCount.${n === 2 ? "two" : "three"}`)}
                       </span>
-                      <p className="text-xs text-white/50 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {t(`create.teamCount.${n === 2 ? "twoDescription" : "threeDescription"}`)}
                       </p>
                     </button>
@@ -476,15 +481,15 @@ export default function CreateDraft() {
                 </div>
               </div>
 
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-4">
+              <div className="bg-card shadow-card rounded-xl p-6 border border-border space-y-4">
                 <div>
-                  <Label htmlFor="draftName" className="text-white/80">{t("create.nameStep.label")}</Label>
+                  <Label htmlFor="draftName" className="text-foreground/80">{t("create.nameStep.label")}</Label>
                   <Input
                     id="draftName"
                     placeholder={t("create.nameStep.placeholder")}
                     value={draftName}
                     onChange={(e) => setDraftName(e.target.value)}
-                    className="mt-2 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                    className="mt-2 h-12"
                     maxLength={50}
                   />
                 </div>
@@ -493,7 +498,7 @@ export default function CreateDraft() {
                 <button
                   type="button"
                   onClick={() => setShowDetails(!showDetails)}
-                  className="w-full flex items-center justify-between text-white/60 hover:text-white/80 transition-colors py-2"
+                  className="w-full flex items-center justify-between text-muted-foreground hover:text-foreground/80 transition-colors py-2"
                 >
                   <span className="text-sm">{t("create.nameStep.addDetails")}</span>
                   {showDetails ? (
@@ -508,10 +513,10 @@ export default function CreateDraft() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="space-y-4 pt-2 border-t border-white/10"
+                    className="space-y-4 pt-2 border-t border-border"
                   >
                     <div>
-                      <Label htmlFor="location" className="text-white/80 flex items-center gap-2">
+                      <Label htmlFor="location" className="text-foreground/80 flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
                         {t("create.nameStep.location")}
                       </Label>
@@ -520,11 +525,11 @@ export default function CreateDraft() {
                         placeholder={t("create.nameStep.locationPlaceholder")}
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        className="mt-2 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                        className="mt-2 h-12"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="notes" className="text-white/80 flex items-center gap-2">
+                      <Label htmlFor="notes" className="text-foreground/80 flex items-center gap-2">
                         <FileText className="h-4 w-4" />
                         {t("create.nameStep.notes")}
                       </Label>
@@ -533,7 +538,7 @@ export default function CreateDraft() {
                         placeholder={t("create.nameStep.notesPlaceholder")}
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="mt-2 bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none"
+                        className="mt-2 resize-none"
                         rows={2}
                       />
                     </div>
@@ -544,7 +549,7 @@ export default function CreateDraft() {
               <Button
                 onClick={goNext}
                 disabled={!canProceedToPlayers}
-                className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
               >
                 {t("create.continue")}
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -562,47 +567,47 @@ export default function CreateDraft() {
               className="space-y-6"
             >
               <div className="text-center">
-                <h1 className="text-2xl font-bold text-white mb-2">
+                <h1 className="text-2xl font-bold text-foreground mb-2">
                   <Users className="inline h-6 w-6 mr-2" />
                   {t("create.playersStep.title")}
                 </h1>
-                <p className="text-white/60">
+                <p className="text-muted-foreground">
                   {t("create.playersStep.selected", { count: selectedPlayerIds.length })} ({t("create.playersStep.required", { min: MIN_PLAYERS, max: MAX_PLAYERS })})
                 </p>
               </div>
 
               {fetchError === "member_access_denied" ? (
-                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center space-y-4">
+                <div className="bg-card shadow-card rounded-xl p-8 border border-border text-center space-y-4">
                   <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                  <h3 className="font-semibold text-white mb-2">
+                  <h3 className="font-semibold text-foreground mb-2">
                     {t("create.errors.noAccess")}
                   </h3>
-                  <p className="text-white/60 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     {t("create.errors.noAccessDescription")}
                   </p>
                   <div className="flex gap-3 justify-center flex-wrap">
                     <Button
                       onClick={() => { setLoading(true); fetchPlayers(); }}
-                      className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       {t("create.errors.retry")}
                     </Button>
-                    <Button asChild className="bg-white/20 hover:bg-white/30 text-white border-white/20">
+                    <Button asChild className="bg-muted hover:bg-muted/80 text-foreground border-border">
                       <Link to="/dashboard">{t("create.errors.backToDashboard")}</Link>
                     </Button>
                   </div>
                 </div>
               ) : allPlayers.length === 0 && guestPlayers.length === 0 ? (
-                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center space-y-4">
+                <div className="bg-card shadow-card rounded-xl p-8 border border-border text-center space-y-4">
                   <AlertCircle className="h-12 w-12 text-amber-400 mx-auto mb-4" />
-                  <h3 className="font-semibold text-white mb-2">
+                  <h3 className="font-semibold text-foreground mb-2">
                     {t("create.errors.noPlayers")}
                   </h3>
-                  <p className="text-white/60 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     {t("create.errors.noPlayersDescription")}
                   </p>
                   <div className="flex gap-3 justify-center flex-wrap">
-                    <Button asChild className="bg-white/20 hover:bg-white/30 text-white border-white/20">
+                    <Button asChild className="bg-muted hover:bg-muted/80 text-foreground border-border">
                       <Link to="/players">{t("create.errors.addToLibrary")}</Link>
                     </Button>
                     <Button
@@ -627,7 +632,7 @@ export default function CreateDraft() {
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && addGuest()}
-                          className="flex-1 h-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                          className="flex-1 h-10"
                           maxLength={30}
                           autoFocus
                         />
@@ -646,12 +651,12 @@ export default function CreateDraft() {
                   {/* Show added guests */}
                   {guestPlayers.length > 0 && (
                     <div className="space-y-2 mt-4">
-                      <p className="text-white/60 text-sm">{t("create.guest.added", { count: guestPlayers.length })}</p>
+                      <p className="text-muted-foreground text-sm">{t("create.guest.added", { count: guestPlayers.length })}</p>
                       <div className="flex flex-wrap gap-2 justify-center">
                         {guestPlayers.map((guest) => (
                           <span
                             key={guest.id}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-amber-500/20 rounded-full text-amber-300 text-sm"
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-amber-500/20 rounded-full text-amber-700 text-sm"
                           >
                             {guest.name}
                             <button onClick={() => removeGuest(guest.id)}>
@@ -666,19 +671,19 @@ export default function CreateDraft() {
               ) : (
                 <>
                   <div className="flex gap-2 justify-center flex-wrap">
-                    <Button size="sm" onClick={selectRegulars} className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30">
+                    <Button size="sm" onClick={selectRegulars} className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/30">
                       {t("create.playersStep.selectRegulars")}
                     </Button>
-                    <Button size="sm" onClick={selectAll} className="bg-white/20 hover:bg-white/30 text-white border-white/20">
+                    <Button size="sm" onClick={selectAll} className="bg-muted hover:bg-muted/80 text-foreground border-border">
                       {t("create.playersStep.selectAll")}
                     </Button>
-                    <Button size="sm" onClick={deselectAll} className="bg-white/20 hover:bg-white/30 text-white border-white/20">
+                    <Button size="sm" onClick={deselectAll} className="bg-muted hover:bg-muted/80 text-foreground border-border">
                       {t("create.playersStep.deselectAll")}
                     </Button>
                     <Button
                       size="sm"
                       onClick={() => setShowAddGuest(true)}
-                      className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/30"
+                      className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 border-amber-500/30"
                     >
                       <UserPlus className="h-4 w-4 mr-1" />
                       {t("create.guest.addGuest")}
@@ -699,7 +704,7 @@ export default function CreateDraft() {
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && addGuest()}
-                          className="flex-1 h-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                          className="flex-1 h-10"
                           maxLength={30}
                           autoFocus
                         />
@@ -717,18 +722,18 @@ export default function CreateDraft() {
                             setShowAddGuest(false);
                             setGuestName("");
                           }}
-                          className="bg-white/20 hover:bg-white/30 text-white"
+                          className="bg-muted hover:bg-muted/80 text-foreground"
                         >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-                      <p className="text-xs text-amber-300/70 mt-2">
+                      <p className="text-xs text-amber-700/70 mt-2">
                         {t("create.guest.oneTimeNote")}
                       </p>
                     </motion.div>
                   )}
 
-                  <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10 max-h-96 overflow-y-auto space-y-4">
+                  <div className="bg-card shadow-card rounded-xl p-4 border border-border space-y-4">
                     {/* Regular Players */}
                     {(() => {
                       const regulars = allPlayers.filter((p) => p.category === 'regular' || !p.category);
@@ -737,15 +742,15 @@ export default function CreateDraft() {
                         <>
                           {regulars.length > 0 && (
                             <div>
-                              <p className="text-xs text-white/50 mb-2 font-medium">{t("create.playersStep.regular")} ({regulars.length})</p>
+                              <p className="text-xs text-muted-foreground mb-2 font-medium">{t("create.playersStep.regular")} ({regulars.length})</p>
                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {regulars.map((player) => (
                                   <label
                                     key={player.id}
                                     className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                                       selectedPlayerIds.includes(player.id)
-                                        ? "bg-emerald-500/20 border-2 border-emerald-400"
-                                        : "bg-white/10 border-2 border-transparent hover:bg-white/20"
+                                        ? "bg-primary/15 border-2 border-primary"
+                                        : "bg-card border-2 border-border hover:bg-muted"
                                     }`}
                                   >
                                     <Checkbox
@@ -757,7 +762,7 @@ export default function CreateDraft() {
                                       photoUrl={player.photo_url}
                                       size="sm"
                                     />
-                                    <span className="text-sm font-medium text-white truncate">
+                                    <span className="text-sm font-medium text-foreground truncate">
                                       {player.name}
                                     </span>
                                   </label>
@@ -768,15 +773,15 @@ export default function CreateDraft() {
 
                           {occasionals.length > 0 && (
                             <div>
-                              <p className="text-xs text-white/50 mb-2 font-medium">{t("create.playersStep.occasional")} ({occasionals.length})</p>
+                              <p className="text-xs text-muted-foreground mb-2 font-medium">{t("create.playersStep.occasional")} ({occasionals.length})</p>
                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {occasionals.map((player) => (
                                   <label
                                     key={player.id}
                                     className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                                       selectedPlayerIds.includes(player.id)
-                                        ? "bg-emerald-500/20 border-2 border-emerald-400"
-                                        : "bg-white/10 border-2 border-transparent hover:bg-white/20"
+                                        ? "bg-primary/15 border-2 border-primary"
+                                        : "bg-card border-2 border-border hover:bg-muted"
                                     }`}
                                   >
                                     <Checkbox
@@ -788,7 +793,7 @@ export default function CreateDraft() {
                                       photoUrl={player.photo_url}
                                       size="sm"
                                     />
-                                    <span className="text-sm font-medium text-white truncate">
+                                    <span className="text-sm font-medium text-foreground truncate">
                                       {player.name}
                                     </span>
                                   </label>
@@ -803,7 +808,7 @@ export default function CreateDraft() {
                     {/* Guest Players */}
                     {guestPlayers.length > 0 && (
                       <div>
-                        <p className="text-xs text-amber-300/50 mb-2 font-medium">{t("create.guest.guests")} ({guestPlayers.length})</p>
+                        <p className="text-xs text-amber-700/50 mb-2 font-medium">{t("create.guest.guests")} ({guestPlayers.length})</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                           {guestPlayers.map((player) => (
                             <div
@@ -823,13 +828,13 @@ export default function CreateDraft() {
                                 photoUrl={null}
                                 size="sm"
                               />
-                              <span className="text-sm font-medium text-amber-300 truncate flex-1">
+                              <span className="text-sm font-medium text-amber-700 truncate flex-1">
                                 {player.name}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => removeGuest(player.id)}
-                                className="text-amber-400/60 hover:text-amber-400"
+                                className="text-amber-500/60 hover:text-amber-600"
                               >
                                 <X className="h-4 w-4" />
                               </button>
@@ -840,22 +845,28 @@ export default function CreateDraft() {
                     )}
                   </div>
 
-                  <div className="flex gap-3">
-                    <Button onClick={goBack} className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20">
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      {t("create.back")}
-                    </Button>
-                    <Button
-                      onClick={goNext}
-                      disabled={!canProceedToCaptains}
-                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
-                    >
-                      {t("create.continue")}
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
+                  {/* Spacer for sticky bottom bar */}
+                  <div className="h-20" />
                 </>
               )}
+
+              {/* Sticky bottom bar */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border z-30">
+                <div className="max-w-2xl mx-auto flex gap-3">
+                  <Button onClick={goBack} className="flex-1 bg-muted hover:bg-muted/80 text-foreground border-border">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("create.back")}
+                  </Button>
+                  <Button
+                    onClick={goNext}
+                    disabled={!canProceedToCaptains}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    {t("create.continue")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -869,11 +880,11 @@ export default function CreateDraft() {
               className="space-y-6"
             >
               <div className="text-center">
-                <h1 className="text-2xl font-bold text-white mb-2">
+                <h1 className="text-2xl font-bold text-foreground mb-2">
                   <Crown className="inline h-6 w-6 mr-2 text-amber-400" />
                   {t("create.captainsStep.title", { total: numTeams })}
                 </h1>
-                <p className="text-white/60">
+                <p className="text-muted-foreground">
                   {t("create.captainsStep.selected", { count: captainIds.length, total: numTeams })}
                 </p>
               </div>
@@ -887,8 +898,8 @@ export default function CreateDraft() {
                       key={num}
                       className={`w-20 h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center ${
                         captain
-                          ? "border-emerald-400 bg-emerald-500/20"
-                          : "border-white/30"
+                          ? "border-primary bg-primary/15"
+                          : "border-border"
                       }`}
                     >
                       {captain ? (
@@ -898,12 +909,12 @@ export default function CreateDraft() {
                             photoUrl={captain.photo_url}
                             size="md"
                           />
-                          <span className="text-xs mt-1 truncate w-full text-center px-1 text-white">
+                          <span className="text-xs mt-1 truncate w-full text-center px-1 text-foreground">
                             {captain.name}
                           </span>
                         </>
                       ) : (
-                        <span className="text-white/50 text-xs">
+                        <span className="text-muted-foreground text-xs">
                           {t("captain", { number: num })}
                         </span>
                       )}
@@ -914,12 +925,12 @@ export default function CreateDraft() {
 
               {/* Note about guests */}
               {guestPlayers.length > 0 && (
-                <p className="text-center text-white/50 text-sm">
+                <p className="text-center text-muted-foreground text-sm">
                   {t("create.captainsStep.guestsCannotBeCaptains")}
                 </p>
               )}
 
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10 max-h-72 overflow-y-auto">
+              <div className="bg-card shadow-card rounded-xl p-4 border border-border">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {selectedPlayers.map((player) => {
                     const isGuest = player.isGuest;
@@ -935,8 +946,8 @@ export default function CreateDraft() {
                           isCaptain
                             ? "bg-amber-500/20 border-2 border-amber-400"
                             : isGuest
-                            ? "bg-white/5 border-2 border-transparent opacity-50 cursor-not-allowed"
-                            : "bg-white/10 border-2 border-transparent hover:bg-white/20 disabled:opacity-50"
+                            ? "bg-muted/50 border-2 border-transparent opacity-50 cursor-not-allowed"
+                            : "bg-card border-2 border-border hover:bg-muted disabled:opacity-50"
                         }`}
                       >
                         <PlayerAvatar
@@ -944,14 +955,14 @@ export default function CreateDraft() {
                           photoUrl={player.photo_url}
                           size="sm"
                         />
-                        <span className={`text-sm font-medium truncate ${isGuest ? "text-white/50" : "text-white"}`}>
+                        <span className={`text-sm font-medium truncate ${isGuest ? "text-muted-foreground" : "text-foreground"}`}>
                           {player.name}
                         </span>
                         {isCaptain && (
                           <Crown className="h-4 w-4 text-amber-400 ml-auto" />
                         )}
                         {isGuest && (
-                          <span className="text-xs text-amber-400/50 ml-auto">{t("create.guest.guestLabel")}</span>
+                          <span className="text-xs text-amber-500 ml-auto">{t("create.guest.guestLabel")}</span>
                         )}
                       </button>
                     );
@@ -959,19 +970,25 @@ export default function CreateDraft() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button onClick={goBack} className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  {t("create.back")}
-                </Button>
-                <Button
-                  onClick={goNext}
-                  disabled={!canProceedToConfirm}
-                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
-                >
-                  {t("create.continue")}
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
+              {/* Spacer for sticky bottom bar */}
+              <div className="h-20" />
+
+              {/* Sticky bottom bar */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border z-30">
+                <div className="max-w-2xl mx-auto flex gap-3">
+                  <Button onClick={goBack} className="flex-1 bg-muted hover:bg-muted/80 text-foreground border-border">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {t("create.back")}
+                  </Button>
+                  <Button
+                    onClick={goNext}
+                    disabled={!canProceedToConfirm}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    {t("create.continue")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}
@@ -986,20 +1003,20 @@ export default function CreateDraft() {
               className="space-y-6"
             >
               <div className="text-center">
-                <h1 className="text-2xl font-bold text-white mb-2">
+                <h1 className="text-2xl font-bold text-foreground mb-2">
                   {t("create.confirmStep.title")}
                 </h1>
-                <p className="text-white/60">{t("create.confirmStep.reviewDetails")}</p>
+                <p className="text-muted-foreground">{t("create.confirmStep.reviewDetails")}</p>
               </div>
 
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 space-y-4">
+              <div className="bg-card shadow-card rounded-xl p-6 border border-border space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-white/60">{t("create.confirmStep.draftName")}:</span>
-                  <span className="font-semibold text-white">{draftName}</span>
+                  <span className="text-muted-foreground">{t("create.confirmStep.draftName")}:</span>
+                  <span className="font-semibold text-foreground">{draftName}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-white/60">{t("create.confirmStep.players")}:</span>
-                  <span className="font-semibold text-white">
+                  <span className="text-muted-foreground">{t("create.confirmStep.players")}:</span>
+                  <span className="font-semibold text-foreground">
                     {selectedPlayerIds.length}
                     {guestPlayers.length > 0 && (
                       <span className="text-amber-400 text-sm ml-2">
@@ -1008,8 +1025,8 @@ export default function CreateDraft() {
                     )}
                   </span>
                 </div>
-                <div className="border-t border-white/10 pt-4">
-                  <span className="text-white/60 block mb-3">{t("create.confirmStep.captains")}:</span>
+                <div className="border-t border-border pt-4">
+                  <span className="text-muted-foreground block mb-3">{t("create.confirmStep.captains")}:</span>
                   <div className="flex justify-center gap-4">
                     {captains.map((captain, idx) => (
                       <div key={captain.id} className="text-center">
@@ -1018,8 +1035,8 @@ export default function CreateDraft() {
                           photoUrl={captain.photo_url}
                           size="lg"
                         />
-                        <p className="text-sm font-medium mt-2 text-white">{captain.name}</p>
-                        <span className="text-xs text-white/60">
+                        <p className="text-sm font-medium mt-2 text-foreground">{captain.name}</p>
+                        <span className="text-xs text-muted-foreground">
                           {t("captain", { number: idx + 1 })}
                         </span>
                       </div>
@@ -1028,15 +1045,74 @@ export default function CreateDraft() {
                 </div>
               </div>
 
+              {/* Fairness warning */}
+              {(() => {
+                const nonCaptainCount = selectedPlayerIds.length - numTeams;
+                if (numTeams === 2 && nonCaptainCount % 2 !== 0) {
+                  return (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                        <p className="text-sm text-amber-800 font-medium">
+                          {t("create.fairness.unevenTeams2")}
+                        </p>
+                      </div>
+                      <div className="space-y-2 ml-7">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="draftMode"
+                            checked={draftMode === "all"}
+                            onChange={() => setDraftMode("all")}
+                            className="accent-amber-500"
+                          />
+                          <span className="text-sm text-amber-700">
+                            {t("create.fairness.unevenOption", { playerCount: selectedPlayerIds.length })}
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="draftMode"
+                            checked={draftMode === "even"}
+                            onChange={() => setDraftMode("even")}
+                            className="accent-amber-500"
+                          />
+                          <span className="text-sm text-amber-700">
+                            {t("create.fairness.evenOption", {
+                              playerCount: selectedPlayerIds.length,
+                              evenCount: selectedPlayerIds.length - 1,
+                            })}
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  );
+                }
+                if (numTeams === 3 && nonCaptainCount % 3 !== 0) {
+                  return (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <div className="flex items-start gap-2">
+                        <Info className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+                        <p className="text-sm text-blue-700">
+                          {t("create.fairness.unevenTeams3", { teams: numTeams })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               <div className="flex gap-3">
-                <Button onClick={goBack} className="flex-1 bg-white/20 hover:bg-white/30 text-white border-white/20">
+                <Button onClick={goBack} className="flex-1 bg-muted hover:bg-muted/80 text-foreground border-border">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   {t("create.back")}
                 </Button>
                 <Button
                   onClick={handleCreate}
                   disabled={creating}
-                  className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   {creating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

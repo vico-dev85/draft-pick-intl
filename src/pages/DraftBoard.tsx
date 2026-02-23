@@ -10,7 +10,6 @@ import { ArrowLeft, Loader2, Volume2, VolumeX } from "lucide-react";
 import {
   playSound,
   playRandomCrowd,
-  speak,
   playSoundThenSpeak,
   preloadSounds,
   isMuted,
@@ -24,6 +23,7 @@ import {
   ConfirmPickModal,
 } from "@/components/draft";
 import { useTranslation } from "react-i18next";
+import { Logo } from "@/components/ui/logo";
 
 interface DraftRoom {
   id: string;
@@ -107,6 +107,7 @@ export default function DraftBoard() {
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
 
   const [soundMuted, setSoundMuted] = useState(isMuted);
+  const [draftComplete, setDraftComplete] = useState(false);
 
   // Lock to prevent double-picks
   const pickLockRef = useRef(false);
@@ -126,12 +127,12 @@ export default function DraftBoard() {
 
   const isDebugMode = new URLSearchParams(window.location.search).get('debug') === '1';
 
-  // Handle draft completion — whistle + TTS + delayed navigation (deduplicated)
+  // Handle draft completion — whistle + TTS + celebration overlay + delayed navigation
   const handleDraftComplete = useCallback(() => {
     if (draftCompleteHandledRef.current) return;
     draftCompleteHandledRef.current = true;
+    setDraftComplete(true);
     playSound("whistle.mp3");
-    setTimeout(() => speak(t("board.tts.draftComplete")), 2200);
     setTimeout(() => navigate(`/results/${roomCode}`), 5000);
   }, [navigate, roomCode, t]);
 
@@ -179,11 +180,11 @@ export default function DraftBoard() {
   // Browser tab title when it's your turn
   useEffect(() => {
     if (isMyTurn) {
-      document.title = `${t("board.tabTitleYourTurn")} | Draft Pick`;
+      document.title = `${t("board.tabTitleYourTurn")} | PickNKick`;
     } else {
-      document.title = `${t("board.tabTitleDraft")} | Draft Pick`;
+      document.title = `${t("board.tabTitleDraft")} | PickNKick`;
     }
-    return () => { document.title = "Draft Pick"; };
+    return () => { document.title = "PickNKick"; };
   }, [isMyTurn, t]);
 
   // Get captain name by number
@@ -223,9 +224,8 @@ export default function DraftBoard() {
           playerName: truncateName(player.display_name),
           isMe: false,
         });
-        // Sound: crowd reaction + TTS "[captain] picked [player]"
+        // Sound: crowd reaction
         playRandomCrowd();
-        setTimeout(() => speak(t("board.tts.playerPicked", { captain: captainName, player: player.display_name })), 600);
         break; // Only one announcement at a time
       }
     }
@@ -485,7 +485,6 @@ export default function DraftBoard() {
       console.log(`[DraftBoard] Pick SUCCESS: ${playerName} (pick #${result.pick_number})`);
 
       playRandomCrowd();
-      setTimeout(() => speak(t("board.tts.youPicked", { player: playerName })), 600);
 
       setAnnouncement({
         id: generateAnnouncementId(),
@@ -536,7 +535,7 @@ export default function DraftBoard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
       </div>
     );
   }
@@ -579,8 +578,8 @@ export default function DraftBoard() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Compact Header - emerald branded */}
-      <header className="px-3 py-2 flex items-center justify-between border-b border-emerald-700 bg-emerald-800">
+      {/* Compact Header - purple branded */}
+      <header className="px-3 py-2 flex items-center justify-between border-b border-purple-700 bg-purple-800">
         <Link
           to="/"
           className="flex items-center gap-1 text-white/70 hover:text-white transition-colors text-sm"
@@ -588,7 +587,7 @@ export default function DraftBoard() {
           <ArrowLeft className="h-3 w-3" />
           <span>{t("board.back")}</span>
         </Link>
-        <img src="/logo.png" alt="Draft Pick" className="h-6 w-auto" />
+        <Logo size="sm" variant="light" />
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSoundMuted(toggleMute())}
@@ -601,7 +600,7 @@ export default function DraftBoard() {
         </div>
       </header>
 
-      <main className="flex-1 px-3 py-2 flex flex-col">
+      <main className="flex-1 px-3 py-2 flex flex-col lg:px-6 lg:py-3">
         {/* Debug Panel */}
         {isDebugMode && (
           <div className="mb-2 p-2 bg-black/90 text-green-400 text-[10px] font-mono rounded border border-green-500">
@@ -623,64 +622,84 @@ export default function DraftBoard() {
           isMyTurn={isMyTurn}
         />
 
-        {/* Teams Grid */}
-        <div className={`grid ${getTeamGridClass(numTeams)} gap-2 mt-3`}>
-          {teams.map((team) => (
-            <TeamColumn
-              key={team.number}
-              captainNumber={team.number}
-              captainName={team.captainName}
-              captainPhotoUrl={team.captainPhotoUrl}
-              players={team.players}
-              isActive={room.current_turn_captain_number === team.number}
-              totalPlayersInDraft={totalNonCaptainPlayers}
-              numTeams={numTeams}
+        {/* Draft Progress */}
+        <div className="mt-2 flex items-center gap-2">
+          <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${totalNonCaptainPlayers > 0 ? ((totalNonCaptainPlayers - availablePlayers.length) / totalNonCaptainPlayers) * 100 : 0}%` }}
             />
-          ))}
+          </div>
+          <span className="text-xs text-gray-500 font-mono whitespace-nowrap">
+            {totalNonCaptainPlayers - availablePlayers.length}/{totalNonCaptainPlayers}
+          </span>
         </div>
 
-        {/* Available Players Pool */}
-        <div className="mt-4 flex-1">
-          <div className="text-base font-semibold mb-3 text-gray-800">
-            {t("board.availablePlayers", { count: availablePlayers.length })}
+        {/* Desktop: two-panel layout / Mobile: stacked */}
+        <div className="mt-3 flex-1 lg:grid lg:grid-cols-[1fr,320px] lg:gap-4 xl:grid-cols-[1fr,380px]">
+
+          {/* Available Players Pool — main area on desktop, below teams on mobile */}
+          <div className="order-2 lg:order-1 mt-4 lg:mt-0 pb-6">
+            <div className="text-base font-semibold mb-3 text-gray-800">
+              {t("board.availablePlayers", { count: availablePlayers.length })}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+              <AnimatePresence mode="popLayout">
+                {availablePlayers.map((player) => {
+                  const isPicking = picking === player.id;
+
+                  let state: "available" | "highlighted" | "selected" | "disabled" = "disabled";
+                  if (isMyTurn && !picking) {
+                    state = "highlighted";
+                  }
+
+                  return (
+                    <motion.div
+                      key={player.id}
+                      layout="position"
+                      initial={{ opacity: 1 }}
+                      exit={{ opacity: 0, scale: 0.85 }}
+                      transition={{ layout: { type: "spring", stiffness: 200, damping: 25 }, opacity: { duration: 0.2 } }}
+                    >
+                      {isPicking ? (
+                        <div className="h-10 flex items-center justify-center bg-primary/20 rounded-xl">
+                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        </div>
+                      ) : (
+                        <PlayerChip
+                          name={player.display_name}
+                          photoUrl={player.photo_url}
+                          size="md"
+                          state={state}
+                          onClick={() => handleSelectPlayer(player)}
+                        />
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <AnimatePresence mode="popLayout">
-              {availablePlayers.map((player) => {
-                const isPicking = picking === player.id;
-
-                let state: "available" | "highlighted" | "selected" | "disabled" = "disabled";
-                if (isMyTurn && !picking) {
-                  state = "highlighted";
-                }
-
-                return (
-                  <motion.div
-                    key={player.id}
-                    layout
-                    initial={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  >
-                    {isPicking ? (
-                      <div className="h-10 flex items-center justify-center bg-primary/20 rounded-xl">
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <PlayerChip
-                        name={player.display_name}
-                        photoUrl={player.photo_url}
-                        size="md"
-                        state={state}
-                        onClick={() => handleSelectPlayer(player)}
-                      />
-                    )}
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
+          {/* Teams — sidebar on desktop, top on mobile */}
+          <div className="order-1 lg:order-2">
+            <div className={`grid ${getTeamGridClass(numTeams)} gap-2 lg:grid-cols-1 lg:gap-3`}>
+              {teams.map((team) => (
+                <TeamColumn
+                  key={team.number}
+                  captainNumber={team.number}
+                  captainName={team.captainName}
+                  captainPhotoUrl={team.captainPhotoUrl}
+                  players={team.players}
+                  isActive={room.current_turn_captain_number === team.number}
+                  totalPlayersInDraft={totalNonCaptainPlayers}
+                  numTeams={numTeams}
+                />
+              ))}
+            </div>
           </div>
+
         </div>
       </main>
 
@@ -713,6 +732,39 @@ export default function DraftBoard() {
               }
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Draft Complete Overlay */}
+      <AnimatePresence>
+        {draftComplete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.2 }}
+              className="text-center p-8"
+            >
+              <motion.div
+                animate={{ rotate: [0, -10, 10, -10, 0] }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-6xl mb-4"
+              >
+                🏆
+              </motion.div>
+              <h2 className="text-3xl font-heading font-bold text-white mb-2">
+                {t("board.draftComplete")}
+              </h2>
+              <p className="text-white/60 text-sm">
+                {t("board.viewResults")}...
+              </p>
+              <Loader2 className="h-5 w-5 animate-spin text-white/40 mx-auto mt-4" />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

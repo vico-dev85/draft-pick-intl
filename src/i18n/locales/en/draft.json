@@ -64,6 +64,12 @@
       "guestLabel": "Guest",
       "added": "Guests added: {{count}}"
     },
+    "fairness": {
+      "unevenTeams2": "Odd number of players — teams won't be equal",
+      "unevenTeams3": "Player count isn't divisible by {{teams}} — not all teams will be equal",
+      "evenOption": "Drop last pick ({{playerCount}} → {{evenCount}} players, even teams)",
+      "unevenOption": "Keep all {{playerCount}} players (one team gets an extra)"
+    },
     "errors": {
       "noPlayers": "No players yet",
       "noPlayersDescription": "Add players to your squad or add guests for this draft",
@@ -160,6 +166,7 @@
     "draftComplete": "Draft Complete!",
     "viewResults": "View Results",
     "team": "Team {{number}}",
+    "teamCaptain": "Team {{captain}}",
     "availablePlayers": "Available Players ({{count}})",
     "you": "You",
     "enableSounds": "Enable sounds",
@@ -186,7 +193,7 @@
       "yourTurn": "Your turn to pick",
       "captainPicking": "{{captain}} is picking",
       "playerPicked": "{{captain}} picked {{player}}",
-      "draftComplete": "The teams are ready. Thanks for using Draft Pick!",
+      "draftComplete": "The teams are ready. Thanks for using PickNKick!",
       "youPicked": "You picked {{player}}"
     }
   },
