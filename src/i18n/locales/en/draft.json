@@ -9,6 +9,13 @@
       "pickCaptains": "Pick Captains",
       "confirm": "Confirm"
     },
+    "draftMode": {
+      "title": "Draft Mode",
+      "live": "Live Draft",
+      "liveDescription": "Captains join on their phones and pick in turn",
+      "solo": "Solo Draft",
+      "soloDescription": "You pick all teams yourself — fast and easy"
+    },
     "teamCount": {
       "title": "Number of Teams",
       "two": "2 Teams",
@@ -242,6 +249,37 @@
     "rerollNeutral": "Different neutral hand — again!",
     "rerollSame": "All the same — again!",
     "draftOrder": "Draft Order:"
+  },
+  "solo": {
+    "title": "Split Teams",
+    "subtitle": "Pick tonight's players and split into teams",
+    "selectPlayers": "Who's playing tonight?",
+    "teamCount": "Teams",
+    "continue": "Continue",
+    "modeDraft": "Snake Draft",
+    "modeDraftDescription": "Pick one at a time in fair snake order",
+    "modeFree": "Drag & Drop",
+    "modeFreeDescription": "Drag players to teams",
+    "pickingFor": "Picking for Team {{number}}",
+    "assignTo": "Drag to a team",
+    "undoLastPick": "Undo",
+    "availablePlayers": "Available ({{count}})",
+    "allAssigned": "All players assigned!",
+    "shareWhatsApp": "Share on WhatsApp",
+    "copyText": "Copy",
+    "copied": "Copied!",
+    "shareTitle": "Teams: {{name}}",
+    "startOver": "Start Over",
+    "done": "Done",
+    "back": "Back",
+    "fairTeams": "Fair teams. No arguments. \u2014 PickNKick",
+    "team": "Team {{number}}",
+    "emptyTeam": "Drop players here",
+    "resetTeams": "Reset Teams",
+    "dragHint": "Drag players to teams — tap assigned players to remove",
+    "saving": "Saving...",
+    "saveError": "Could not save the draft",
+    "shareWithoutSaving": "Share without saving"
   },
   "captain": "Captain {{number}}",
   "captainLabel": "Captain"

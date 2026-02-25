@@ -327,6 +327,7 @@ export default function Results() {
   if (!room) return null;
 
   const numTeams = getNumTeams(room);
+  const isSoloDraft = !room.captains && !room.captain1_player_id;
   const teams = getAllCaptains(room).map((c) => {
     const captainPlayer = players.find((p) => p.player_id === c.playerId);
     const teamPlayers = players.filter(
@@ -335,7 +336,8 @@ export default function Results() {
     return {
       number: c.captainNumber,
       playerId: c.playerId,
-      name: captainPlayer?.display_name || getCaptainLabel(c.captainNumber),
+      name: captainPlayer?.display_name
+        || (isSoloDraft ? t("team", { captain: c.captainNumber }) : getCaptainLabel(c.captainNumber)),
       photoUrl: captainPlayer?.photo_url,
       players: teamPlayers.sort(
         (a, b) => (a.pick_number || 0) - (b.pick_number || 0)
@@ -350,7 +352,7 @@ export default function Results() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 relative overflow-hidden">
       {/* Pitch lines decoration */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Center circle */}
@@ -366,7 +368,7 @@ export default function Results() {
         {/* Compact Header */}
         <header className="px-4 py-3 flex items-center justify-center gap-2 bg-black/20 backdrop-blur-sm">
           <Trophy className="h-5 w-5 text-yellow-400" />
-          <h1 className="text-lg font-bold text-white truncate">
+          <h1 className="text-lg font-heading font-bold text-white truncate">
             {room.draft_name}
           </h1>
         </header>
@@ -408,20 +410,28 @@ export default function Results() {
               <div
                 className={`${getCaptainColor(team.number)} p-2 flex flex-col items-center gap-1`}
               >
-                <div className="relative">
-                  <PlayerAvatar
-                    name={team.name}
-                    photoUrl={team.photoUrl}
-                    size="md"
-                    className="border-2 border-white/40"
-                  />
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
-                    <Crown className="h-3 w-3 text-yellow-900" />
-                  </div>
-                </div>
-                <span className="text-white font-bold text-sm truncate max-w-full px-1">
-                  {truncateName(team.name, 10)}
-                </span>
+                {isSoloDraft ? (
+                  <span className="text-white font-bold text-sm py-1">
+                    {team.name}
+                  </span>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <PlayerAvatar
+                        name={team.name}
+                        photoUrl={team.photoUrl}
+                        size="md"
+                        className="border-2 border-white/40"
+                      />
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
+                        <Crown className="h-3 w-3 text-yellow-900" />
+                      </div>
+                    </div>
+                    <span className="text-white font-bold text-sm truncate max-w-full px-1">
+                      {truncateName(team.name, 10)}
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Team Players */}
@@ -447,10 +457,10 @@ export default function Results() {
                 ))}
               </div>
 
-              {/* Team count - includes captain */}
+              {/* Team count */}
               <div className="px-2 py-1.5 text-center border-t border-white/10">
                 <span className="text-white/60 text-xs">
-                  {t("players", { count: team.players.length + 1 })}
+                  {t("players", { count: team.players.length + (isSoloDraft ? 0 : 1) })}
                 </span>
               </div>
             </motion.div>
@@ -573,7 +583,7 @@ export default function Results() {
               }
             }}
             disabled={startingNight}
-            className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white h-11"
+            className="w-full gap-2 bg-purple-600 hover:bg-purple-700 text-white h-11"
           >
             {startingNight ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -623,16 +633,16 @@ export default function Results() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            className="bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 backdrop-blur-sm rounded-xl p-4 border border-emerald-400/30"
+            className="bg-gradient-to-r from-purple-500/20 to-purple-600/20 backdrop-blur-sm rounded-xl p-4 border border-purple-400/30"
           >
             {/* Already linked member */}
             {isMember ? (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-purple-300" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-emerald-400 font-bold text-sm">
+                  <p className="text-purple-400 font-bold text-sm">
                     {t("member.title")}
                   </p>
                   <p className="text-white/60 text-xs mt-0.5">
@@ -643,11 +653,11 @@ export default function Results() {
             ) : claimSent ? (
               /* Claim already sent */
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check className="h-5 w-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Check className="h-5 w-5 text-purple-300" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-emerald-400 font-bold text-sm">
+                  <p className="text-purple-400 font-bold text-sm">
                     {t("requestSent.title")}
                   </p>
                   <p className="text-white/60 text-xs mt-0.5">
@@ -658,8 +668,8 @@ export default function Results() {
             ) : (
               /* Not a member — show claim button */
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-purple-300" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-bold text-sm">
@@ -670,7 +680,7 @@ export default function Results() {
                   </p>
                   <button
                     onClick={() => setShowClaimSheet(true)}
-                    className="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="mt-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors"
                   >
                     {t("visitor.claimButton")}
                   </button>
@@ -697,7 +707,7 @@ export default function Results() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-emerald-900 border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-purple-900 border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col"
             >
               {/* Sheet header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -843,7 +853,7 @@ export default function Results() {
             </p>
             <Link
               to="/auth"
-              className="inline-block px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm rounded-lg transition-colors"
+              className="inline-block px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white font-medium text-sm rounded-lg transition-colors"
             >
               {t("growth.cta")}
             </Link>
