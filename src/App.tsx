@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -9,22 +9,49 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { getSafeRedirectPath } from "@/lib/safeRedirect";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
+
+// Landing stays in main bundle for fastest first paint
 import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Players from "./pages/Players";
-import CreateDraft from "./pages/CreateDraft";
-import JoinDraft from "./pages/JoinDraft";
-import WaitingRoom from "./pages/WaitingRoom";
-import DraftBoard from "./pages/DraftBoard";
-import Results from "./pages/Results";
-import QuickDraft from "./pages/QuickDraft";
-import AcceptInvite from "./pages/AcceptInvite";
-import GameNight from "./pages/GameNight";
-import NightResults from "./pages/NightResults";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import NotFound from "./pages/NotFound";
+
+// Retry wrapper for lazy imports — handles chunk loading failures after deployments.
+// If the chunk fails to load (stale service worker, network blip), reload the page once.
+function lazyRetry<T extends { default: React.ComponentType<unknown> }>(
+  importFn: () => Promise<T>
+) {
+  return lazy(() =>
+    importFn().catch(() => {
+      // Check if we already tried reloading for this session
+      const reloaded = sessionStorage.getItem("chunk_reload");
+      if (!reloaded) {
+        sessionStorage.setItem("chunk_reload", "1");
+        window.location.reload();
+        // Return a never-resolving promise while the page reloads
+        return new Promise<T>(() => {});
+      }
+      // Already reloaded once — clear flag and let ErrorBoundary handle it
+      sessionStorage.removeItem("chunk_reload");
+      return importFn();
+    })
+  );
+}
+
+// All other routes lazy-loaded — only downloaded when visited
+const Auth = lazyRetry(() => import("./pages/Auth"));
+const Dashboard = lazyRetry(() => import("./pages/Dashboard"));
+const Players = lazyRetry(() => import("./pages/Players"));
+const CreateDraft = lazyRetry(() => import("./pages/CreateDraft"));
+const JoinDraft = lazyRetry(() => import("./pages/JoinDraft"));
+const WaitingRoom = lazyRetry(() => import("./pages/WaitingRoom"));
+const DraftBoard = lazyRetry(() => import("./pages/DraftBoard"));
+const SoloDraftBoard = lazyRetry(() => import("./pages/SoloDraftBoard"));
+const Results = lazyRetry(() => import("./pages/Results"));
+const QuickDraft = lazyRetry(() => import("./pages/QuickDraft"));
+const AcceptInvite = lazyRetry(() => import("./pages/AcceptInvite"));
+const GameNight = lazyRetry(() => import("./pages/GameNight"));
+const NightResults = lazyRetry(() => import("./pages/NightResults"));
+const Privacy = lazyRetry(() => import("./pages/Privacy"));
+const Terms = lazyRetry(() => import("./pages/Terms"));
+const NotFound = lazyRetry(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -79,7 +106,7 @@ function OAuthCallbackHandler({ children }: { children: React.ReactNode }) {
 
   if (isProcessingAuth) {
     return (
-      <div className="min-h-screen bg-emerald-900 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-purple-900 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
         <p className="text-white/70">{t("status.connecting")}</p>
       </div>
@@ -87,6 +114,11 @@ function OAuthCallbackHandler({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
+}
+
+// Clear chunk reload flag on successful app mount
+if (sessionStorage.getItem("chunk_reload")) {
+  sessionStorage.removeItem("chunk_reload");
 }
 
 const App = () => (
@@ -98,6 +130,11 @@ const App = () => (
           <Sonner />
           <ErrorBoundary>
           <HashRouter>
+            <Suspense fallback={
+              <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }>
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
@@ -107,6 +144,7 @@ const App = () => (
               <Route path="/join/:roomCode" element={<JoinDraft />} />
               <Route path="/room/:roomCode" element={<WaitingRoom />} />
               <Route path="/draft/:roomCode" element={<DraftBoard />} />
+              <Route path="/solo-draft" element={<SoloDraftBoard />} />
               <Route path="/results/:roomCode" element={<Results />} />
               <Route path="/night/:nightId" element={<GameNight />} />
               <Route path="/night-results/:nightId" element={<NightResults />} />
@@ -116,6 +154,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </HashRouter>
           </ErrorBoundary>
         </OAuthCallbackHandler>

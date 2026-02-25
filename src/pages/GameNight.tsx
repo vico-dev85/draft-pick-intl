@@ -623,7 +623,7 @@ export default function GameNight() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
@@ -646,7 +646,7 @@ export default function GameNight() {
   // --- Render ---
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/10 rounded-full" />
@@ -660,7 +660,7 @@ export default function GameNight() {
             {/* Header */}
             <header className="px-4 py-3 flex items-center justify-between bg-black/20 backdrop-blur-sm border-b border-white/10">
               <div className="flex items-center gap-2">
-                <Timer className="h-5 w-5 text-emerald-400" />
+                <Timer className="h-5 w-5 text-purple-400" />
                 <h1 className="text-lg font-bold text-white">{t("title")}</h1>
               </div>
               <Button variant="ghost" size="icon" className="text-white/60" onClick={handleToggleMute}>
@@ -734,7 +734,7 @@ export default function GameNight() {
               {/* Start Game Button */}
               <Button
                 onClick={handleStartGame}
-                className="w-full h-16 text-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                className="w-full h-16 text-xl font-bold bg-purple-500 hover:bg-purple-600 text-white shadow-lg shadow-purple-500/30"
               >
                 <Play className="h-6 w-6 mr-2" />
                 {t("preGame.startGame")}
@@ -804,7 +804,7 @@ export default function GameNight() {
 
                 {/* Score */}
                 <div className="text-center">
-                  <div className="text-white font-black text-5xl tracking-wider">
+                  <div className="text-white font-mono font-black text-5xl tracking-wider">
                     {scoreA} - {scoreB}
                   </div>
                 </div>
@@ -957,7 +957,7 @@ export default function GameNight() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-emerald-900 border-t border-white/10 rounded-t-2xl max-h-[60vh] flex flex-col"
+                className="fixed bottom-0 left-0 right-0 z-50 bg-purple-900 border-t border-white/10 rounded-t-2xl max-h-[60vh] flex flex-col"
               >
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
                   <h3 className="text-lg font-bold text-white">{t("goals.selectScorer")}</h3>
@@ -1004,7 +1004,7 @@ export default function GameNight() {
         {/* ====== PENALTIES VIEW ====== */}
         {view === "penalties" && (
           <div className="min-h-screen flex flex-col items-center justify-center px-4">
-            <h2 className="text-2xl font-bold text-white mb-2">{t("penalties.title")}</h2>
+            <h2 className="text-2xl font-heading font-bold text-white mb-2">{t("penalties.title")}</h2>
             <p className="text-white/60 text-sm mb-8">
               {scoreA} - {scoreB}
             </p>
@@ -1033,7 +1033,7 @@ export default function GameNight() {
               animate={{ scale: 1, opacity: 1 }}
               className="bg-black/30 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center w-full max-w-sm"
             >
-              <h2 className="text-xl font-bold text-white mb-4">{t("gameOver.title", { number: activeGameNumber })}</h2>
+              <h2 className="text-xl font-heading font-bold text-white mb-4">{t("gameOver.title", { number: activeGameNumber })}</h2>
 
               <div className="flex items-center justify-center gap-6 mb-4">
                 <div className="text-center">
@@ -1042,7 +1042,7 @@ export default function GameNight() {
                   </div>
                   <p className="text-white text-sm truncate max-w-[80px]">{getTeamName(teamA)}</p>
                 </div>
-                <div className="text-white font-black text-4xl">
+                <div className="text-white font-mono font-black text-4xl">
                   {scoreA} - {scoreB}
                 </div>
                 <div className="text-center">
@@ -1054,7 +1054,7 @@ export default function GameNight() {
               </div>
 
               {scoreA !== scoreB && (
-                <p className="text-emerald-400 font-bold mb-4">
+                <p className="text-purple-400 font-bold mb-4">
                   {t("gameOver.winner", { team: scoreA > scoreB ? getTeamName(teamA) : getTeamName(teamB) })}
                 </p>
               )}
@@ -1062,7 +1062,7 @@ export default function GameNight() {
 
             <Button
               onClick={handleNextGame}
-              className="w-full max-w-sm h-14 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
+              className="w-full max-w-sm h-14 text-lg font-bold bg-purple-500 hover:bg-purple-600 text-white"
             >
               <Play className="h-5 w-5 mr-2" />
               {t("gameOver.nextGame")}
@@ -1147,13 +1147,13 @@ export default function GameNight() {
                         >
                           <span className="text-white/40 text-xs w-8">#{g.game_number}</span>
                           <div className="flex-1 flex items-center justify-center gap-3">
-                            <span className={`text-sm font-medium ${isAWin ? "text-emerald-400" : "text-white/70"}`}>
+                            <span className={`text-sm font-medium ${isAWin ? "text-purple-400" : "text-white/70"}`}>
                               {getTeamName(g.team_a_captain_number)}
                             </span>
                             <span className="text-white font-bold text-base">
                               {g.score_a} - {g.score_b}
                             </span>
-                            <span className={`text-sm font-medium ${isBWin ? "text-emerald-400" : "text-white/70"}`}>
+                            <span className={`text-sm font-medium ${isBWin ? "text-purple-400" : "text-white/70"}`}>
                               {getTeamName(g.team_b_captain_number)}
                             </span>
                           </div>
@@ -1203,7 +1203,7 @@ export default function GameNight() {
                           {i === 0 && <Crown className="h-3.5 w-3.5 text-yellow-400" />}
                           {getTeamName(s.captain_number)}
                         </span>
-                        <span className="text-center text-emerald-400 text-sm">{s.wins}</span>
+                        <span className="text-center text-purple-400 text-sm">{s.wins}</span>
                         <span className="text-center text-white/50 text-sm">{s.draws}</span>
                         <span className="text-center text-red-400/70 text-sm">{s.losses}</span>
                         <span className="text-center text-white font-bold text-sm">{s.points}</span>

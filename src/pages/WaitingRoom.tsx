@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { playSound, stopSound, preloadSounds, isMuted, toggleMute } from "@/lib/sounds";
 import { useTranslation } from "react-i18next";
+import { Logo } from "@/components/ui/logo";
 
 // Hand images for shuffle animation
 const HAND_IMAGES = [
@@ -37,10 +38,6 @@ const HAND_IMAGES = [
   '/assets/hands/hand_down_right.png',
 ];
 import type { RealtimeChannel } from "@supabase/supabase-js";
-
-// Module-level tracking to prevent double animations across component remounts
-// Only resets on full page refresh
-const roomAnimationCompleted = new Map<string, boolean>();
 
 interface DraftRoomPublic {
   id: string;
@@ -430,12 +427,6 @@ export default function WaitingRoom() {
     if (rafflePhase !== "waiting") return;
     if (raffleStartedRef.current) return;
 
-    // Module-level check to prevent double animation across remounts
-    if (roomAnimationCompleted.get(room.id)) {
-      console.log("[Client] Animation already completed for this room, skipping...");
-      return;
-    }
-
     console.log("[Client] All captains connected, fetching pre-generated raffle order...");
 
     let cancelled = false;
@@ -467,9 +458,6 @@ export default function WaitingRoom() {
 
           // Run animation (same on all clients with same predetermined result)
           await runLocalRaffleAnimation(raffleOrder);
-
-          // Mark animation as completed for this room (prevents double runs on remount)
-          roomAnimationCompleted.set(room.id, true);
 
           console.log("[Client] Animation complete, attempting to start draft...");
 
@@ -519,7 +507,7 @@ export default function WaitingRoom() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-emerald-900 flex items-center justify-center">
+      <div className="min-h-screen bg-purple-900 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
@@ -528,10 +516,10 @@ export default function WaitingRoom() {
   if (!room) return null;
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
+    <div className="min-h-screen relative overflow-hidden bg-purple-900">
       {/* Background Layer */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 to-purple-950" />
         <div
           className="absolute inset-0"
           style={{
@@ -563,7 +551,7 @@ export default function WaitingRoom() {
           <ArrowLeft className="h-4 w-4" />
           <span>{t("waiting.back")}</span>
         </Link>
-        <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
+        <Logo size="md" variant="light" />
         <button
           onClick={() => setSoundMuted(toggleMute())}
           className="text-white/60 hover:text-white transition-colors p-1"
@@ -593,7 +581,7 @@ export default function WaitingRoom() {
                 {rafflePhase === "countdown" && (
                   <>
                     <PartyPopper className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-green-500 mb-2">{t("waiting.allConnected")}</h2>
+                    <h2 className="text-2xl font-heading font-bold text-green-500 mb-2">{t("waiting.allConnected")}</h2>
                     <p className="text-muted-foreground mb-6">{t("waiting.raffle.title")}</p>
                     <motion.div
                       key={countdown}
@@ -601,7 +589,7 @@ export default function WaitingRoom() {
                       animate={{ scale: 1, opacity: 1 }}
                       className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-xl"
                     >
-                      <span className="text-7xl font-bold text-white">{countdown}</span>
+                      <span className="text-7xl font-heading font-bold text-white">{countdown}</span>
                     </motion.div>
                   </>
                 )}
@@ -629,7 +617,7 @@ export default function WaitingRoom() {
                         />
                       ))}
                     </div>
-                    <h2 className="text-2xl font-bold mb-6">{t("waiting.raffle.title")}</h2>
+                    <h2 className="text-2xl font-heading font-bold mb-6">{t("waiting.raffle.title")}</h2>
                     <div className="flex justify-center gap-3">
                       {shuffleDisplay.map((num, idx) => (
                         <motion.div
@@ -656,7 +644,7 @@ export default function WaitingRoom() {
                     >
                       <Trophy className="h-14 w-14 text-yellow-500 mx-auto" />
                     </motion.div>
-                    <h2 className="text-2xl font-bold mb-2">{t("waiting.raffle.result")}</h2>
+                    <h2 className="text-2xl font-heading font-bold mb-2">{t("waiting.raffle.result")}</h2>
                     <p className="text-muted-foreground text-sm mb-4">{t("waiting.raffle.snakeDescription")}</p>
 
                     <div className="space-y-2 mb-4">
@@ -702,12 +690,12 @@ export default function WaitingRoom() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           {/* Room Info */}
           <div className="text-center space-y-4">
-            <h1 className="text-2xl font-bold text-white">{room.draft_name}</h1>
+            <h1 className="text-2xl font-heading font-bold text-white">{room.draft_name}</h1>
             <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/10">
               <span className="text-white/60">{t("waiting.code")}:</span>
               <span className="font-mono font-bold text-2xl text-white">{room.room_code}</span>
               <Button size="sm" onClick={copyRoomCode} className="bg-white/20 hover:bg-white/30 text-white">
-                {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-purple-400" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
             <div>
@@ -719,12 +707,12 @@ export default function WaitingRoom() {
           </div>
 
           {/* Status */}
-          <div className={`rounded-xl p-4 text-center ${allCaptainsConnected ? "bg-emerald-500/20 border border-emerald-500/50" : "bg-amber-500/10 border border-amber-500/30"}`}>
+          <div className={`rounded-xl p-4 text-center ${allCaptainsConnected ? "bg-purple-500/20 border border-purple-500/50" : "bg-amber-500/10 border border-amber-500/30"}`}>
             <div className="flex items-center justify-center gap-2 text-lg font-medium">
               {allCaptainsConnected ? (
                 <>
-                  <Wifi className="h-5 w-5 text-emerald-400" />
-                  <span className="text-emerald-400">{t("waiting.allConnected")}</span>
+                  <Wifi className="h-5 w-5 text-purple-400" />
+                  <span className="text-purple-400">{t("waiting.allConnected")}</span>
                 </>
               ) : (
                 <>
@@ -746,12 +734,12 @@ export default function WaitingRoom() {
                 <div key={captain!.captainNumber} className="text-center">
                   <div className="relative inline-block">
                     <PlayerAvatar name={captain!.name} photoUrl={captain!.photoUrl} size="lg" />
-                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-emerald-900 flex items-center justify-center ${captain!.isConnected ? "bg-emerald-500" : "bg-white/20"}`}>
+                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-purple-900 flex items-center justify-center ${captain!.isConnected ? getCaptainColor(captain!.captainNumber) : "bg-white/20"}`}>
                       {captain!.isConnected && <Check className="h-3 w-3 text-white" />}
                     </div>
                   </div>
                   <p className="font-medium text-sm mt-2 text-white">{captain!.name}</p>
-                  <span className={`text-xs ${captain!.isConnected ? "text-emerald-400" : "text-white/50"}`}>
+                  <span className={`text-xs ${captain!.isConnected ? "text-purple-400" : "text-white/50"}`}>
                     {captain!.isConnected ? t("waiting.captainReady") : t("waiting.captainWaiting")}
                   </span>
                   <div className={`mt-2 h-1 w-12 mx-auto rounded ${getCaptainColor(captain!.captainNumber)}`} />

@@ -180,6 +180,8 @@
     "muteSounds": "Mute sounds",
     "tabTitleYourTurn": "Your Turn!",
     "tabTitleDraft": "Draft",
+    "connectionLive": "Connected",
+    "connectionReconnecting": "Reconnecting...",
     "announcement": {
       "youPicked": "You picked {{player}}",
       "captainPicked": "{{captain}} picked {{player}}"

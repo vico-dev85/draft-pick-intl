@@ -1,5 +1,5 @@
 import { useRef, useCallback } from "react";
-import { playSound, speak, isMuted } from "@/lib/sounds";
+import { playSound, speak, isMuted, splitByScript } from "@/lib/sounds";
 
 type AnnouncementPriority = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -34,17 +34,19 @@ export function useAnnouncementQueue() {
       playSound(item.sound);
       const delay = item.ttsDelay ?? 500;
       setTimeout(() => {
-        const utterance = new SpeechSynthesisUtterance(item.ttsText!);
-        const lang = localStorage.getItem("draftpick_lang") || "en";
-        utterance.lang = lang;
-        const voices = window.speechSynthesis.getVoices();
-        const matchedVoice = voices.find((v) => v.lang.startsWith(lang));
-        if (matchedVoice) utterance.voice = matchedVoice;
-        utterance.onend = () => setTimeout(processNext, 300);
-        utterance.onerror = () => setTimeout(processNext, 300);
+        // speak() handles mixed-script splitting (Hebrew names + English template)
         window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-        // Fallback timeout in case onend never fires
+        speak(item.ttsText!);
+        // Wait for all utterances to finish, then process next
+        const checkDone = () => {
+          if (!window.speechSynthesis.speaking) {
+            setTimeout(processNext, 300);
+          } else {
+            setTimeout(checkDone, 200);
+          }
+        };
+        setTimeout(checkDone, 500);
+        // Fallback timeout in case speech never ends
         setTimeout(() => {
           if (isPlayingRef.current) processNext();
         }, 4000);
@@ -53,16 +55,16 @@ export function useAnnouncementQueue() {
       playSound(item.sound);
       setTimeout(processNext, 1000);
     } else if (item.ttsText) {
-      const utterance = new SpeechSynthesisUtterance(item.ttsText);
-      const lang = localStorage.getItem("draftpick_lang") || "en";
-      utterance.lang = lang;
-      const voices = window.speechSynthesis.getVoices();
-      const matchedVoice = voices.find((v) => v.lang.startsWith(lang));
-      if (matchedVoice) utterance.voice = matchedVoice;
-      utterance.onend = () => setTimeout(processNext, 300);
-      utterance.onerror = () => setTimeout(processNext, 300);
       window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
+      speak(item.ttsText);
+      const checkDone = () => {
+        if (!window.speechSynthesis.speaking) {
+          setTimeout(processNext, 300);
+        } else {
+          setTimeout(checkDone, 200);
+        }
+      };
+      setTimeout(checkDone, 500);
       setTimeout(() => {
         if (isPlayingRef.current) processNext();
       }, 3500);

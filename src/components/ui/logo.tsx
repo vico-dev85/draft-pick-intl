@@ -6,20 +6,19 @@ interface LogoProps {
   variant?: "default" | "light";
 }
 
-export function Logo({ className, size = "md", variant = "default" }: LogoProps) {
-  const sizeClasses = {
-    sm: "text-xl",
-    md: "text-2xl",
-    lg: "text-4xl",
-    xl: "text-5xl",
-  };
+const sizeMap = {
+  sm: "h-6",
+  md: "h-8",
+  lg: "h-10",
+  xl: "h-14",
+};
 
+export function Logo({ className, size = "md", variant = "default" }: LogoProps) {
   return (
-    <div className={cn("flex items-center gap-2 font-sans font-bold", sizeClasses[size], className)}>
-      <span className={cn(
-        size === "sm" ? "text-xl" : size === "lg" ? "text-4xl" : size === "xl" ? "text-5xl" : "text-2xl"
-      )} role="img" aria-label="soccer ball">⚽</span>
-      <span className={variant === "light" ? "text-white" : "text-gradient-primary"}>Draft Pick</span>
-    </div>
+    <img
+      src="/logo.png"
+      alt="PickNKick"
+      className={cn(sizeMap[size], "w-auto", variant === "light" ? "brightness-0 invert" : "", className)}
+    />
   );
 }

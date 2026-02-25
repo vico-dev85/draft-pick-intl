@@ -12,9 +12,10 @@
     "takePhoto": "Take a photo",
     "defaultOwnerName": "Organizer"
   },
-  "memberGuidance": "When the organizer creates a new draft, you'll get a notification to join",
+  "memberGuidance": "Your organizer will let you know when it's game time. You can also join any draft with a game code below.",
   "cta": {
-    "createDraft": "Create New Draft",
+    "createDraft": "Live Draft",
+    "splitTeams": "Solo Draft",
     "managePlayers": "Manage Squad",
     "settings": "Settings"
   },
@@ -55,18 +56,18 @@
       "skip": "Maybe later"
     },
     "welcome": {
-      "title": "Welcome to Draft Pick!",
+      "title": "Welcome to PickNKick!",
       "subtitle": "3 simple steps to get started",
       "step1Title": "Create your club",
       "step1Description": "We already created one for you! You can rename it in settings",
       "step2Title": "Add your regular players",
       "step2Description": "Build your squad for quick draft setup every week",
       "step3Title": "On match day, select who's playing and draft teams",
-      "step3Description": "3 captains pick in turns — balanced pick order",
+      "step3Description": "Captains pick in turns — balanced snake order",
       "cta": "Got it, let's start"
     }
   },
-  "footer": "Draft Pick — Fair teams. No arguments.",
+  "footer": "PickNKick — Fair teams. No arguments.",
   "connecting": "Connecting...",
   "settings": {
     "title": "Club Settings",

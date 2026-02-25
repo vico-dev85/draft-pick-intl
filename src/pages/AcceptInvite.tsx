@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle, XCircle, UserPlus, Eye, EyeOff, Mail, ChevronDown } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 interface InviteResult {
   success: boolean;
@@ -60,7 +61,7 @@ export default function AcceptInvite() {
 
   // Store token in both sessionStorage and localStorage for cross-tab survival
   useEffect(() => {
-    if (token) {
+    if (token && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
       sessionStorage.setItem("pendingInviteToken", token);
       localStorage.setItem("pendingInviteToken", token);
     }
@@ -281,7 +282,7 @@ export default function AcceptInvite() {
   // Loading states
   if (authLoading || status === "loading" || status === "accepting") {
     return (
-      <div className="min-h-screen bg-emerald-900 flex items-center justify-center">
+      <div className="min-h-screen bg-purple-900 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-4" />
           <p className="text-white/70">
@@ -293,10 +294,10 @@ export default function AcceptInvite() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
+    <div className="min-h-screen relative overflow-hidden bg-purple-900">
       {/* Background Layer */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 to-purple-950" />
       </div>
 
       {/* Content Layer */}
@@ -308,14 +309,14 @@ export default function AcceptInvite() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <img src="/logo.png" alt="Draft Pick" className="h-12 w-auto mx-auto mb-2" />
+            <Logo size="lg" variant="light" />
           </div>
 
           {/* Invite Preview — Main auth screen */}
           {status === "invite-preview" && (
             <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center">
-              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="h-8 w-8 text-emerald-400" />
+              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserPlus className="h-8 w-8 text-purple-400" />
               </div>
 
               {/* Personalized or generic greeting */}
@@ -327,7 +328,7 @@ export default function AcceptInvite() {
               <p className="text-white/70 mb-6">
                 {peekData?.club_name
                   ? <Trans i18nKey="auth:invite.invitedToClub" values={{ club: peekData.club_name }}>
-                      You've been invited to join <span className="text-emerald-400 font-bold">{{club: peekData.club_name} as any}</span>
+                      You've been invited to join <span className="text-purple-400 font-bold">{{club: peekData.club_name} as any}</span>
                     </Trans>
                   : t("auth:invite.signInToJoin")}
               </p>
@@ -384,7 +385,7 @@ export default function AcceptInvite() {
                       onClick={() => setEmailTab("signup")}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                         emailTab === "signup"
-                          ? "bg-emerald-500 text-white"
+                          ? "bg-purple-500 text-white"
                           : "text-white/50 hover:text-white/70"
                       }`}
                     >
@@ -395,7 +396,7 @@ export default function AcceptInvite() {
                       onClick={() => setEmailTab("login")}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                         emailTab === "login"
-                          ? "bg-emerald-500 text-white"
+                          ? "bg-purple-500 text-white"
                           : "text-white/50 hover:text-white/70"
                       }`}
                     >
@@ -413,7 +414,7 @@ export default function AcceptInvite() {
                         type="email"
                         placeholder="your@email.com"
                         dir="ltr"
-                        className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-400 focus:ring-emerald-400/20"
+                        className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-purple-400 focus:ring-purple-400/20"
                         {...form.register("email")}
                       />
                       {form.formState.errors.email && (
@@ -433,7 +434,7 @@ export default function AcceptInvite() {
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••"
                           dir="ltr"
-                          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-400 focus:ring-emerald-400/20 pl-12"
+                          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-purple-400 focus:ring-purple-400/20 pl-12"
                           {...form.register("password")}
                         />
                         <button
@@ -454,7 +455,7 @@ export default function AcceptInvite() {
 
                     <Button
                       type="submit"
-                      className="w-full h-11 font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
+                      className="w-full h-11 font-bold bg-purple-500 hover:bg-purple-600 text-white"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
@@ -484,7 +485,7 @@ export default function AcceptInvite() {
               <p className="text-white/50 text-sm mb-4">
                 {peekData?.club_name
                   ? <Trans i18nKey="auth:invite.clickToCompleteWithClub" values={{ club: peekData.club_name }}>
-                      Click the link in the email to complete signup and join <span className="text-emerald-400">{{club: peekData.club_name} as any}</span>.
+                      Click the link in the email to complete signup and join <span className="text-purple-400">{{club: peekData.club_name} as any}</span>.
                     </Trans>
                   : t("auth:invite.clickToComplete")}
               </p>
@@ -508,14 +509,14 @@ export default function AcceptInvite() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", delay: 0.2 }}
-                className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4"
+                className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4"
               >
-                <CheckCircle className="h-8 w-8 text-emerald-400" />
+                <CheckCircle className="h-8 w-8 text-purple-400" />
               </motion.div>
               <h2 className="text-xl font-bold text-white mb-2">{t("auth:invite.joinedSuccess")}</h2>
               <p className="text-white/70 mb-2">
                 <Trans i18nKey="auth:invite.youAreNow" values={{ name: inviteData?.playerName }}>
-                  You are now <span className="text-emerald-400 font-bold">{{name: inviteData?.playerName} as any}</span>
+                  You are now <span className="text-purple-400 font-bold">{{name: inviteData?.playerName} as any}</span>
                 </Trans>
               </p>
               {inviteData?.clubName && (
@@ -525,7 +526,7 @@ export default function AcceptInvite() {
               )}
               <Button
                 onClick={handleGoToDashboard}
-                className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+                className="w-full h-12 bg-purple-500 hover:bg-purple-600 text-white font-bold"
               >
                 {t("auth:invite.goToDashboard")}
               </Button>

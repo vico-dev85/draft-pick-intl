@@ -172,7 +172,7 @@ export default function NightResults() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
@@ -180,13 +180,13 @@ export default function NightResults() {
 
   if (!summary) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-white text-lg font-bold mb-2">{t("nightResults.notFound")}</p>
           <p className="text-white/60 text-sm mb-4">{t("nightResults.invalidLink")}</p>
           <Link
             to="/"
-            className="text-emerald-400 hover:text-emerald-300 underline text-sm"
+            className="text-purple-400 hover:text-purple-300 underline text-sm"
           >
             {t("nightResults.backToHome")}
           </Link>
@@ -205,7 +205,7 @@ export default function NightResults() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 relative overflow-hidden">
       {/* Pitch lines decoration */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/10 rounded-full" />
@@ -218,7 +218,7 @@ export default function NightResults() {
         {/* Header */}
         <header className="px-4 py-4 flex flex-col items-center gap-1 bg-black/20 backdrop-blur-sm border-b border-white/10">
           <Trophy className="h-6 w-6 text-yellow-400" />
-          <h1 className="text-lg font-bold text-white">
+          <h1 className="text-lg font-heading font-bold text-white">
             {summary.club_name || summary.draft_name || t("nightResults.title")}
           </h1>
           <p className="text-white/50 text-xs">
@@ -231,11 +231,11 @@ export default function NightResults() {
           <div className="bg-black/30 rounded-xl p-4 border border-white/10 text-center">
             <div className="flex justify-center gap-8">
               <div>
-                <p className="text-3xl font-bold text-white">{summary.total_games}</p>
+                <p className="text-3xl font-mono font-bold text-white">{summary.total_games}</p>
                 <p className="text-white/50 text-xs">{t("summary.games")}</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{summary.total_goals}</p>
+                <p className="text-3xl font-mono font-bold text-white">{summary.total_goals}</p>
                 <p className="text-white/50 text-xs">{t("summary.totalGoals")}</p>
               </div>
             </div>
@@ -255,13 +255,13 @@ export default function NightResults() {
                   >
                     <span className="text-white/40 text-xs w-8">#{g.game_number}</span>
                     <div className="flex-1 flex items-center justify-center gap-3">
-                      <span className={`text-sm font-medium ${isAWin ? "text-emerald-400" : "text-white/70"}`}>
+                      <span className={`text-sm font-medium ${isAWin ? "text-purple-400" : "text-white/70"}`}>
                         {getCaptainName(g.team_a_captain_number)}
                       </span>
-                      <span className="text-white font-bold text-base">
+                      <span className="text-white font-mono font-bold text-base">
                         {g.score_a} - {g.score_b}
                       </span>
-                      <span className={`text-sm font-medium ${isBWin ? "text-emerald-400" : "text-white/70"}`}>
+                      <span className={`text-sm font-medium ${isBWin ? "text-purple-400" : "text-white/70"}`}>
                         {getCaptainName(g.team_b_captain_number)}
                       </span>
                     </div>
@@ -310,7 +310,7 @@ export default function NightResults() {
                       {i === 0 && <Crown className="h-3.5 w-3.5 text-yellow-400" />}
                       {getCaptainName(s.captain_number)}
                     </span>
-                    <span className="text-center text-emerald-400 text-sm">{s.wins}</span>
+                    <span className="text-center text-purple-400 text-sm">{s.wins}</span>
                     <span className="text-center text-white/50 text-sm">{s.draws}</span>
                     <span className="text-center text-red-400/70 text-sm">{s.losses}</span>
                     <span className="text-center text-white font-bold text-sm">{s.points}</span>
@@ -354,14 +354,14 @@ export default function NightResults() {
 
           {/* Claim CTA — "This is me" */}
           {claimablePlayers.length > 0 && !isMember && (
-            <div className="bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 backdrop-blur-sm rounded-xl p-4 border border-emerald-400/30">
+            <div className="bg-gradient-to-r from-purple-500/20 to-purple-600/20 backdrop-blur-sm rounded-xl p-4 border border-purple-400/30">
               {claimSent ? (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="h-5 w-5 text-emerald-300" />
+                  <div className="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Check className="h-5 w-5 text-purple-300" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-emerald-400 font-bold text-sm">
+                    <p className="text-purple-400 font-bold text-sm">
                       {t("requestSent.title")}
                     </p>
                     <p className="text-white/60 text-xs mt-0.5">
@@ -371,8 +371,8 @@ export default function NightResults() {
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Users className="h-5 w-5 text-emerald-300" />
+                  <div className="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Users className="h-5 w-5 text-purple-300" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-bold text-sm">
@@ -383,7 +383,7 @@ export default function NightResults() {
                     </p>
                     <button
                       onClick={() => setShowClaimSheet(true)}
-                      className="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
+                      className="mt-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors"
                     >
                       {t("visitor.claimButton")}
                     </button>
@@ -395,13 +395,13 @@ export default function NightResults() {
 
           {/* Already a member */}
           {isMember && (
-            <div className="bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 backdrop-blur-sm rounded-xl p-4 border border-emerald-400/30">
+            <div className="bg-gradient-to-r from-purple-500/20 to-purple-600/20 backdrop-blur-sm rounded-xl p-4 border border-purple-400/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-purple-300" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-emerald-400 font-bold text-sm">
+                  <p className="text-purple-400 font-bold text-sm">
                     {t("member.title")}
                   </p>
                   <p className="text-white/60 text-xs mt-0.5">
@@ -422,7 +422,7 @@ export default function NightResults() {
             </p>
             <Link
               to="/auth"
-              className="inline-block px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm rounded-lg transition-colors"
+              className="inline-block px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white font-medium text-sm rounded-lg transition-colors"
             >
               {t("growth.cta")}
             </Link>
@@ -449,11 +449,11 @@ export default function NightResults() {
             onClick={() => setShowClaimSheet(false)}
           />
           <div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-emerald-900 border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-purple-900 border-t border-white/10 rounded-t-2xl max-h-[70vh] flex flex-col"
           >
             {/* Sheet header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <h3 className="text-lg font-bold text-white">{t("claim.sheetTitle")}</h3>
+              <h3 className="text-lg font-heading font-bold text-white">{t("claim.sheetTitle")}</h3>
               <button
                 onClick={() => setShowClaimSheet(false)}
                 className="p-2 text-white/60 hover:text-white"
@@ -490,7 +490,7 @@ export default function NightResults() {
                       <Crown className="h-3.5 w-3.5 text-yellow-400 flex-shrink-0" />
                     )}
                     {goals && goals > 0 && (
-                      <span className="text-xs text-emerald-400 flex-shrink-0">
+                      <span className="text-xs text-purple-400 flex-shrink-0">
                         ⚽{goals}
                       </span>
                     )}

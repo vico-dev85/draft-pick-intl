@@ -238,7 +238,7 @@ export function SelfieAvatarEditor({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="bg-emerald-900 border-white/10 max-h-[92vh]">
+      <DrawerContent className="bg-purple-900 border-white/10 max-h-[92vh]">
         {/* Hidden file inputs */}
         <input
           ref={cameraInputRef}
@@ -268,7 +268,7 @@ export function SelfieAvatarEditor({
 
               <Button
                 onClick={() => cameraInputRef.current?.click()}
-                className="w-full max-w-xs h-14 text-base font-bold bg-emerald-500 hover:bg-emerald-600 text-white gap-3"
+                className="w-full max-w-xs h-14 text-base font-bold bg-purple-500 hover:bg-purple-600 text-white gap-3"
               >
                 <Camera className="h-5 w-5" />
                 {t("selfieEditor.takeSelfie")}
@@ -364,7 +364,7 @@ export function SelfieAvatarEditor({
               <Button
                 onClick={handleCrop}
                 disabled={isCropping}
-                className="w-full h-12 text-base font-bold bg-emerald-500 hover:bg-emerald-600 text-white gap-2"
+                className="w-full h-12 text-base font-bold bg-purple-500 hover:bg-purple-600 text-white gap-2"
               >
                 {isCropping ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

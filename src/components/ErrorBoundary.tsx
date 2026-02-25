@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div
           style={{
             minHeight: "100vh",
-            background: "linear-gradient(to bottom, #065f46, #064e3b, #065f46)",
+            background: "linear-gradient(to bottom, #4c1d95, #3b0764, #4c1d95)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -73,7 +73,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <button
               onClick={() => window.location.reload()}
               style={{
-                background: "#10b981",
+                background: "#7C3AED",
                 color: "white",
                 border: "none",
                 borderRadius: "8px",

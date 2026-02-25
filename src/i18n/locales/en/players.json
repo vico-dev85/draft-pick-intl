@@ -54,7 +54,7 @@
     "canSendInvites": "Can send invites"
   },
   "invite": {
-    "message": "Hey {{name}}! 👋\nJoin our club on Draft Pick\n\n✓ View your draft history\n✓ Organize drafts yourself\n\n{{url}}",
+    "message": "Hey {{name}}! 👋\nJoin our club on PickNKick\n\n✓ View your draft history\n✓ Organize drafts yourself\n\n{{url}}",
     "created": "Invite created",
     "expiresIn": "Invite valid for 48 hours",
     "error": "Couldn't create invite"

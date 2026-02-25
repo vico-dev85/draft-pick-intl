@@ -49,7 +49,7 @@ export function InstallPromptBanner({ variant }: InstallPromptBannerProps) {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="bg-gradient-to-r from-emerald-600/30 to-emerald-500/20 backdrop-blur-sm rounded-xl p-4 border border-emerald-400/30 relative"
+          className="bg-gradient-to-r from-purple-600/30 to-purple-500/20 backdrop-blur-sm rounded-xl p-4 border border-purple-400/30 relative"
         >
           {/* Dismiss button */}
           <button
@@ -61,8 +61,8 @@ export function InstallPromptBanner({ variant }: InstallPromptBannerProps) {
           </button>
 
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-emerald-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-              <Download className="h-5 w-5 text-emerald-300" />
+            <div className="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+              <Download className="h-5 w-5 text-purple-300" />
             </div>
             <div className="flex-1 min-w-0 pr-6">
               <p className="text-white font-bold text-sm">
@@ -76,7 +76,7 @@ export function InstallPromptBanner({ variant }: InstallPromptBannerProps) {
 
           <Button
             onClick={handleInstall}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-10 gap-2 font-bold"
+            className="w-full bg-purple-500 hover:bg-purple-600 text-white h-10 gap-2 font-bold"
           >
             <Download className="h-4 w-4" />
             {isIOS ? t("installPrompt.addToHomeScreen") : t("installPrompt.installApp")}
@@ -103,8 +103,8 @@ export function InstallPromptBanner({ variant }: InstallPromptBannerProps) {
         className="bg-black/20 backdrop-blur-sm rounded-xl p-3 border border-white/10"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-            <Download className="h-4 w-4 text-emerald-400" />
+          <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <Download className="h-4 w-4 text-purple-400" />
           </div>
           <p className="flex-1 text-white/70 text-sm">
             {t("installPrompt.dashboardText")}
@@ -112,7 +112,7 @@ export function InstallPromptBanner({ variant }: InstallPromptBannerProps) {
           <Button
             onClick={handleInstall}
             size="sm"
-            className="bg-emerald-500/80 hover:bg-emerald-500 text-white text-xs h-8 px-3"
+            className="bg-purple-500/80 hover:bg-purple-500 text-white text-xs h-8 px-3"
           >
             {t("buttons.install")}
           </Button>
@@ -160,7 +160,7 @@ function IOSInstructionsSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-emerald-900 rounded-t-2xl border-t border-emerald-400/30 p-6 pb-8"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-purple-900 rounded-t-2xl border-t border-purple-400/30 p-6 pb-8"
           >
             {/* Handle */}
             <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />
@@ -172,8 +172,8 @@ function IOSInstructionsSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
             <div className="space-y-5">
               {/* Step 1 */}
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <ArrowUp className="h-5 w-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <ArrowUp className="h-5 w-5 text-purple-300" />
                 </div>
                 <div>
                   <p className="text-white font-medium text-sm">
@@ -187,8 +187,8 @@ function IOSInstructionsSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
               {/* Step 2 */}
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Plus className="h-5 w-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Plus className="h-5 w-5 text-purple-300" />
                 </div>
                 <div>
                   <p className="text-white font-medium text-sm">
@@ -202,8 +202,8 @@ function IOSInstructionsSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
               {/* Step 3 */}
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Download className="h-5 w-5 text-emerald-300" />
+                <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Download className="h-5 w-5 text-purple-300" />
                 </div>
                 <div>
                   <p className="text-white font-medium text-sm">
@@ -218,7 +218,7 @@ function IOSInstructionsSheet({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
             <Button
               onClick={onClose}
-              className="w-full mt-6 bg-emerald-500 hover:bg-emerald-600 text-white h-11 font-bold"
+              className="w-full mt-6 bg-purple-500 hover:bg-purple-600 text-white h-11 font-bold"
             >
               {t("buttons.gotIt")}
             </Button>

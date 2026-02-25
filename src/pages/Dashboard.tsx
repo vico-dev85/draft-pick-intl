@@ -22,12 +22,14 @@ import {
   Camera,
   CheckCircle,
   Crown,
+  Zap,
 } from "lucide-react";
 import { ClubSettings } from "@/components/ClubSettings";
 import { SelfieAvatarEditor } from "@/components/SelfieAvatarEditor";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { Logo } from "@/components/ui/logo";
 import { formatDistanceToNow } from "date-fns";
 
 interface DraftRoom {
@@ -282,36 +284,33 @@ export default function Dashboard() {
 
   if (authLoading || clubLoading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-emerald-900">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
-        </div>
-        <div className="relative z-10">
+      <div className="min-h-screen bg-background">
+        <div>
           {/* Skeleton header */}
-          <div className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20">
-            <div className="h-9 w-24 rounded bg-white/10 animate-pulse" />
-            <div className="h-8 w-8 rounded bg-white/10 animate-pulse" />
+          <div className="p-4 flex items-center justify-between border-b border-border bg-background/80">
+            <div className="h-9 w-24 rounded bg-muted animate-pulse" />
+            <div className="h-8 w-8 rounded bg-muted animate-pulse" />
           </div>
           {/* Skeleton content */}
           <div className="px-4 py-6 max-w-md mx-auto space-y-6">
             {/* Profile card skeleton */}
-            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+            <div className="bg-card rounded-xl p-4 border border-border shadow-card">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-white/10 animate-pulse" />
+                <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-5 w-32 rounded bg-white/10 animate-pulse" />
-                  <div className="h-3 w-24 rounded bg-white/10 animate-pulse" />
+                  <div className="h-5 w-32 rounded bg-muted animate-pulse" />
+                  <div className="h-3 w-24 rounded bg-muted animate-pulse" />
                 </div>
               </div>
             </div>
             {/* CTA button skeleton */}
-            <div className="h-16 rounded-md bg-emerald-500/20 animate-pulse" />
+            <div className="h-16 rounded-md bg-primary/10 animate-pulse" />
             {/* Join code skeleton */}
-            <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-              <div className="h-4 w-20 mx-auto rounded bg-white/10 animate-pulse mb-3" />
+            <div className="bg-card rounded-xl p-4 border border-border shadow-card">
+              <div className="h-4 w-20 mx-auto rounded bg-muted animate-pulse mb-3" />
               <div className="flex gap-2">
-                <div className="flex-1 h-12 rounded bg-white/10 animate-pulse" />
-                <div className="h-12 w-20 rounded bg-white/10 animate-pulse" />
+                <div className="flex-1 h-12 rounded bg-muted animate-pulse" />
+                <div className="h-12 w-20 rounded bg-muted animate-pulse" />
               </div>
             </div>
           </div>
@@ -327,33 +326,21 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
-      {/* Background Layer */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)",
-          }}
-        />
-      </div>
-
+    <div className="min-h-screen bg-background bg-mesh-light">
       {/* Content Layer */}
-      <div className="relative z-10 min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col">
         {/* Header */}
         <header
-          className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm"
+          className="p-4 flex items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm"
         >
-          <img src="/logo.png" alt="Draft Pick" className="h-9 w-auto" />
+          <Logo size="md" />
           <div className="flex items-center gap-1">
             {/* Players button — owner only */}
             {isOwner && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white/60 hover:text-white hover:bg-white/10 relative"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent/10 relative"
                 onClick={() => navigate("/players")}
               >
                 <Users className="h-4 w-4 mr-1" />
@@ -370,7 +357,7 @@ export default function Dashboard() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white/60 hover:text-white hover:bg-white/10"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent/10"
                 onClick={() => setShowSettings(true)}
                 title={t("header.settings")}
               >
@@ -381,7 +368,7 @@ export default function Dashboard() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white/60 hover:text-white hover:bg-white/10"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent/10"
               onClick={handleSignOut}
               title={t("header.signOut")}
             >
@@ -403,7 +390,7 @@ export default function Dashboard() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10"
+                className="bg-card rounded-xl p-4 border border-border shadow-card"
               >
                 <div className="flex items-center gap-4">
                   {/* Oval avatar — click opens selfie editor */}
@@ -417,11 +404,11 @@ export default function Dashboard() {
                         name={playerName}
                         photoUrl={localPhotoUrl || playerPhoto}
                         size="lg"
-                        className="border-2 border-emerald-400/50"
+                        className="border-2 border-primary/50"
                       />
                     ) : (
-                      <div className="w-14 h-[4.75rem] rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center hover:bg-white/20 transition-colors">
-                        <Camera className="h-6 w-6 text-white/50" />
+                      <div className="w-14 h-[4.75rem] rounded-full bg-muted border-2 border-dashed border-muted-foreground/30 flex items-center justify-center hover:bg-muted/80 transition-colors">
+                        <Camera className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
                     {isUploadingPhoto && (
@@ -431,17 +418,17 @@ export default function Dashboard() {
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-xl font-bold text-white truncate">
+                    <h2 className="text-xl font-heading font-bold text-foreground truncate">
                       {playerName}
                     </h2>
                     {currentClub && (
-                      <p className="text-white/60 text-sm">
+                      <p className="text-muted-foreground text-sm">
                         {t("profile.memberOf", { clubName: currentClub.name })}
                       </p>
                     )}
                     <div className="flex items-center gap-1.5 mt-1">
-                      <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-emerald-400 text-xs">{t("profile.autoIdentified")}</span>
+                      <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-primary text-xs">{t("profile.autoIdentified")}</span>
                     </div>
                   </div>
                 </div>
@@ -449,7 +436,7 @@ export default function Dashboard() {
                 {!(localPhotoUrl || playerPhoto) && (
                   <button
                     onClick={() => setShowMemberSelfieEditor(true)}
-                    className="w-full mt-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 text-sm transition-colors"
+                    className="w-full mt-3 py-2 rounded-lg bg-muted hover:bg-muted/80 text-muted-foreground text-sm transition-colors"
                     disabled={isUploadingPhoto}
                   >
                     <Camera className="h-4 w-4 inline mr-1" />
@@ -464,9 +451,9 @@ export default function Dashboard() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/5 rounded-xl p-4 border border-white/10 text-center"
+                className="bg-muted/50 rounded-xl p-4 border border-border text-center"
               >
-                <p className="text-white/60 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {t("memberGuidance")}
                 </p>
               </motion.div>
@@ -477,7 +464,7 @@ export default function Dashboard() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10"
+                className="bg-card rounded-xl p-4 border border-border shadow-card"
               >
                 <div className="flex items-center gap-4">
                   {/* Oval avatar — click opens selfie editor */}
@@ -494,8 +481,8 @@ export default function Dashboard() {
                         className="border-2 border-amber-400/50"
                       />
                     ) : (
-                      <div className="w-14 h-[4.75rem] rounded-full bg-white/10 border-2 border-dashed border-amber-400/30 flex items-center justify-center hover:bg-white/20 transition-colors">
-                        <Camera className="h-6 w-6 text-white/50" />
+                      <div className="w-14 h-[4.75rem] rounded-full bg-muted border-2 border-dashed border-amber-400/30 flex items-center justify-center hover:bg-muted/80 transition-colors">
+                        <Camera className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
                     {isUploadingOwnerPhoto && (
@@ -505,10 +492,10 @@ export default function Dashboard() {
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-xl font-bold text-white truncate">
+                    <h2 className="text-xl font-heading font-bold text-foreground truncate">
                       {user?.user_metadata?.full_name || user?.email?.split("@")[0] || t("profile.defaultOwnerName")}
                     </h2>
-                    <p className="text-white/60 text-sm">
+                    <p className="text-muted-foreground text-sm">
                       {currentClub.name}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1">
@@ -531,11 +518,22 @@ export default function Dashboard() {
                 <Button
                   asChild
                   size="lg"
-                  className="w-full h-16 text-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                  className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
                 >
                   <Link to="/create-draft" className="flex items-center justify-center gap-3">
                     <Plus className="h-6 w-6" />
                     {t("cta.createDraft")}
+                  </Link>
+                </Button>
+
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full h-12 bg-card border-border text-foreground hover:bg-accent/10"
+                >
+                  <Link to="/solo-draft" className="flex items-center justify-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    {t("cta.splitTeams")}
                   </Link>
                 </Button>
 
@@ -545,7 +543,7 @@ export default function Dashboard() {
                     <Button
                       asChild
                       variant="outline"
-                      className="flex-1 h-11 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white relative"
+                      className="flex-1 h-11 bg-card border-border text-foreground hover:bg-accent/10 relative"
                     >
                       <Link to="/players" className="flex items-center justify-center gap-2">
                         <Users className="h-4 w-4" />
@@ -559,7 +557,7 @@ export default function Dashboard() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex-1 h-11 bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
+                      className="flex-1 h-11 bg-card border-border text-foreground hover:bg-accent/10"
                       onClick={() => setShowSettings(true)}
                     >
                       <Settings className="h-4 w-4 mr-2" />
@@ -580,12 +578,12 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
-              className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10"
+              className="bg-card rounded-xl p-4 border border-border shadow-card"
             >
               <div className="flex items-center gap-4 mb-3">
-                <div className="flex-1 h-px bg-white/20" />
-                <span className="text-white/60 text-sm">{t("joinCode.title")}</span>
-                <div className="flex-1 h-px bg-white/20" />
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-muted-foreground text-sm">{t("joinCode.title")}</span>
+                <div className="flex-1 h-px bg-border" />
               </div>
               <div className="flex gap-2">
                 <Input
@@ -595,13 +593,13 @@ export default function Dashboard() {
                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDown}
                   maxLength={4}
-                  className="flex-1 h-12 text-center text-xl font-mono tracking-widest bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-400 focus:ring-emerald-400/20"
+                  className="flex-1 h-12 text-center text-xl font-mono tracking-widest"
                   dir="ltr"
                 />
                 <Button
                   onClick={handleJoinDraft}
                   disabled={joinCode.trim().length !== 4}
-                  className="h-12 px-6 bg-white/10 hover:bg-white/20 text-white border-2 border-white/70"
+                  className="h-12 px-6 bg-muted hover:bg-muted/80 text-foreground border-2 border-border"
                 >
                   {t("joinCode.join")}
                 </Button>
@@ -616,19 +614,19 @@ export default function Dashboard() {
                 transition={{ delay: 0.3, duration: 0.3 }}
                 className="space-y-3"
               >
-                <h2 className="text-white/80 text-sm font-medium flex items-center gap-2">
+                <h2 className="text-foreground/80 text-sm font-medium flex items-center gap-2">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
                   {t("drafts.active")}
                 </h2>
                 {activeDrafts.map((draft) => (
                   <div
                     key={draft.id}
-                    className="bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden"
+                    className="bg-card rounded-xl border border-border shadow-card overflow-hidden"
                   >
                     <div className="p-4 flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="font-medium text-white">{draft.draft_name}</h3>
-                        <p className="text-sm text-white/50">
+                        <h3 className="font-medium text-foreground">{draft.draft_name}</h3>
+                        <p className="text-sm text-muted-foreground">
                           {formatDistanceToNow(new Date(draft.created_at), {
                             addSuffix: true,
                           })}
@@ -638,8 +636,8 @@ export default function Dashboard() {
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             draft.status === "drafting"
-                              ? "bg-yellow-500/20 text-yellow-300"
-                              : "bg-blue-500/20 text-blue-300"
+                              ? "bg-yellow-500/10 text-yellow-600"
+                              : "bg-blue-500/10 text-blue-600"
                           }`}
                         >
                           {draft.status === "drafting" ? t("drafts.statusDrafting") : t("drafts.statusWaiting")}
@@ -650,7 +648,7 @@ export default function Dashboard() {
                       <Button
                         asChild
                         size="sm"
-                        className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
+                        className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                       >
                         <Link to={getDraftLink(draft)}>
                           <Play className="h-4 w-4 mr-1" />
@@ -661,7 +659,7 @@ export default function Dashboard() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
                           onClick={() => handleDeleteDraft(draft)}
                           disabled={deletingId === draft.id}
                         >
@@ -688,7 +686,7 @@ export default function Dashboard() {
               >
                 <button
                   onClick={() => setShowHistory(!showHistory)}
-                  className="w-full text-white/60 text-sm font-medium flex items-center justify-between hover:text-white/80 transition-colors"
+                  className="w-full text-muted-foreground text-sm font-medium flex items-center justify-between hover:text-foreground/80 transition-colors"
                 >
                   <span>{t("drafts.recent")}</span>
                   {showHistory ? (
@@ -704,20 +702,20 @@ export default function Dashboard() {
                       <Link
                         key={draft.id}
                         to={getDraftLink(draft)}
-                        className="block bg-black/20 backdrop-blur-sm rounded-xl p-3 border border-white/10 hover:bg-black/30 transition-colors"
+                        className="block bg-card rounded-xl p-3 border border-border shadow-card hover:bg-accent/10 transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="font-medium text-white text-sm">
+                            <h3 className="font-medium text-foreground text-sm">
                               {draft.draft_name}
                             </h3>
-                            <p className="text-xs text-white/40">
+                            <p className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(draft.created_at), {
                                 addSuffix: true,
                               })}
                             </p>
                           </div>
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                             {t("drafts.statusCompleted")}
                           </span>
                         </div>
@@ -737,10 +735,10 @@ export default function Dashboard() {
                 className="text-center py-8"
               >
                 <div className="text-5xl mb-4">⚽</div>
-                <h3 className="text-lg font-medium text-white mb-2">
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   {isMember ? t("empty.memberTitle") : t("empty.ownerTitle")}
                 </h3>
-                <p className="text-white/50 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {isMember
                     ? t("empty.memberDescription")
                     : permissions.canCreateDrafts
@@ -754,13 +752,13 @@ export default function Dashboard() {
             {loadingDrafts && (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                  <div key={i} className="bg-card rounded-xl p-4 border border-border shadow-card">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2 flex-1">
-                        <div className="h-4 w-36 rounded bg-white/10 animate-pulse" />
-                        <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
+                        <div className="h-4 w-36 rounded bg-muted animate-pulse" />
+                        <div className="h-3 w-20 rounded bg-muted animate-pulse" />
                       </div>
-                      <div className="h-6 w-14 rounded-full bg-white/10 animate-pulse" />
+                      <div className="h-6 w-14 rounded-full bg-muted animate-pulse" />
                     </div>
                   </div>
                 ))}
@@ -771,7 +769,7 @@ export default function Dashboard() {
 
         {/* Footer */}
         <footer className="p-4 text-center">
-          <p className="text-white/30 text-xs">
+          <p className="text-muted-foreground text-xs">
             {t("footer")}
           </p>
         </footer>
@@ -815,16 +813,16 @@ export default function Dashboard() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="bg-emerald-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center">
+              <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
                 <div className="text-4xl mb-3">📸</div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-heading font-bold text-foreground">
                   {t("onboarding.selfie.title")}
                 </h2>
-                <p className="text-white/60 text-sm mt-2 mb-6">
+                <p className="text-muted-foreground text-sm mt-2 mb-6">
                   {t("onboarding.selfie.description")}
                 </p>
                 <Button
-                  className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base"
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base"
                   onClick={() => {
                     setShowOnboardingSelfie(false);
                     setShowOwnerSelfieEditor(true);
@@ -837,7 +835,7 @@ export default function Dashboard() {
                     setShowOnboardingSelfie(false);
                     setShowOnboarding(true);
                   }}
-                  className="mt-3 text-white/40 text-sm hover:text-white/60 transition-colors"
+                  className="mt-3 text-muted-foreground text-sm hover:text-foreground transition-colors"
                 >
                   {t("onboarding.selfie.skip")}
                 </button>
@@ -865,51 +863,51 @@ export default function Dashboard() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <div className="bg-emerald-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+              <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-xl">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">⚽</div>
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-heading font-bold text-foreground">
                     {t("onboarding.welcome.title")}
                   </h2>
-                  <p className="text-white/60 text-sm mt-1">
+                  <p className="text-muted-foreground text-sm mt-1">
                     {t("onboarding.welcome.subtitle")}
                   </p>
                 </div>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-emerald-400 font-bold text-sm">1</span>
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-primary font-bold text-sm">1</span>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">{t("onboarding.welcome.step1Title")}</p>
-                      <p className="text-white/50 text-xs">{t("onboarding.welcome.step1Description")}</p>
+                      <p className="text-foreground font-medium text-sm">{t("onboarding.welcome.step1Title")}</p>
+                      <p className="text-muted-foreground text-xs">{t("onboarding.welcome.step1Description")}</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-emerald-400 font-bold text-sm">2</span>
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-primary font-bold text-sm">2</span>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">{t("onboarding.welcome.step2Title")}</p>
-                      <p className="text-white/50 text-xs">{t("onboarding.welcome.step2Description")}</p>
+                      <p className="text-foreground font-medium text-sm">{t("onboarding.welcome.step2Title")}</p>
+                      <p className="text-muted-foreground text-xs">{t("onboarding.welcome.step2Description")}</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-emerald-400 font-bold text-sm">3</span>
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-primary font-bold text-sm">3</span>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">{t("onboarding.welcome.step3Title")}</p>
-                      <p className="text-white/50 text-xs">{t("onboarding.welcome.step3Description")}</p>
+                      <p className="text-foreground font-medium text-sm">{t("onboarding.welcome.step3Title")}</p>
+                      <p className="text-muted-foreground text-xs">{t("onboarding.welcome.step3Description")}</p>
                     </div>
                   </div>
                 </div>
 
                 <Button
-                  className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base"
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base"
                   onClick={() => {
                     setShowOnboarding(false);
                     navigate("/players");

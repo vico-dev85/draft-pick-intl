@@ -607,31 +607,26 @@ export default function Players() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-emerald-900 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-white" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
-      {/* Background Layer */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
-      </div>
-
+    <div className="min-h-screen bg-background bg-mesh-light">
       {/* Content Layer */}
-      <div className="relative z-10 pb-24">
+      <div className="pb-24">
         {/* Header */}
-        <header className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-40">
-          <Link to="/dashboard" className="flex items-center gap-2 text-white/70 hover:text-white transition-colors">
+        <header className="p-4 flex items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
+          <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             <span>{t("header.back")}</span>
           </Link>
-          <h1 className="text-lg font-bold text-white">{t("header.title")}</h1>
+          <h1 className="text-lg font-bold text-foreground">{t("header.title")}</h1>
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="p-2 text-white/70 hover:text-white transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <Search className="h-5 w-5" />
           </button>
@@ -644,22 +639,22 @@ export default function Players() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden bg-black/20 border-b border-white/10"
+              className="overflow-hidden bg-card border-b border-border"
             >
               <div className="p-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={t("search.placeholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                    className="pl-10 h-10"
                     autoFocus
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -676,18 +671,18 @@ export default function Players() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-12 bg-black/20 rounded-xl border border-white/10"
+              className="text-center py-12 bg-card shadow-card rounded-xl border border-border"
             >
               <div className="text-5xl mb-4">👥</div>
               {isOwner ? (
                 <>
-                  <h3 className="text-lg font-medium text-white mb-2">{t("empty.ownerTitle")}</h3>
-                  <p className="text-white/60 text-sm mb-4 px-4 whitespace-pre-line">
+                  <h3 className="text-lg font-medium text-foreground mb-2">{t("empty.ownerTitle")}</h3>
+                  <p className="text-muted-foreground text-sm mb-4 px-4 whitespace-pre-line">
                     {t("empty.ownerDescription")}
                   </p>
                   <Button
                     onClick={() => setShowAddDrawer(true)}
-                    className="bg-emerald-500 hover:bg-emerald-600"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {t("actions.addPlayer")}
@@ -695,8 +690,8 @@ export default function Players() {
                 </>
               ) : (
                 <>
-                  <h3 className="text-lg font-medium text-white mb-2">{t("empty.memberTitle")}</h3>
-                  <p className="text-white/60 text-sm px-4">
+                  <h3 className="text-lg font-medium text-foreground mb-2">{t("empty.memberTitle")}</h3>
+                  <p className="text-muted-foreground text-sm px-4">
                     {t("empty.memberDescription")}
                   </p>
                 </>
@@ -708,8 +703,8 @@ export default function Players() {
               {filteredRequested.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-3">
-                    <Mail className="h-4 w-4 text-emerald-400" />
-                    <h2 className="text-sm font-medium text-emerald-400">{t("categories.requested")} ({filteredRequested.length})</h2>
+                    <Mail className="h-4 w-4 text-primary" />
+                    <h2 className="text-sm font-medium text-primary">{t("categories.requested")} ({filteredRequested.length})</h2>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     {filteredRequested.map((player, index) => (
@@ -732,7 +727,7 @@ export default function Players() {
                 <section>
                   <div className="flex items-center gap-2 mb-3">
                     <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                    <h2 className="text-sm font-medium text-white/70">{t("categories.regular")} ({filteredRegular.length})</h2>
+                    <h2 className="text-sm font-medium text-muted-foreground">{t("categories.regular")} ({filteredRegular.length})</h2>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     {filteredRegular.map((player, index) => (
@@ -752,7 +747,7 @@ export default function Players() {
               {/* Occasional Players Section */}
               {filteredOccasional.length > 0 && (
                 <section>
-                  <h2 className="text-sm font-medium text-white/70 mb-3">{t("categories.occasional")} ({filteredOccasional.length})</h2>
+                  <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("categories.occasional")} ({filteredOccasional.length})</h2>
                   <div className="grid grid-cols-1 gap-2">
                     {filteredOccasional.map((player, index) => (
                       <PlayerRow
@@ -770,7 +765,7 @@ export default function Players() {
 
               {/* No results */}
               {searchQuery && filteredRegular.length === 0 && filteredOccasional.length === 0 && (
-                <div className="text-center py-8 text-white/60">
+                <div className="text-center py-8 text-muted-foreground">
                   {t("search.noResults")}
                 </div>
               )}
@@ -786,7 +781,7 @@ export default function Players() {
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring" }}
           onClick={() => setShowAddDrawer(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center z-30"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-30"
         >
           <Plus className="h-6 w-6" />
         </motion.button>
@@ -795,24 +790,24 @@ export default function Players() {
       {/* Add Player Drawer (owner only) */}
       {isOwner && (
         <Drawer open={showAddDrawer} onOpenChange={setShowAddDrawer}>
-          <DrawerContent className="bg-emerald-900 border-white/10">
+          <DrawerContent className="bg-card border-border">
             <DrawerHeader className="text-left">
-              <DrawerTitle className="text-white">{t("addDrawer.title")}</DrawerTitle>
+              <DrawerTitle className="text-foreground">{t("addDrawer.title")}</DrawerTitle>
             </DrawerHeader>
             <div className="p-4 space-y-4">
               <div className="space-y-2">
-                <Label className="text-white/80">{t("addDrawer.nameLabel")}</Label>
+                <Label className="text-foreground/80">{t("addDrawer.nameLabel")}</Label>
                 <Input
                   placeholder={t("addDrawer.namePlaceholder")}
                   value={newPlayerName}
                   onChange={(e) => setNewPlayerName(e.target.value)}
                   maxLength={30}
-                  className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                  className="h-12"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white/80">{t("addDrawer.photoLabel")}</Label>
+                <Label className="text-foreground/80">{t("addDrawer.photoLabel")}</Label>
                 <div className="flex items-center gap-4">
                   {photoPreview ? (
                     <div className="relative">
@@ -832,7 +827,7 @@ export default function Players() {
                       </button>
                     </div>
                   ) : (
-                    <label className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg cursor-pointer hover:bg-white/30 transition-colors text-white">
+                    <label className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg cursor-pointer transition-colors text-foreground">
                       <Camera className="h-4 w-4" />
                       <span className="text-sm">{t("addDrawer.choosePhoto")}</span>
                       <input
@@ -849,7 +844,7 @@ export default function Players() {
               <Button
                 onClick={handleAddPlayer}
                 disabled={isAdding || !newPlayerName.trim()}
-                className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
               >
                 {isAdding ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -867,12 +862,12 @@ export default function Players() {
 
       {/* Player Details Drawer */}
       <Drawer open={!!selectedPlayer} onOpenChange={(open) => !open && setSelectedPlayer(null)}>
-        <DrawerContent className="bg-emerald-900 border-white/10 max-h-[85vh]">
+        <DrawerContent className="bg-card border-border max-h-[85vh]">
           {selectedPlayer && (
             <div className="overflow-y-auto">
               <DrawerHeader className="text-center pb-0">
                 <DrawerClose asChild>
-                  <button className="absolute top-4 right-4 p-2 text-white/60 hover:text-white">
+                  <button className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground">
                     <X className="h-5 w-5" />
                   </button>
                 </DrawerClose>
@@ -893,7 +888,7 @@ export default function Players() {
                             {getInitials(editName || selectedPlayer.name)}
                           </div>
                         )}
-                        <label className="absolute bottom-0 right-0 bg-emerald-500 text-white rounded-full p-2 cursor-pointer">
+                        <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer">
                           <Camera className="h-4 w-4" />
                           <input
                             type="file"
@@ -924,16 +919,16 @@ export default function Players() {
                     <Input
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="text-center text-lg font-bold bg-white/10 border-white/20 text-white max-w-[200px]"
+                      className="text-center text-lg font-bold max-w-[200px]"
                       maxLength={30}
                     />
                   ) : (
-                    <DrawerTitle className="text-white text-xl">{selectedPlayer.name}</DrawerTitle>
+                    <DrawerTitle className="text-foreground text-xl">{selectedPlayer.name}</DrawerTitle>
                   )}
 
                   {/* "This is me" badge for members */}
                   {isMyPlayer(selectedPlayer) && (
-                    <div className="flex items-center gap-1.5 text-sm text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-1.5 text-sm text-primary bg-primary/10 px-3 py-1 rounded-full">
                       <User className="h-3.5 w-3.5" />
                       {t("status.thisIsMe")}
                     </div>
@@ -941,8 +936,8 @@ export default function Players() {
 
                   {/* Connected Status */}
                   {isOwner && (
-                    <div className={`flex items-center gap-1.5 text-sm ${selectedPlayer.linked_user_id ? 'text-emerald-400' : 'text-white/50'}`}>
-                      <div className={`w-2 h-2 rounded-full ${selectedPlayer.linked_user_id ? 'bg-emerald-400' : 'bg-white/30'}`} />
+                    <div className={`flex items-center gap-1.5 text-sm ${selectedPlayer.linked_user_id ? 'text-primary' : 'text-muted-foreground'}`}>
+                      <div className={`w-2 h-2 rounded-full ${selectedPlayer.linked_user_id ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
                       {selectedPlayer.linked_user_id ? t("status.connected") : t("status.notConnected")}
                     </div>
                   )}
@@ -962,7 +957,7 @@ export default function Players() {
                             setEditPhoto(null);
                             setEditPhotoPreview(selectedPlayer.photo_url);
                           }}
-                          className="flex-1 bg-white/20 hover:bg-white/30 text-white"
+                          className="flex-1 bg-muted hover:bg-muted/80 text-foreground"
                         >
                           <X className="h-4 w-4 mr-2" />
                           {t("delete.cancel")}
@@ -970,7 +965,7 @@ export default function Players() {
                         <Button
                           onClick={handleUpdatePlayer}
                           disabled={isUpdating || !editName.trim()}
-                          className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
+                          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                         >
                           {isUpdating ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -985,7 +980,7 @@ export default function Players() {
                     ) : (
                       <Button
                         onClick={() => setIsEditing(true)}
-                        className="w-full bg-white/10 hover:bg-white/20 text-white"
+                        className="w-full bg-muted hover:bg-muted/80 text-foreground"
                       >
                         <Camera className="h-4 w-4 mr-2" />
                         {t("actions.editNameAndPhoto")}
@@ -1005,7 +1000,7 @@ export default function Players() {
                             setEditPhoto(null);
                             setEditPhotoPreview(selectedPlayer.photo_url);
                           }}
-                          className="flex-1 bg-white/20 hover:bg-white/30 text-white"
+                          className="flex-1 bg-muted hover:bg-muted/80 text-foreground"
                         >
                           <X className="h-4 w-4 mr-2" />
                           {t("delete.cancel")}
@@ -1013,7 +1008,7 @@ export default function Players() {
                         <Button
                           onClick={handleUpdateOwnPhoto}
                           disabled={isUpdating || !editPhoto}
-                          className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
+                          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                         >
                           {isUpdating ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -1028,7 +1023,7 @@ export default function Players() {
                     ) : (
                       <Button
                         onClick={() => setIsEditing(true)}
-                        className="w-full bg-white/10 hover:bg-white/20 text-white"
+                        className="w-full bg-muted hover:bg-muted/80 text-foreground"
                       >
                         <Camera className="h-4 w-4 mr-2" />
                         {selectedPlayer.photo_url ? t("actions.updatePhoto") : t("actions.addPhoto")}
@@ -1039,15 +1034,15 @@ export default function Players() {
 
                 {/* Category Selector (owner only) */}
                 {isOwner && (
-                  <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                    <Label className="text-white/70 text-sm mb-3 block">{t("playerType.label")}</Label>
+                  <div className="bg-card rounded-xl p-4 border border-border">
+                    <Label className="text-muted-foreground text-sm mb-3 block">{t("playerType.label")}</Label>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleCategoryChange('regular')}
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                           selectedPlayer.category === 'regular'
                             ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50'
-                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                       >
                         <Star className={`h-4 w-4 ${selectedPlayer.category === 'regular' ? 'fill-amber-400' : ''}`} />
@@ -1057,8 +1052,8 @@ export default function Players() {
                         onClick={() => handleCategoryChange('occasional')}
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                           selectedPlayer.category === 'occasional'
-                            ? 'bg-white/20 text-white border border-white/30'
-                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                            ? 'bg-muted text-foreground border border-border'
+                            : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
                         }`}
                       >
                         {t("playerType.occasional")}
@@ -1069,24 +1064,24 @@ export default function Players() {
 
                 {/* Permissions (owner only, for linked players) */}
                 {isOwner && selectedPlayer.linked_user_id && (
-                  <div className="bg-black/20 rounded-xl p-4 border border-white/10 space-y-4">
-                    <Label className="text-white/70 text-sm">{t("permissions.label")}</Label>
+                  <div className="bg-card rounded-xl p-4 border border-border space-y-4">
+                    <Label className="text-muted-foreground text-sm">{t("permissions.label")}</Label>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-white text-sm">{t("permissions.canCreateDrafts")}</span>
+                      <span className="text-foreground text-sm">{t("permissions.canCreateDrafts")}</span>
                       <Switch
                         checked={selectedPlayer.can_create_drafts}
                         onCheckedChange={(v) => handlePermissionChange('can_create_drafts', v)}
-                        className="data-[state=checked]:bg-emerald-500"
+                        className="data-[state=checked]:bg-primary"
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-white text-sm">{t("permissions.canSendInvites")}</span>
+                      <span className="text-foreground text-sm">{t("permissions.canSendInvites")}</span>
                       <Switch
                         checked={selectedPlayer.can_send_invites}
                         onCheckedChange={(v) => handlePermissionChange('can_send_invites', v)}
-                        className="data-[state=checked]:bg-emerald-500"
+                        className="data-[state=checked]:bg-primary"
                       />
                     </div>
                   </div>
@@ -1094,9 +1089,9 @@ export default function Players() {
 
                 {/* Invite request banner */}
                 {selectedPlayer.invite_requested_at && !selectedPlayer.linked_user_id && (
-                  <div className="bg-emerald-500/15 border border-emerald-400/30 rounded-xl p-3 flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                    <p className="text-emerald-400 text-sm font-medium">
+                  <div className="bg-primary/10 border border-primary/30 rounded-xl p-3 flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-primary flex-shrink-0" />
+                    <p className="text-primary text-sm font-medium">
                       {t("status.requestedToJoin")}
                     </p>
                   </div>
@@ -1108,7 +1103,7 @@ export default function Players() {
                     {selectedPlayer.linked_user_id ? (
                       <Button
                         onClick={handleUnlink}
-                        className="w-full bg-white/10 hover:bg-white/20 text-white"
+                        className="w-full bg-muted hover:bg-muted/80 text-foreground"
                       >
                         <Unlink className="h-4 w-4 mr-2" />
                         {t("actions.unlinkAccount")}
@@ -1199,12 +1194,12 @@ function PlayerRow({ player, onClick, index, isMe, isRequested, t }: { player: P
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.03 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 p-3 backdrop-blur-sm rounded-xl border transition-colors text-left ${
+      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors text-left ${
         isRequested
-          ? "bg-emerald-500/10 border-emerald-400/30 hover:bg-emerald-500/20 border-l-2 border-l-emerald-400"
+          ? "bg-primary/10 border-primary/30 hover:bg-primary/15 border-l-2 border-l-primary"
           : isMe
-            ? "bg-emerald-500/10 border-emerald-400/30 hover:bg-emerald-500/20"
-            : "bg-black/30 border-white/10 hover:bg-black/40"
+            ? "bg-primary/10 border-primary/30 hover:bg-primary/15"
+            : "bg-card shadow-card border-border hover:bg-muted/50"
       }`}
     >
       {/* Avatar */}
@@ -1223,19 +1218,19 @@ function PlayerRow({ player, onClick, index, isMe, isRequested, t }: { player: P
 
       {/* Name & Status */}
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-white truncate">{player.name}</p>
+        <p className="font-medium text-foreground truncate">{player.name}</p>
         {isRequested ? (
-          <p className="text-xs text-emerald-400 flex items-center gap-1">
+          <p className="text-xs text-primary flex items-center gap-1">
             <Mail className="h-3 w-3" />
             {t("status.requestedInvite")}
           </p>
         ) : isMe ? (
-          <p className="text-xs text-emerald-400 flex items-center gap-1">
+          <p className="text-xs text-primary flex items-center gap-1">
             <User className="h-3 w-3" />
             {t("status.thisIsMe")}
           </p>
         ) : player.linked_user_id ? (
-          <p className="text-xs text-emerald-400 flex items-center gap-1">
+          <p className="text-xs text-primary flex items-center gap-1">
             <LinkIcon className="h-3 w-3" />
             {t("status.connected")}
           </p>
@@ -1247,7 +1242,7 @@ function PlayerRow({ player, onClick, index, isMe, isRequested, t }: { player: P
         {player.category === 'regular' && (
           <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
         )}
-        <ChevronRight className="h-4 w-4 text-white/40" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </div>
     </motion.button>
   );

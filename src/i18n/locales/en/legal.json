@@ -5,11 +5,11 @@
     "sections": {
       "intro": {
         "title": "Introduction",
-        "content": "Draft Pick (\"the App\") is a web application for organizing soccer team drafts. This privacy policy explains how we collect, use, and protect your personal information."
+        "content": "PickNKick (\"the App\") is a web application for organizing soccer team drafts. This privacy policy explains how we collect, use, and protect your personal information."
       },
       "dataCollected": {
         "title": "Information We Collect",
-        "content": "When you use Draft Pick, we may collect the following information:",
+        "content": "When you use PickNKick, we may collect the following information:",
         "items": [
           "Email address (when signing up or logging in with Google)",
           "Name and profile photo (from your Google account, if you sign in with Google)",
@@ -52,11 +52,11 @@
     "sections": {
       "acceptance": {
         "title": "Acceptance of Terms",
-        "content": "By using Draft Pick, you agree to these terms. If you do not agree, please stop using the service."
+        "content": "By using PickNKick, you agree to these terms. If you do not agree, please stop using the service."
       },
       "description": {
         "title": "The Service",
-        "content": "Draft Pick provides a platform for organizing team drafts for recreational soccer. The service enables:",
+        "content": "PickNKick provides a platform for organizing team drafts for recreational soccer. The service enables:",
         "items": [
           "Creating live drafts for team selection",
           "Managing player rosters",

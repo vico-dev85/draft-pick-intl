@@ -271,7 +271,10 @@ export default function DraftBoard() {
         };
 
         setRoom(parsedRoom);
+
+        // Fetch players
         await fetchPlayers(roomCode);
+
         setLoading(false);
 
       } catch (err) {
@@ -596,7 +599,17 @@ export default function DraftBoard() {
           >
             {soundMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
-          <span className="text-xs text-white/60">{room.room_code}</span>
+          <span className="flex items-center gap-1.5 text-xs text-white/60">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                realtimeStatus === "SUBSCRIBED"
+                  ? "bg-green-400"
+                  : "bg-yellow-400 animate-pulse"
+              }`}
+              title={realtimeStatus === "SUBSCRIBED" ? t("board.connectionLive") : t("board.connectionReconnecting")}
+            />
+            {room.room_code}
+          </span>
         </div>
       </header>
 

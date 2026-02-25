@@ -18,15 +18,15 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icons/*.png", "icons/*.svg"],
       manifest: {
-        name: "Draft Pick — Fair Teams in One Click",
-        short_name: "Draft Pick",
+        name: "PickNKick — Fair Teams. No Arguments.",
+        short_name: "PickNKick",
         lang: "en",
         dir: "ltr",
         description: "Live soccer draft — pick captains, randomize order, build balanced teams",
         display: "standalone",
         orientation: "portrait",
-        theme_color: "#065f46",
-        background_color: "#064e3b",
+        theme_color: "#7C3AED",
+        background_color: "#1a1025",
         start_url: "/",
         icons: [
           {

@@ -131,16 +131,16 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-emerald-900 z-50 shadow-2xl overflow-hidden flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-card z-50 shadow-2xl overflow-hidden flex flex-col"
           >
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/20">
-              <h2 className="text-xl font-bold text-white">{t("settings.title")}</h2>
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h2 className="text-xl font-bold text-foreground">{t("settings.title")}</h2>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="text-white/60 hover:text-white hover:bg-white/10"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent/10"
               >
                 <X className="h-5 w-5" />
               </Button>
@@ -150,56 +150,56 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {loading ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : (
                 <>
                   {/* Club Name */}
                   <div className="space-y-2">
-                    <Label className="text-white/80">{t("settings.clubName")}</Label>
+                    <Label className="text-foreground">{t("settings.clubName")}</Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={t("settings.clubNamePlaceholder")}
-                      className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                      className="h-12"
                     />
                   </div>
 
                   {/* Default Location */}
                   <div className="space-y-2">
-                    <Label className="text-white/80">{t("settings.defaultLocation")}</Label>
+                    <Label className="text-foreground">{t("settings.defaultLocation")}</Label>
                     <Input
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder={t("settings.defaultLocationPlaceholder")}
-                      className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                      className="h-12"
                     />
-                    <p className="text-xs text-white/40">
+                    <p className="text-xs text-muted-foreground">
                       {t("settings.defaultLocationHint")}
                     </p>
                   </div>
 
                   {/* Default Notes */}
                   <div className="space-y-2">
-                    <Label className="text-white/80">{t("settings.defaultNotes")}</Label>
+                    <Label className="text-foreground">{t("settings.defaultNotes")}</Label>
                     <Textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder={t("settings.defaultNotesPlaceholder")}
                       rows={2}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none"
+                      className="resize-none"
                     />
                   </div>
 
                   {/* WhatsApp Templates Section */}
-                  <div className="pt-4 border-t border-white/10">
+                  <div className="pt-4 border-t border-border">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-white font-medium">{t("settings.whatsappTemplates")}</h3>
+                      <h3 className="text-foreground font-medium">{t("settings.whatsappTemplates")}</h3>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={resetTemplates}
-                        className="text-white/50 hover:text-white hover:bg-white/10"
+                        className="text-muted-foreground hover:text-foreground hover:bg-accent/10"
                       >
                         <RotateCcw className="h-4 w-4 mr-1" />
                         {t("settings.reset")}
@@ -208,28 +208,28 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
 
                     {/* Invite Template */}
                     <div className="space-y-2 mb-4">
-                      <Label className="text-white/80">{t("settings.inviteTemplate")}</Label>
+                      <Label className="text-foreground">{t("settings.inviteTemplate")}</Label>
                       <Textarea
                         value={inviteTemplate}
                         onChange={(e) => setInviteTemplate(e.target.value)}
                         rows={4}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none font-mono text-sm"
+                        className="resize-none font-mono text-sm"
                       />
-                      <p className="text-xs text-white/40">
+                      <p className="text-xs text-muted-foreground">
                         {t("settings.inviteTemplateVars")}
                       </p>
                     </div>
 
                     {/* Results Template */}
                     <div className="space-y-2">
-                      <Label className="text-white/80">{t("settings.resultsTemplate")}</Label>
+                      <Label className="text-foreground">{t("settings.resultsTemplate")}</Label>
                       <Textarea
                         value={resultsTemplate}
                         onChange={(e) => setResultsTemplate(e.target.value)}
                         rows={6}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 resize-none font-mono text-sm"
+                        className="resize-none font-mono text-sm"
                       />
-                      <p className="text-xs text-white/40">
+                      <p className="text-xs text-muted-foreground">
                         {t("settings.resultsTemplateVars")}
                       </p>
                     </div>
@@ -239,11 +239,11 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-white/10 bg-black/20">
+            <div className="p-4 border-t border-border">
               <Button
                 onClick={handleSave}
                 disabled={saving || loading}
-                className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
               >
                 {saving ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

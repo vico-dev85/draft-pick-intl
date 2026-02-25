@@ -126,10 +126,10 @@
     "standingsTitle": "Standings:",
     "standingRow": "{{rank}}. Team {{name}} — {{wins}}W {{draws}}D {{losses}}L ({{points}} Pts)",
     "topScorer": "Top Scorer: {{name}} ({{goals}} goals)",
-    "fairTeams": "Draft Pick — Fair teams. No arguments."
+    "fairTeams": "PickNKick — Fair teams. No arguments."
   },
   "footer": {
-    "brand": "Draft Pick"
+    "brand": "PickNKick"
   },
   "claim": {
     "sheetTitle": "Who are you?",

@@ -4,7 +4,7 @@ import { Crown } from "lucide-react";
 const PLAYER_COLORS = [
   "bg-rose-500",
   "bg-amber-500",
-  "bg-emerald-500",
+  "bg-purple-500",
   "bg-cyan-500",
   "bg-violet-500",
   "bg-pink-500",
@@ -76,12 +76,12 @@ export function PlayerChip({
       onClick={isClickable ? onClick : undefined}
       disabled={!isClickable}
       className={cn(
-        "flex items-center rounded-xl text-right w-full transition-all duration-150",
+        "flex items-center rounded-xl w-full transition-all duration-150",
         s.container,
         // State styles - explicit light theme colors
         state === "available" && "bg-white hover:bg-gray-50 border border-gray-200 cursor-pointer",
-        state === "highlighted" && "bg-emerald-50 border-2 border-emerald-500 cursor-pointer ring-2 ring-emerald-300",
-        state === "selected" && "bg-emerald-100 border-2 border-emerald-500 cursor-pointer scale-[1.02] shadow-md",
+        state === "highlighted" && "bg-blue-50 border-2 border-blue-400 cursor-pointer ring-2 ring-blue-200",
+        state === "selected" && "bg-blue-100 border-2 border-blue-500 cursor-pointer scale-[1.02] shadow-md",
         state === "picked" && "bg-gray-100 border border-gray-200",
         state === "disabled" && "bg-gray-50 border border-gray-100 opacity-50 cursor-not-allowed",
         className
@@ -117,7 +117,7 @@ export function PlayerChip({
 
       {/* Name */}
       <span className={cn(
-        "font-medium truncate flex-1 text-right text-gray-900",
+        "font-medium truncate flex-1 text-left text-gray-900",
         s.name,
         state === "picked" && "text-gray-600",
         state === "disabled" && "text-gray-400",

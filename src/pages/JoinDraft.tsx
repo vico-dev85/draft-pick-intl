@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getSecureSessionId } from "@/lib/draftUtils";
 import { ArrowLeft, Loader2, Crown, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Logo } from "@/components/ui/logo";
 
 interface DraftRoom {
   id: string;
@@ -224,11 +225,11 @@ export default function JoinDraft() {
 
   if (loading || autoIdentifying) {
     return (
-      <div className="min-h-screen bg-emerald-900 flex items-center justify-center">
+      <div className="min-h-screen bg-purple-900 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-3" />
           {autoIdentifying && autoIdentifiedName && (
-            <p className="text-emerald-400 font-medium">
+            <p className="text-purple-400 font-medium">
               {t("join.identifiedAs", { name: autoIdentifiedName })}
             </p>
           )}
@@ -244,17 +245,17 @@ export default function JoinDraft() {
   // If already claimed, redirect to room
   if (claimedPlayerId) {
     return (
-      <div className="min-h-screen bg-emerald-900 flex items-center justify-center">
+      <div className="min-h-screen bg-purple-900 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
-          <Check className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
+          <Check className="h-16 w-16 text-purple-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">
             {t("join.alreadySelected")}
           </h2>
-          <Button onClick={() => navigate(`/room/${roomCode}`)} className="bg-emerald-500 hover:bg-emerald-600 text-white">
+          <Button onClick={() => navigate(`/room/${roomCode}`)} className="bg-purple-500 hover:bg-purple-600 text-white">
             {t("join.enterRoom")}
           </Button>
         </motion.div>
@@ -266,10 +267,10 @@ export default function JoinDraft() {
   const nonCaptains = players.filter((p) => !p.is_captain);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
+    <div className="min-h-screen relative overflow-hidden bg-purple-900">
       {/* Background Layer */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 to-purple-950" />
         <div
           className="absolute inset-0"
           style={{
@@ -310,7 +311,7 @@ export default function JoinDraft() {
           <ArrowLeft className="h-4 w-4" />
           <span>{t("join.back")}</span>
         </Link>
-        <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
+        <Logo size="md" variant="light" />
       </header>
 
       <main className="px-4 py-8 max-w-2xl mx-auto">
@@ -372,7 +373,7 @@ export default function JoinDraft() {
                           {t("join.claimed")}
                         </span>
                       ) : (
-                        <span className="text-sm text-emerald-400">{t("join.select")}</span>
+                        <span className="text-sm text-purple-400">{t("join.select")}</span>
                       )}
                     </button>
                   );
@@ -397,7 +398,7 @@ export default function JoinDraft() {
                       className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
                         isClaimed
                           ? "bg-white/5 border-white/10 opacity-60 cursor-not-allowed"
-                          : "bg-black/30 backdrop-blur-sm border-white/20 hover:border-emerald-400 cursor-pointer"
+                          : "bg-black/30 backdrop-blur-sm border-white/20 hover:border-purple-400 cursor-pointer"
                       }`}
                     >
                       <PlayerAvatar

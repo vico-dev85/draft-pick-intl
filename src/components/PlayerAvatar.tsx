@@ -36,13 +36,13 @@ const ovalSizes: Record<string, { w: number; h: number }> = {
   xl: { w: 72, h: 96 },
 };
 
-// Circle sizes for initials fallback (unchanged from original)
+// Oval sizes for initials fallback (same ratio as photos)
 const sizeClasses = {
-  xs: "w-6 h-6 text-[10px]",
-  sm: "w-8 h-8 text-xs",
-  md: "w-12 h-12 text-sm",
-  lg: "w-16 h-16 text-lg",
-  xl: "w-20 h-20 text-xl",
+  xs: "text-[10px]",
+  sm: "text-xs",
+  md: "text-sm",
+  lg: "text-lg",
+  xl: "text-xl",
 };
 
 export function PlayerAvatar({ name, photoUrl, size = "md", className }: PlayerAvatarProps) {
@@ -58,6 +58,7 @@ export function PlayerAvatar({ name, photoUrl, size = "md", className }: PlayerA
     );
   }
 
+  const oval = ovalSizes[size];
   return (
     <div
       className={cn(
@@ -66,6 +67,7 @@ export function PlayerAvatar({ name, photoUrl, size = "md", className }: PlayerA
         sizeClasses[size],
         className
       )}
+      style={{ width: oval.w, height: oval.h }}
     >
       {getInitials(name)}
     </div>

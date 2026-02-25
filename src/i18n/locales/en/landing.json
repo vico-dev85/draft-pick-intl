@@ -1,14 +1,14 @@
 {
   "hero": {
-    "title": "Draft Pick",
-    "tagline1": "Pick 3 captains",
-    "tagline2": "Draft teams from your phone",
-    "tagline3": "Fair teams. No arguments."
+    "title": "PickNKick",
+    "tagline1": "Pick tonight's squad",
+    "tagline2": "Draft fair teams live",
+    "tagline3": "Kick off. No arguments."
   },
   "cta": {
-    "createClub": "Create Your Club",
-    "alreadyHaveAccount": "Already have an account? Sign in",
-    "tryWithoutAccount": "Try without an account"
+    "createClub": "Get Started",
+    "alreadyHaveAccount": "Already registered? Sign in",
+    "tryWithoutAccount": "Try Solo Draft"
   },
   "joinCode": {
     "divider": "Have a game code?",

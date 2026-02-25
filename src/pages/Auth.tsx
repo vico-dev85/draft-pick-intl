@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { getSafeRedirectPath } from "@/lib/safeRedirect";
+import { getSafeRedirectPath, isSafeRedirectPath } from "@/lib/safeRedirect";
 import { Loader2, ArrowRight, ChevronDown, Mail } from "lucide-react";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { Logo } from "@/components/ui/logo";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -39,7 +40,7 @@ export default function Auth() {
   const returnTo = locationState?.returnTo || "/dashboard";
 
   const [isLoading, setIsLoading] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(true);
   const [emailTab, setEmailTab] = useState<EmailTab>("login");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ export default function Auth() {
         } else {
           toast({
             title: t("auth:success.resetSent"),
-            description: t("auth:success.resetSentDescription"),
+            description: t("auth:success.resetSentDescription", { email: data.email }),
           });
           setShowForgotPassword(false);
         }
@@ -136,14 +137,13 @@ export default function Auth() {
     if (message.includes("Password")) {
       return t("auth:errors.passwordTooShort");
     }
-    return message;
+    return t("auth:errors.unexpectedError");
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
-      {/* Background Layer */}
+    <div className="min-h-screen relative overflow-hidden bg-purple-950">
+      {/* Background Image Layer */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
         <div
           className="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/assets/bg/auth-desktop.jpg')" }}
@@ -152,11 +152,11 @@ export default function Auth() {
           className="md:hidden absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/assets/bg/auth-mobile.jpg')" }}
         />
+        {/* Dark overlay for text readability */}
         <div
           className="absolute inset-0"
           style={{
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.5) 100%)",
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.5) 100%)',
           }}
         />
       </div>
@@ -175,7 +175,7 @@ export default function Auth() {
           <div className="flex items-center gap-1">
             <LanguagePicker />
             <Link to="/">
-              <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
+              <Logo size="lg" variant="light" />
             </Link>
           </div>
         </header>
@@ -188,14 +188,14 @@ export default function Auth() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-sm"
           >
-            <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <div className="bg-card rounded-2xl p-6 border border-border shadow-card">
               {/* Google OAuth — Hero */}
               <div className="space-y-3">
                 <Button
                   type="button"
                   className="w-full h-12 bg-white hover:bg-white/90 text-gray-700 font-bold text-base shadow-lg"
                   onClick={async () => {
-                    if (returnTo !== "/dashboard") {
+                    if (returnTo !== "/dashboard" && isSafeRedirectPath(returnTo)) {
                       localStorage.setItem("authReturnTo", returnTo);
                     }
                     const { error } = await signInWithGoogle();
@@ -232,16 +232,16 @@ export default function Auth() {
 
                 {/* Divider */}
                 <div className="flex items-center gap-4">
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-white/30 text-xs">{t("auth:form.or")}</span>
-                  <div className="flex-1 h-px bg-white/10" />
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-muted-foreground text-xs">{t("auth:form.or")}</span>
+                  <div className="flex-1 h-px bg-border" />
                 </div>
 
                 {/* Email toggle */}
                 <button
                   type="button"
                   onClick={() => setShowEmailForm(!showEmailForm)}
-                  className="w-full flex items-center justify-center gap-2 text-sm text-white/40 hover:text-white/60 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Mail className="h-4 w-4" />
                   <span>{t("auth:form.continueWithEmail")}</span>
@@ -251,17 +251,17 @@ export default function Auth() {
 
               {/* Email Form — expanded */}
               {showEmailForm && (
-                <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="mt-4 pt-4 border-t border-border">
                   {/* Login / Signup tabs */}
                   {!showForgotPassword && (
-                    <div className="flex mb-4 bg-white/5 rounded-lg p-1">
+                    <div className="flex mb-4 bg-muted rounded-lg p-1">
                       <button
                         type="button"
                         onClick={() => setEmailTab("login")}
                         className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                           emailTab === "login"
-                            ? "bg-emerald-500 text-white"
-                            : "text-white/50 hover:text-white/70"
+                            ? "bg-primary text-white"
+                            : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         {t("auth:form.login")}
@@ -271,8 +271,8 @@ export default function Auth() {
                         onClick={() => setEmailTab("signup")}
                         className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                           emailTab === "signup"
-                            ? "bg-emerald-500 text-white"
-                            : "text-white/50 hover:text-white/70"
+                            ? "bg-primary text-white"
+                            : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         {t("auth:form.signup")}
@@ -283,13 +283,13 @@ export default function Auth() {
                   {/* Forgot password header */}
                   {showForgotPassword && (
                     <div className="mb-4 text-center">
-                      <p className="text-white/80 text-sm">{t("auth:form.forgotPasswordDescription")}</p>
+                      <p className="text-muted-foreground text-sm">{t("auth:form.forgotPasswordDescription")}</p>
                     </div>
                   )}
 
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4" noValidate>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-white/80">
+                      <Label htmlFor="email" className="text-foreground">
                         {t("auth:form.email")}
                       </Label>
                       <Input
@@ -297,7 +297,7 @@ export default function Auth() {
                         type="email"
                         placeholder="your@email.com"
                         dir="ltr"
-                        className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-400 focus:ring-emerald-400/20"
+                        className="h-12"
                         {...form.register("email")}
                       />
                       {form.formState.errors.email && (
@@ -309,7 +309,7 @@ export default function Auth() {
 
                     {!showForgotPassword && (
                       <div className="space-y-2">
-                        <Label htmlFor="password" className="text-white/80">
+                        <Label htmlFor="password" className="text-foreground">
                           {t("auth:form.password")}
                         </Label>
                         <Input
@@ -317,7 +317,7 @@ export default function Auth() {
                           type="password"
                           placeholder="••••••"
                           dir="ltr"
-                          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-400 focus:ring-emerald-400/20"
+                          className="h-12"
                           {...form.register("password")}
                         />
                         {form.formState.errors.password && (
@@ -330,7 +330,7 @@ export default function Auth() {
 
                     <Button
                       type="submit"
-                      className="w-full h-11 font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
+                      className="w-full h-11 font-bold bg-primary hover:bg-primary/90 text-white"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -349,7 +349,7 @@ export default function Auth() {
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
-                        className="w-full text-sm text-white/40 hover:text-white/60 transition-colors"
+                        className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
                       >
                         {t("auth:form.forgotPassword")}
                       </button>
@@ -360,7 +360,7 @@ export default function Auth() {
                       <button
                         type="button"
                         onClick={() => setShowForgotPassword(false)}
-                        className="w-full text-sm text-emerald-400 hover:underline"
+                        className="w-full text-sm text-primary hover:underline"
                       >
                         {t("auth:form.backToLogin")}
                       </button>
@@ -370,11 +370,11 @@ export default function Auth() {
               )}
 
               {/* Quick draft link */}
-              <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="mt-4 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => navigate("/quick-draft")}
-                  className="w-full text-sm text-white/40 hover:text-amber-400 transition-colors"
+                  className="w-full text-sm text-white/50 hover:text-amber-400 transition-colors"
                 >
                   {t("auth:quickDraft")}
                 </button>
@@ -382,7 +382,7 @@ export default function Auth() {
             </div>
 
             {/* Footer */}
-            <p className="text-center text-white/30 text-xs mt-6">
+            <p className="text-center text-white/50 text-xs mt-6">
               {t("auth:footer")}
             </p>
           </motion.div>

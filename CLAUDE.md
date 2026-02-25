@@ -1,10 +1,11 @@
-# Draft Pick — International Soccer Draft App
+# PickNKick — International Soccer Draft App
 
 ## What This Is
 
-An **international, English-first** soccer/football draft app for pickup groups. Forked from [kohot.online](https://kohot.online) (Hebrew RTL version) and fully transformed to LTR with i18n support.
+An **international, English-first** soccer/football draft app for pickup groups. Forked from [kohot.online](https://kohot.online) (Hebrew RTL version) and fully transformed to LTR with i18n support and rebranded as **PickNKick**.
 
-**Product name**: Draft Pick (working title — see `docs/research/01-naming.md`)
+**Product name**: PickNKick
+**Tagline**: "Fair teams. No arguments."
 **Target languages**: English (default), Spanish, French, German, Italian, Dutch
 **Direction**: LTR only (no RTL languages in v1)
 
@@ -12,29 +13,40 @@ An **international, English-first** soccer/football draft app for pickup groups.
 
 ## Current State (as of Feb 2026)
 
-The app is **functional in English** and nearly launch-ready.
+The app is **functional in English** with a complete purple rebrand.
 
 **Completed:**
 - Full i18n system (react-i18next, namespace-per-page, language picker)
 - All pages translated to English
 - All RTL removed, LTR-first
-- TTS reads language dynamically from `localStorage` key `draftpick_lang`
+- Complete rebrand: emerald → purple color system, Satoshi + JetBrains Mono fonts
+- Two visual modes: light utility (Dashboard, Players, CreateDraft) + dark event (Landing, WaitingRoom, Results)
+- Logo component uses PNG image (`public/logo.png`) with light/dark variant support
+- Mesh gradient backgrounds on light utility pages (`bg-mesh-light`)
+- Auth page has photo background (dark overlay + white form card)
+- TTS auto-detects Hebrew/Arabic names via `detectTtsLang()` in `sounds.ts`
+- Oval avatars for both photos and initials placeholders (1:1.35 ratio)
+- Sticky bottom bars on CreateDraft player/captain selection steps
 - Multi-team support (2-3 teams, expandable to 4-5)
-- PWA icons replaced (Hebrew → "DP" initials)
-- 24 tests passing, production build clean
+- HTTPS force redirect in `.htaccess`
+- Security hardening: crypto RNG for room codes/raffle, UUID validation on invite tokens, safe redirect validation on localStorage, error message sanitization
+- 77 tests passing (63 security tests), production build clean
+- Video content plan (`docs/VIDEO-CONTENT-PLAN.md`)
 
 **Not yet done:**
-- OG image (needs design, not code generation)
-- Logo component still uses emoji placeholder (⚽ in `src/components/ui/logo.tsx`)
-- English legal pages (Privacy.tsx, Terms.tsx still have Hebrew text)
-- Production domain not set up
-- Brand identity decisions open (name, colors, logo, typography, visual language)
+- OG image (1200x630, needs design)
+- PWA icons still show old "DP" initials — replace with new logo
+- Production domain not finalized
 - Translations for ES, FR, DE, IT, NL
+- Landing page background image (new concept needed)
+- Blog/content pages for SEO (`public/blog/`)
+- Hero demo video for landing page
 
 **Docs:**
-- `docs/ROADMAP.md` — product roadmap with launch checklist and 5 phases
-- `docs/BRAND-GUIDE.md` — current visual state + brand direction
-- `docs/research/01-06` — self-contained research prompts for each brand decision
+- `docs/VIDEO-CONTENT-PLAN.md` — 12-video production plan with storyboards
+- `docs/REBRAND-PLAN.md` — brand research synthesis and implementation plan
+- `docs/ROADMAP.md` — product roadmap with launch checklist
+- `docs/research/01-06` — brand research studies (naming, colors, typography, visual language, competitive, tone)
 
 ---
 
@@ -106,6 +118,31 @@ The core loop:
 
 ---
 
+## Design System
+
+### Brand Colors
+- **Primary**: `#7C3AED` (purple) — CTAs, active states, brand
+- **Accent**: `#A3E635` (lime) — energy moments, highlights
+- **Captain gold**: `#FBBF24` — captain highlights
+- **Team colors**: Blue `#3B82F6`, Red `#EF4444`, Amber `#F59E0B`, Green `#22C55E`, Pink `#EC4899`
+
+### Typography
+- **Display/Heading**: Satoshi (Black 900, Bold 700) — `font-heading`
+- **Body**: Inter (Regular 400, Medium 500) — default
+- **Mono**: JetBrains Mono (Regular 400) — `font-mono` for room codes, timers
+
+### Two Visual Modes
+- **Light utility** (Dashboard, Players, CreateDraft, Auth form, Privacy, Terms): `bg-background bg-mesh-light`, solid cards, minimal animation
+- **Dark event** (Landing, WaitingRoom, DraftBoard header, Results, GameNight, NightResults): dark purple gradients, glassmorphic cards, full animations
+
+### Logo
+- Component: `src/components/ui/logo.tsx` — renders `public/logo.png` as `<img>`
+- `variant="light"` applies `brightness-0 invert` CSS filter for dark backgrounds
+- Sizes: sm (24px), md (32px), lg (40px), xl (56px) height
+- To change the logo: replace `public/logo.png`
+
+---
+
 ## i18n System
 
 Fully set up with `react-i18next`. All pages use `t()` for translations.
@@ -124,18 +161,19 @@ src/i18n/
       draft.json        ← CreateDraft, WaitingRoom, DraftBoard
       results.json      ← Results, sharing templates
       gamenight.json    ← GameNight, NightResults
+      legal.json        ← Privacy, Terms
 ```
 
 - Language stored in `localStorage` key: `draftpick_lang`
 - Language picker in app header (`LanguagePicker` component)
-- TTS in `src/lib/sounds.ts` reads language dynamically from localStorage
+- TTS in `src/lib/sounds.ts` reads language dynamically; `detectTtsLang()` auto-detects Hebrew/Arabic names
 - `<html lang="">` attribute updated on language change
 
 ---
 
 ## Multi-Team Architecture
 
-The app supports **2-3 teams** (expandable to 4-5). This is a recent addition built on top of the original 3-captain-only system.
+The app supports **2-3 teams** (expandable to 4-5).
 
 ### Database Schema
 
@@ -154,11 +192,7 @@ All captain logic flows through this single module:
 | `resolveCaptainNumber(room, playerId)` | Which captain number is this player? |
 | `getAllCaptains(room)` | Array of all `{ captainNumber, playerId }` |
 
-**Every page uses these helpers** instead of hardcoding captain1/2/3. Pages updated: CreateDraft, WaitingRoom, DraftBoard, Results, GameNight, NightResults, JoinDraft, QuickDraft.
-
-### Database Migration
-
-`supabase/migrations/20260219_multi_team_support.sql` — comprehensive migration that updates schema + all RPCs (`pick_player_atomic`, `start_draft_if_ready`, `create_quick_draft`, `start_game`, `get_game_night_summary`).
+**Every page uses these helpers** instead of hardcoding captain1/2/3.
 
 ---
 
@@ -182,23 +216,25 @@ When ready to launch for real users, create a separate Supabase project and run 
 
 - **OAuthCallbackHandler** — In `App.tsx`, detects both implicit and PKCE tokens. After processing, cleans up the query string and checks for pending invite tokens.
 
-- **Dual storage for invite tokens** — `pendingInviteToken` is stored in both `sessionStorage` and `localStorage` because email confirmation opens a new tab where `sessionStorage` is empty.
+- **Dual storage for invite tokens** — `pendingInviteToken` is stored in both `sessionStorage` and `localStorage` because email confirmation opens a new tab where `sessionStorage` is empty. Tokens are validated as UUID format before storage.
 
 - **RLS + SECURITY DEFINER RPCs** — Most data access goes through RPCs to avoid RLS recursion. Direct table queries work only for owners. Members must use RPCs.
 
-- **DraftBoard uses light theme** — `bg-gray-100` for readability during draft, unlike the rest of the dark emerald theme.
+- **DraftBoard uses light theme** — `bg-gray-100` for readability during draft.
 
-- **Secure session IDs** — `getSecureSessionId()` generates browser session IDs for captain identity claiming (separate from Supabase auth).
+- **Secure session IDs** — `getSecureSessionId()` in `src/lib/sessionManager.ts` generates cryptographic browser session IDs using `crypto.getRandomValues()` for captain identity claiming.
 
-- **Sound system** — `src/lib/sounds.ts` plays sound effects and browser TTS. Sound files in `public/sounds/`. Mute toggle persisted in `sessionStorage`. TTS language reads from `localStorage` key `draftpick_lang`.
+- **Sound system** — `src/lib/sounds.ts` plays sound effects and browser TTS. Sound files in `public/sounds/`. Mute toggle persisted in `sessionStorage`. `detectTtsLang()` auto-detects Hebrew/Arabic characters in player names and switches TTS voice accordingly.
 
 - **Selfie Avatar Editor** — Camera/gallery capture with oval face crop guide. Outputs PNG with transparent corners.
 
-- **Oval avatars** — `PlayerAvatar` renders photos as ovals (~1:1.35 ratio). Initials fallback stays circular.
+- **Oval avatars** — `PlayerAvatar` renders both photos and initials as ovals (~1:1.35 ratio).
 
 - **Photo upload** — `compressPhoto()` (500KB, 400px, WebP) + `uploadPlayerPhoto()` to Supabase storage.
 
 - **Captain helpers** — All captain resolution goes through `src/lib/captainHelpers.ts`. Never hardcode captain1/2/3 logic in pages.
+
+- **Room codes** — Generated with `crypto.getRandomValues()` (not Math.random) for unpredictability. 4 chars from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (excludes ambiguous 0/O/1/I).
 
 ---
 
@@ -207,7 +243,7 @@ When ready to launch for real users, create a separate Supabase project and run 
 | RPC | Used By | Purpose |
 |---|---|---|
 | `get_user_club` | Dashboard, CreateDraft, ClubSettings | Get user's club |
-| `get_club_players` | CreateDraft, Players | Get player pool |
+| `get_club_players` | CreateDraft, Players | Get player pool (includes `invite_requested_at`) |
 | `get_club_drafts` | Dashboard | Get draft history |
 | `get_my_linked_clubs` | useClubContext | Get clubs user belongs to |
 | `get_room_players_public` | Multiple pages | Get players for a draft (public) |
@@ -253,7 +289,7 @@ When ready to launch for real users, create a separate Supabase project and run 
 | `useClubContext()` | Club membership: `{ currentClub, isOwner, isMember, permissions, playerId, playerName }` |
 | `useGameTimer()` | Game night countdown timer with audio warnings |
 | `useWakeLock()` | Prevent screen sleep during drafts/games |
-| `useAnnouncementQueue()` | Queue TTS + sound announcements |
+| `useAnnouncementQueue()` | Queue TTS + sound announcements (uses `detectTtsLang`) |
 | `useInstallPrompt()` | PWA install prompt detection |
 
 ---
@@ -262,14 +298,15 @@ When ready to launch for real users, create a separate Supabase project and run 
 
 **Before every commit, run:**
 ```bash
-npm test        # Vitest — all tests must pass (24 tests currently)
+npm test        # Vitest — all tests must pass (77 tests across 4 suites)
 npm run build   # Vite production build — catches TypeScript errors
 ```
 
 **Test files:**
+- `src/test/security.test.ts` — 63 security tests: redirects, tokens, room codes, raffle, sessions, TTS, XSS, storage, schemas, env vars
 - `src/test/pages.test.tsx` — smoke tests for Landing, Auth, AcceptInvite, QuickDraft
 - `src/test/invite-flow.test.tsx` — OAuth redirect logic, invite token handling
-- `src/test/security.test.ts` — open redirect prevention, token validation
+- `src/test/game-night.test.tsx` — GameNight and NightResults smoke tests
 - `src/test/setup.tsx` — mocks for Supabase, framer-motion, matchMedia
 - `src/test/test-utils.tsx` — `renderWithProviders()` helper
 
@@ -279,11 +316,28 @@ npm run build   # Vite production build — catches TypeScript errors
 
 These patterns must be preserved:
 
-- **Open redirect prevention**: `src/lib/safeRedirect.ts` validates all redirect paths
-- **Invite tokens**: UUID format only, validated server-side, expire after 48 hours
+- **Open redirect prevention**: `src/lib/safeRedirect.ts` validates all redirect paths — used in Auth.tsx, App.tsx
+- **Invite tokens**: UUID format validated client-side before storage, validated server-side in RPCs, expire after 48 hours
+- **returnTo validation**: Auth.tsx validates `returnTo` with `isSafeRedirectPath()` before storing in localStorage
+- **Cryptographic RNG**: Room codes and raffle order use `crypto.getRandomValues()`, not `Math.random()`
+- **Error sanitization**: Auth error fallback returns i18n `unexpectedError`, never raw backend messages
 - **SECURITY DEFINER RPCs**: `peek_invite` (read-only, anon) and `create_quick_draft` (write, anon) both have `SET search_path TO 'public'`
 - **No secrets in git**: `.env.local` is in `.gitignore`
-- **All redirect targets** go through `getSafeRedirectPath()`
+- **HTTPS forced**: `.htaccess` redirects HTTP → HTTPS
+
+---
+
+## SEO Limitations
+
+The app uses **HashRouter** (`/#/path`), which means only the landing page (`/`) is crawlable by search engines. This is a deliberate trade-off for PKCE OAuth compatibility.
+
+**Workarounds available:**
+- Static HTML pages in `public/blog/` bypass the SPA and are fully crawlable
+- `robots.txt` and `sitemap.xml` should be added to `public/`
+- Dynamic page titles via `useEffect` + `document.title` (not yet implemented)
+- Structured data (JSON-LD) can be added to `index.html`
+
+See SEO audit notes in session history for full details.
 
 ---
 
@@ -292,29 +346,29 @@ These patterns must be preserved:
 1. `npm run build` — outputs to `dist/`
 2. Upload contents of `dist/` to hosting (static hosting, no SSR needed)
 3. HashRouter means all routes work without server-side rewrite rules
+4. `.htaccess` in `public/` forces HTTPS redirect
 
 ---
 
-## PWA Icons
+## Logo & PWA Icons
 
-Generated via `scripts/generate-icons.mjs` using the `sharp` library. Currently shows "DP" initials on emerald circle. To regenerate after brand changes:
-
-```bash
-node scripts/generate-icons.mjs
-```
-
-Outputs: `favicon.ico`, `logo.png`, and all icons in `public/icons/`.
+- **Logo**: `public/logo.png` — used by `src/components/ui/logo.tsx` as an `<img>` tag
+- To change: replace `public/logo.png` with new image
+- Light variant uses CSS `brightness-0 invert` filter
+- **PWA icons** in `public/icons/` — still show old "DP" initials, need updating to match new logo
+- Icon generation script: `scripts/generate-icons.mjs` (uses `sharp` library)
 
 ---
 
 ## Summary: What Makes This App Special
 
 1. **Zero-friction draft**: 2-3 captains join via WhatsApp link, pick players live on their phones
-2. **Snake draft fairness**: Randomized order + snake pattern = balanced teams
+2. **Snake draft fairness**: Cryptographically randomized order + snake pattern = balanced teams
 3. **Flexible team count**: 2-3 teams supported (expandable to 4-5)
 4. **WhatsApp-native sharing**: Results shared as formatted text + link
 5. **Game night mode**: Timer, live scoring, winner-stays rotation, goal tracking
 6. **Club management**: Persistent player pool, invite members, permissions
 7. **PWA**: Install on home screen, works offline-ish, push-ready
-8. **Sound & TTS**: Crowd effects + voice announcements during draft (language-aware)
+8. **Sound & TTS**: Crowd effects + voice announcements during draft (auto-detects Hebrew/Arabic names)
 9. **Selfie avatars**: Camera capture with oval face crop for player identity
+10. **Security-hardened**: Crypto RNG, UUID validation, redirect prevention, error sanitization

@@ -393,46 +393,38 @@ export default function CreateDraft() {
 
       <main className="px-4 py-8 max-w-2xl mx-auto">
         {/* Progress Steps */}
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2">
-            {(["name", "players", "captains", "confirm"] as Step[]).map(
-              (s, i) => (
-                <div key={s} className="flex items-center">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      step === s
-                        ? "bg-primary text-primary-foreground"
-                        : (["name", "players", "captains", "confirm"] as Step[]).indexOf(
-                            step
-                          ) > i
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {(["name", "players", "captains", "confirm"] as Step[]).indexOf(
-                      step
-                    ) > i ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      i + 1
+        {(() => {
+          const steps: Step[] = ["name", "players", "captains", "confirm"];
+          const currentIndex = steps.indexOf(step);
+          return (
+            <div className="flex justify-center mb-8">
+              <div className="flex items-center gap-2">
+                {steps.map((s, i) => (
+                  <div key={s} className="flex items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        step === s
+                          ? "bg-primary text-primary-foreground"
+                          : currentIndex > i
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {currentIndex > i ? <Check className="h-4 w-4" /> : i + 1}
+                    </div>
+                    {i < steps.length - 1 && (
+                      <div
+                        className={`w-8 h-1 mx-1 ${
+                          currentIndex > i ? "bg-primary" : "bg-border"
+                        }`}
+                      />
                     )}
                   </div>
-                  {i < 3 && (
-                    <div
-                      className={`w-8 h-1 mx-1 ${
-                        (["name", "players", "captains", "confirm"] as Step[]).indexOf(
-                          step
-                        ) > i
-                          ? "bg-primary"
-                          : "bg-border"
-                      }`}
-                    />
-                  )}
-                </div>
-              )
-            )}
-          </div>
-        </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         <AnimatePresence mode="wait">
           {/* Step 1: Draft Name */}

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { Logo } from "@/components/ui/logo";
 
 export default function Landing() {
   const { t } = useTranslation("landing");
@@ -78,11 +79,11 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-emerald-900">
+    <div className="min-h-screen relative overflow-hidden bg-purple-900">
       {/* Background Image Layer - pointer-events-none so clicks pass through */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Solid base color - always visible */}
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-800 to-emerald-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 to-purple-950" />
 
         {/* Desktop background (16:9) - fades in when loaded */}
         <div
@@ -113,7 +114,7 @@ export default function Landing() {
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
         <header className="p-4 flex justify-between items-center">
-          <img src="/logo.png" alt="Draft Pick" className="h-8 w-auto" />
+          <Logo size="md" variant="light" />
           <div className="flex items-center gap-1">
             <LanguagePicker />
             {!authLoading && (
@@ -137,16 +138,11 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-sm text-center space-y-8"
           >
-            {/* Logo/Brand */}
-            <div className="space-y-2">
-              <h1 className="text-5xl font-bold text-white">{t("hero.title")}</h1>
-            </div>
-
             {/* Tagline */}
             <div className="space-y-1">
-              <p className="text-2xl font-bold text-white">{t("hero.tagline1")}</p>
-              <p className="text-2xl font-bold text-white">{t("hero.tagline2")}</p>
-              <p className="text-2xl font-bold text-emerald-400">{t("hero.tagline3")}</p>
+              <p className="text-2xl font-heading font-bold text-white">{t("hero.tagline1")}</p>
+              <p className="text-2xl font-heading font-bold text-white">{t("hero.tagline2")}</p>
+              <p className="text-2xl font-heading font-bold text-lime-400">{t("hero.tagline3")}</p>
             </div>
 
             {/* Primary CTA */}
@@ -159,7 +155,7 @@ export default function Landing() {
               <Button
                 onClick={handleCreateDraft}
                 size="lg"
-                className="w-full h-14 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                className="w-full h-14 text-lg font-bold bg-lime-400 hover:bg-lime-500 text-gray-900 shadow-lg shadow-lime-400/30"
               >
                 {t("cta.createClub")}
               </Button>
@@ -201,7 +197,7 @@ export default function Landing() {
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 onKeyDown={handleKeyDown}
                 maxLength={4}
-                className="flex-1 h-12 text-center text-xl font-mono tracking-widest bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-400 focus:ring-emerald-400/20"
+                className="flex-1 h-12 text-center text-xl font-mono tracking-widest bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-purple-400 focus:ring-purple-400/20"
                 dir="ltr"
               />
               <Button

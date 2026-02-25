@@ -58,7 +58,7 @@ export function PickAnnouncement({
           px-6 py-4 rounded-2xl shadow-2xl
           flex items-center gap-3
           ${isMe
-            ? "bg-emerald-600 text-white"
+            ? "bg-purple-600 text-white"
             : "bg-white text-gray-900 border-2 border-gray-200 shadow-xl"
           }
         `}

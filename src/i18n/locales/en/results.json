@@ -9,7 +9,7 @@
     "title": "Draft Results: {{name}}",
     "teamHeader": "{{captain}}:",
     "viewResults": "View results:",
-    "fairTeams": "Fair teams. No arguments. — Draft Pick",
+    "fairTeams": "Fair teams. No arguments. — PickNKick",
     "copy": "Copy"
   },
   "gameNight": {
@@ -55,6 +55,6 @@
     "cta": "Get Started"
   },
   "footer": {
-    "brand": "Draft Pick"
+    "brand": "PickNKick"
   }
 }

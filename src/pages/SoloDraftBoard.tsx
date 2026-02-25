@@ -137,6 +137,7 @@ export default function SoloDraftBoard() {
 
   // Save state
   const [saving, setSaving] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   // Track pick history for undo (draft mode)
   const pickHistoryRef = useRef<{ playerId: string; pickIndex: number }[]>([]);
@@ -489,6 +490,7 @@ export default function SoloDraftBoard() {
         title: t("solo.saveError"),
         variant: "destructive",
       });
+      setSaveFailed(true);
     } finally {
       setSaving(false);
     }
@@ -923,6 +925,7 @@ export default function SoloDraftBoard() {
                       isActive={currentCaptainNumber === team.number}
                       totalPlayersInDraft={totalPicks}
                       numTeams={numTeams}
+                      hideCaptainChip
                     />
                   ))}
                 </div>
@@ -986,6 +989,7 @@ export default function SoloDraftBoard() {
                         numTeams={numTeams}
                         onPlayerClick={handleUnassignPlayer}
                         draggable
+                        hideCaptainChip
                       />
                     ))}
                   </div>
@@ -1061,6 +1065,15 @@ export default function SoloDraftBoard() {
                   {t("solo.done")}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
+                {saveFailed && (
+                  <Button
+                    onClick={handleShareFallback}
+                    variant="outline"
+                    className="bg-white/90 text-gray-700 shadow-lg px-4"
+                  >
+                    {t("solo.shareWithoutSaving")}
+                  </Button>
+                )}
               </>
             )}
           </div>
