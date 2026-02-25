@@ -79,22 +79,19 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-purple-900">
+    <div className={`min-h-screen relative overflow-hidden transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`} style={{ background: '#1a1a2e' }}>
       {/* Background Image Layer - pointer-events-none so clicks pass through */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Solid base color - always visible */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-800 to-purple-950" />
-
-        {/* Desktop background (16:9) - fades in when loaded */}
+        {/* Desktop background (16:9) */}
         <div
-          className={`hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: "url('/assets/bg/landing-desktop.jpg')",
           }}
         />
-        {/* Mobile background (9:16) - fades in when loaded */}
+        {/* Mobile background (9:16) */}
         <div
-          className={`md:hidden absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className="md:hidden absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: "url('/assets/bg/landing-mobile.jpg')",
           }}
@@ -159,21 +156,23 @@ export default function Landing() {
               >
                 {t("cta.createClub")}
               </Button>
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="text-white/50 hover:text-white/80 transition-colors"
-                >
-                  {t("cta.alreadyHaveAccount")}
-                </button>
-                <span className="text-white/30">·</span>
-                <button
-                  onClick={() => navigate("/quick-draft")}
-                  className="text-white/50 hover:text-white/80 transition-colors"
-                >
-                  {t("cta.tryWithoutAccount")}
-                </button>
-              </div>
+              <Button
+                onClick={() => navigate("/quick-draft")}
+                size="lg"
+                variant="outline"
+                className="w-full h-14 text-lg font-bold border-2 border-white/30 bg-white/5 hover:bg-white/10 text-white"
+              >
+                <div className="flex flex-col items-center leading-tight">
+                  <span>{t("cta.quickDraft")}</span>
+                  <span className="text-xs font-normal opacity-60">{t("cta.quickDraftSub")}</span>
+                </div>
+              </Button>
+              <button
+                onClick={() => navigate("/auth")}
+                className="text-white/50 hover:text-white/80 transition-colors text-sm"
+              >
+                {t("cta.alreadyHaveAccount")}
+              </button>
             </motion.div>
 
             {/* Divider */}

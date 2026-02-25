@@ -6,9 +6,10 @@
     "tagline3": "Kick off. No arguments."
   },
   "cta": {
-    "createClub": "Get Started",
-    "alreadyHaveAccount": "Already registered? Sign in",
-    "tryWithoutAccount": "Try Solo Draft"
+    "createClub": "Create Your Club",
+    "quickDraft": "Quick Draft",
+    "quickDraftSub": "No sign-up needed",
+    "alreadyHaveAccount": "Already have an account? Sign in"
   },
   "joinCode": {
     "divider": "Have a game code?",

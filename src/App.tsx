@@ -116,6 +116,13 @@ function OAuthCallbackHandler({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Dark loading skeleton for dark-themed pages (Auth, WaitingRoom, Results, GameNight)
+const DarkSkeleton = () => (
+  <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-white/40" />
+  </div>
+);
+
 // Clear chunk reload flag on successful app mount
 if (sessionStorage.getItem("chunk_reload")) {
   sessionStorage.removeItem("chunk_reload");
@@ -137,17 +144,18 @@ const App = () => (
             }>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<Auth />} />
+              {/* Dark-themed pages get a dark loading skeleton to prevent light flash */}
+              <Route path="/auth" element={<Suspense fallback={<DarkSkeleton />}><Auth /></Suspense>} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/players" element={<Players />} />
               <Route path="/create-draft" element={<CreateDraft />} />
               <Route path="/join/:roomCode" element={<JoinDraft />} />
-              <Route path="/room/:roomCode" element={<WaitingRoom />} />
+              <Route path="/room/:roomCode" element={<Suspense fallback={<DarkSkeleton />}><WaitingRoom /></Suspense>} />
               <Route path="/draft/:roomCode" element={<DraftBoard />} />
               <Route path="/solo-draft" element={<SoloDraftBoard />} />
-              <Route path="/results/:roomCode" element={<Results />} />
-              <Route path="/night/:nightId" element={<GameNight />} />
-              <Route path="/night-results/:nightId" element={<NightResults />} />
+              <Route path="/results/:roomCode" element={<Suspense fallback={<DarkSkeleton />}><Results /></Suspense>} />
+              <Route path="/night/:nightId" element={<Suspense fallback={<DarkSkeleton />}><GameNight /></Suspense>} />
+              <Route path="/night-results/:nightId" element={<Suspense fallback={<DarkSkeleton />}><NightResults /></Suspense>} />
               <Route path="/quick-draft" element={<QuickDraft />} />
               <Route path="/accept-invite" element={<AcceptInvite />} />
               <Route path="/privacy" element={<Privacy />} />

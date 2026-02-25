@@ -40,7 +40,7 @@ export default function Auth() {
   const returnTo = locationState?.returnTo || "/dashboard";
 
   const [isLoading, setIsLoading] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(true);
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const [emailTab, setEmailTab] = useState<EmailTab>("login");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
@@ -141,15 +141,15 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-purple-950">
+    <div className="min-h-screen relative overflow-hidden bg-neutral-900">
       {/* Background Image Layer */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500"
           style={{ backgroundImage: "url('/assets/bg/auth-desktop.jpg')" }}
         />
         <div
-          className="md:hidden absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="md:hidden absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500"
           style={{ backgroundImage: "url('/assets/bg/auth-mobile.jpg')" }}
         />
         {/* Dark overlay for text readability */}

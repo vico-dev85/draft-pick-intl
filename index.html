@@ -30,9 +30,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Preload landing background images for instant render -->
+    <link rel="preload" as="image" href="/assets/bg/landing-desktop.jpg" media="(min-width: 768px)" />
+    <link rel="preload" as="image" href="/assets/bg/landing-mobile.jpg" media="(max-width: 767px)" />
   </head>
 
-  <body>
+  <body style="background:#1a1a2e">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
