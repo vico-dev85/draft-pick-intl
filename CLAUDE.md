@@ -44,6 +44,7 @@ The app is **functional in English** with a complete purple rebrand.
 
 **Docs:**
 - `docs/LAUNCH-OUTREACH-STRATEGY.md` — **master launch playbook** (6-week timeline, channel priorities, ambassador strategy, metrics)
+- `docs/TIKTOK-STRATEGY.md` — TikTok content strategy (2026 algorithm data, content pillars, posting schedule, cross-posting, production guide)
 - `docs/TRANSLATION-AMBASSADOR-PLAN.md` — finding native-speaking players on Reddit to help localize translations per culture
 - `docs/AMBASSADOR-OUTREACH-PLAN.md` — ambassador concept, country-by-country outreach, DM templates, phase plan
 - `docs/REDDIT-LAUNCH-PLAN.md` — Reddit posting schedule, per-subreddit posts, response strategy
