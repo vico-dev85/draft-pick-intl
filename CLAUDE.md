@@ -43,6 +43,13 @@ The app is **functional in English** with a complete purple rebrand.
 - Hero demo video for landing page
 
 **Docs:**
+- `docs/LAUNCH-OUTREACH-STRATEGY.md` — **master launch playbook** (6-week timeline, channel priorities, ambassador strategy, metrics)
+- `docs/TRANSLATION-AMBASSADOR-PLAN.md` — finding native-speaking players on Reddit to help localize translations per culture
+- `docs/AMBASSADOR-OUTREACH-PLAN.md` — ambassador concept, country-by-country outreach, DM templates, phase plan
+- `docs/REDDIT-LAUNCH-PLAN.md` — Reddit posting schedule, per-subreddit posts, response strategy
+- `docs/REDDIT-LOCAL-SUBS.md` — local city/country subreddits with templates and posting schedule
+- `docs/FREE-GROWTH-CHANNELS.md` — all free channels: WhatsApp, Facebook, Instagram/TikTok, Twitter, YouTube, SEO, Quora, directories
+- `docs/PRESS-OUTREACH-PLAN.md` — press kit, tiered media targets, email templates, outreach phases
 - `docs/VIDEO-CONTENT-PLAN.md` — 12-video production plan with storyboards
 - `docs/REBRAND-PLAN.md` — brand research synthesis and implementation plan
 - `docs/ROADMAP.md` — product roadmap with launch checklist
