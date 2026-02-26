@@ -15,10 +15,10 @@ Genuinely curious — for those who play regular pickup/5-a-side, how
 do you handle team selection? And does it bother anyone in your group
 or is it a non-issue?
 
-We usually play 3 teams of 4-5 depending on who shows up. Over the
-years we went through a few stages. At first we did it at the pitch —
-wasted 10-20% of our playing time every session just standing around
-arguing. Then we moved it to WhatsApp — one guy would volunteer and
+We usually play 3 teams of 4-5 depending on who shows up. We rent a
+pitch for 2 hours every week so every minute counts. Over the years
+we went through a few stages. At first we did it at the pitch —
+wasted 10-20% of our paid time just standing around arguing. Then we moved it to WhatsApp — one guy would volunteer and
 post his team split before the game, sometimes two variations.
 Sometimes 2-3 guys would each post their own. Worked for a while
 until complaints started. People noticed bias, patterns, the same
@@ -52,8 +52,9 @@ But mainly just curious — how do you guys do it?
 For those who play weekly — what's your system for picking teams?
 Do people in your group even care or is it just "whatever"?
 
-We usually run 3 teams of 4-5 and played for years going through every
-version. Picking at the pitch and wasting our booking time. Then one
+We usually run 3 teams of 4-5, rent a pitch for 2 hours every week.
+Played for years going through every version. Picking at the pitch
+and wasting time we're paying for. Then one
 guy posting teams on WhatsApp before the game — sometimes one split,
 sometimes two for people to vote on, sometimes 2-3 guys each posting
 their own version. Then people complaining his splits were biased.
@@ -84,9 +85,9 @@ same stages we did.
 ```
 Hey — sharing something I built out of a real frustration.
 
-My pickup football group plays every week — usually 3 teams of 4-5.
-For years we picked teams at the pitch and wasted 10-20% of our
-playing time. Moved it to WhatsApp — one guy would volunteer to post
+My pickup football group plays every week — usually 3 teams of 4-5,
+we rent a pitch for 2 hours. For years we picked teams at the pitch
+and wasted 10-20% of time we're paying for. Moved it to WhatsApp — one guy would volunteer to post
 teams before the game, sometimes two variations to vote on. Worked
 until people started noticing bias and patterns. Nobody wanted to be
 that guy anymore.
@@ -126,8 +127,9 @@ hear it all.
 For those who play regular pickup — do you have a system for teams
 or is it a mess every time?
 
-My group (usually 3 teams of 4-5) went through the whole evolution:
-wasting time at the pitch, then one guy posting teams on WhatsApp
+My group (3 teams of 4-5, rented pitch every week) went through the
+whole evolution: wasting paid time at the pitch, then one guy posting
+teams on WhatsApp
 before the game, then complaints about his picks being biased.
 That's what made me build a free app where captains draft on their
 phones before the game instead. Works for 2 or 3 teams.
