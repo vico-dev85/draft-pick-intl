@@ -15,17 +15,20 @@ Genuinely curious — for those who play regular pickup/5-a-side, how
 do you handle team selection? And does it bother anyone in your group
 or is it a non-issue?
 
-Our group went through a few stages over the years. At first we did it
-at the pitch — wasted 10-20% of our playing time every session just
-standing around arguing. Then we moved it to WhatsApp — one guy would
-volunteer and post his team split before the game. Worked for a while
-until complaints started. People noticed bias, patterns, the same guy
-always ending up with the better players. Nobody wanted to volunteer
-anymore.
+We usually play 3 teams of 4-5 depending on who shows up. Over the
+years we went through a few stages. At first we did it at the pitch —
+wasted 10-20% of our playing time every session just standing around
+arguing. Then we moved it to WhatsApp — one guy would volunteer and
+post his team split before the game, sometimes two variations.
+Sometimes 2-3 guys would each post their own. Worked for a while
+until complaints started. People noticed bias, patterns, the same
+guy always ending up with the better players. Nobody wanted to
+volunteer anymore.
 
 So I ended up building a free web app for it. Captains draft on their
 phones before the game, snake order keeps it fair, teams go to WhatsApp,
-everyone shows up and plays. No one person "owns" the teams.
+everyone shows up and plays. Works for 2 or 3 teams. No one person
+"owns" the teams anymore.
 
 It's called PickNKick: https://picknkick.com
 
@@ -49,15 +52,16 @@ But mainly just curious — how do you guys do it?
 For those who play weekly — what's your system for picking teams?
 Do people in your group even care or is it just "whatever"?
 
-We played for years and went through every version. Picking at the
-pitch and wasting our booking time. Then one guy posting teams on
-WhatsApp before the game. Then people complaining his splits were
-biased. Then nobody wanting to be the guy who makes teams because
-you just get blamed.
+We usually run 3 teams of 4-5 and played for years going through every
+version. Picking at the pitch and wasting our booking time. Then one
+guy posting teams on WhatsApp before the game — sometimes one split,
+sometimes two for people to vote on, sometimes 2-3 guys each posting
+their own version. Then people complaining his splits were biased.
+Then nobody wanting to be that guy because you just get blamed.
 
 That cycle is what made me build PickNKick — a free web app where
-captains draft on their phones before the game. Snake order, teams
-shared to WhatsApp, nobody to blame.
+captains draft on their phones before the game. Snake order, works
+for 2 or 3 teams, shared to WhatsApp, nobody to blame.
 
 https://picknkick.com
 
@@ -80,15 +84,16 @@ same stages we did.
 ```
 Hey — sharing something I built out of a real frustration.
 
-My pickup football group plays every week. For years we picked teams
-at the pitch and wasted 10-20% of our playing time. Moved it to
-WhatsApp — one guy would volunteer to post teams before the game.
-Worked until people started noticing bias and patterns. Nobody wanted
-to be that guy anymore.
+My pickup football group plays every week — usually 3 teams of 4-5.
+For years we picked teams at the pitch and wasted 10-20% of our
+playing time. Moved it to WhatsApp — one guy would volunteer to post
+teams before the game, sometimes two variations to vote on. Worked
+until people started noticing bias and patterns. Nobody wanted to be
+that guy anymore.
 
 So I built PickNKick — captains draft on their phones before the game.
-Snake order (last pick round 1 = first pick round 2), teams shared to
-WhatsApp, show up and play.
+Snake order (last pick round 1 = first pick round 2), works for 2 or
+3 teams, shared to WhatsApp, show up and play.
 
 Stack: React 18, TypeScript, Supabase (Realtime + Auth + Postgres),
 Tailwind, Framer Motion. PWA, installable from browser.
@@ -121,10 +126,11 @@ hear it all.
 For those who play regular pickup — do you have a system for teams
 or is it a mess every time?
 
-My group went through the whole evolution: wasting time at the pitch,
-then one guy doing it on WhatsApp, then complaints about his picks
-being biased. That's what made me build a free app where captains
-draft on their phones before the game instead.
+My group (usually 3 teams of 4-5) went through the whole evolution:
+wasting time at the pitch, then one guy posting teams on WhatsApp
+before the game, then complaints about his picks being biased.
+That's what made me build a free app where captains draft on their
+phones before the game instead. Works for 2 or 3 teams.
 
 https://picknkick.com
 
@@ -145,9 +151,10 @@ What's your current system?
 For those who play weekly pickup — how does your group pick teams?
 Is it a problem or does nobody care?
 
-My group argued about it for years until I built a free app where
-captains draft on their phones before the game. Snake order, teams
-to WhatsApp, show up and play: picknkick.com
+My group (3 teams of 4-5 usually) argued about it for years until
+I built a free app where captains draft on their phones before the
+game. Snake order, works for 2-3 teams, shared to WhatsApp, show
+up and play: picknkick.com
 
 Looking for groups to try it and give feedback. Curious what other
 people's experience is with this.
@@ -163,10 +170,10 @@ Don't make a standalone post. Drop in the daily thread:
 Pickup/5-a-side question — how does your group handle team selection?
 Does anyone actually have a system that works?
 
-My group tried everything over the years — picking at the pitch (waste
-of time), one guy posting teams on WhatsApp (complaints about bias).
-Eventually built a free app where captains draft on phones instead:
-picknkick.com
+My group (3 teams of 4-5 usually) tried everything over the years —
+picking at the pitch (waste of time), one guy posting teams on
+WhatsApp (complaints about bias). Eventually built a free app where
+captains draft on phones instead — works for 2-3 teams: picknkick.com
 
 Looking for groups to test it. Curious how others deal with this.
 ```
@@ -180,10 +187,11 @@ Looking for groups to test it. Curious how others deal with this.
 **Body:**
 
 ```
-One guy in our pickup football group used to post team splits on
-WhatsApp before games. Then everyone complained he was biased. Then
-nobody wanted to do it. So I built a web app where captains draft
-on their phones instead.
+We play 3 teams of 4-5 every week. One guy used to post team splits
+on WhatsApp before games — sometimes two variations for people to
+vote on. Then everyone complained he was biased. Then nobody wanted
+to do it. So I built a web app where captains draft on their phones
+instead. Handles 2-3 teams.
 
 Interesting bits:
 - Supabase Realtime for live picks across devices
@@ -209,9 +217,9 @@ groups willing to test it for real. What would you do differently?
 **Body:**
 
 ```
-Side project — my football group needed a fair way to pick teams
-before games without one person being the "team maker" everyone
-complains about.
+Side project — my football group (3 teams of 4-5 every week) needed
+a fair way to pick teams before games without one person being the
+"team maker" everyone complains about.
 
 Some React patterns that worked well:
 - Lazy routes with chunk-failure auto-retry (stale service worker recovery)
