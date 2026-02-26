@@ -6,198 +6,184 @@
 
 ## r/bootroom (~21K) — Amateur players who care about the game
 
-**Title:** How we went from wasting 20% of our pitch time to having teams ready before we arrive
+**Title:** How does your group pick teams before a game? Is it even a problem for you?
 
 **Body:**
 
 ```
-We've been playing pickup weekly for years. At some point we realized
-we were losing 10-20% of our playing time every session just picking
-teams, arguing, reshuffling. We were paying for pitch time and spending
-it standing around.
+Genuinely curious — for those who play regular pickup/5-a-side, how
+do you handle team selection? And does it bother anyone in your group
+or is it a non-issue?
 
-So we started doing it before the game. We already know who's coming
-from the WhatsApp group, so one of the guys would volunteer and post
-his teams — sometimes one version, sometimes two for people to vote on.
-Sometimes 2-3 guys would each do their own split independently.
+Our group went through a few stages over the years. At first we did it
+at the pitch — wasted 10-20% of our playing time every session just
+standing around arguing. Then we moved it to WhatsApp — one guy would
+volunteer and post his team split before the game. Worked for a while
+until complaints started. People noticed bias, patterns, the same guy
+always ending up with the better players. Nobody wanted to volunteer
+anymore.
 
-It worked for a while. But then complaints started. People noticed
-patterns — the guy making teams always put himself with the better
-players, or always split the same friends apart. It wasn't intentional
-but it wasn't really fair either. And it felt kind of unorganized.
+So I ended up building a free web app for it. Captains draft on their
+phones before the game, snake order keeps it fair, teams go to WhatsApp,
+everyone shows up and plays. No one person "owns" the teams.
 
-That's when I built PickNKick. It's a free web app where captains
-draft on their phones — snake order, so whoever picks last in round 1
-picks first in round 2. Takes 2 minutes, teams go to WhatsApp, everyone
-shows up and plays.
+It's called PickNKick: https://picknkick.com
 
-The difference: nobody owns the teams. The captains make the calls,
-the snake order keeps it balanced, and there's nothing to argue about.
+Still early days. If anyone plays regularly and wants to help test it
+and give feedback — I'd love to build this into something that actually
+saves time for groups around the world. No download, no signup needed
+for quick mode.
 
-https://picknkick.com
-
-Still early — would love feedback from other groups who play regularly.
-How does your group handle this? Have you gone through the same stages?
+But mainly just curious — how do you guys do it?
 ```
 
 ---
 
 ## r/5aside (~5K) — Your exact users
 
-**Title:** The evolution of team picking in our group — and why I ended up building an app for it
+**Title:** How do you split teams before your weekly game? Curious what actually works
 
 **Body:**
 
 ```
-We play every week. Here's the stages we went through:
+For those who play weekly — what's your system for picking teams?
+Do people in your group even care or is it just "whatever"?
 
-Stage 1: Pick teams at the pitch. Waste 10-15 minutes. Argue. Finally
-play with less time than we paid for.
+We played for years and went through every version. Picking at the
+pitch and wasting our booking time. Then one guy posting teams on
+WhatsApp before the game. Then people complaining his splits were
+biased. Then nobody wanting to be the guy who makes teams because
+you just get blamed.
 
-Stage 2: Someone realizes we already know who's coming from the WhatsApp
-group. One guy volunteers to make teams and posts them before the game.
-Sometimes posts 2 options. Sometimes 2-3 guys each post their own split.
-This feels like progress.
-
-Stage 3: Complaints. The guy making teams has patterns. He puts himself
-with the strong players. Or he always breaks up the same pairs. People
-start saying it's not fair. The volunteer stops wanting to do it because
-everyone complains about his picks.
-
-That's where I built PickNKick. Free web app — captains draft on their
-phones before the game, snake order keeps it balanced, teams shared to
-WhatsApp. Nobody "makes" the teams, the draft does.
+That cycle is what made me build PickNKick — a free web app where
+captains draft on their phones before the game. Snake order, teams
+shared to WhatsApp, nobody to blame.
 
 https://picknkick.com
 
-No download, no signup for quick mode. Still early and I'm looking for
-groups who'd try it and tell me what works and what doesn't.
+I'd love for groups who play regularly to try it and help shape it.
+It's free and I want to make it genuinely useful for pickup groups
+everywhere. No download, works in the browser.
 
-Which stage is your group at?
+What's your group's approach? Curious if everyone goes through the
+same stages we did.
 ```
 
 ---
 
 ## r/SideProject (~200K) — Builders who love testing stuff
 
-**Title:** Built a free app because one guy in our football group kept making unfair teams — would love feedback
+**Title:** Built a free app to solve a problem my football group argued about for years — looking for testers
 
 **Body:**
 
 ```
-Hey — sharing something I built to solve a real problem in my pickup
-football group.
+Hey — sharing something I built out of a real frustration.
 
-We play every week. We used to pick teams at the pitch and waste 10-20%
-of our playing time. So we moved it to WhatsApp — one guy would
-volunteer and post his team split before the game.
-
-Worked for a while, but then people started complaining. The guy making
-teams had patterns — unconscious bias, always putting himself with
-certain players, same pairs getting split. Nobody wanted to volunteer
-anymore because you'd just get criticized.
+My pickup football group plays every week. For years we picked teams
+at the pitch and wasted 10-20% of our playing time. Moved it to
+WhatsApp — one guy would volunteer to post teams before the game.
+Worked until people started noticing bias and patterns. Nobody wanted
+to be that guy anymore.
 
 So I built PickNKick — captains draft on their phones before the game.
 Snake order (last pick round 1 = first pick round 2), teams shared to
-WhatsApp, show up and play. Nobody "owns" the teams.
+WhatsApp, show up and play.
 
 Stack: React 18, TypeScript, Supabase (Realtime + Auth + Postgres),
 Tailwind, Framer Motion. PWA, installable from browser.
 
-Some things I'm proud of:
+Some bits I'm proud of:
 - Real-time picks via Supabase channels
 - Crypto RNG for draft order (no Math.random)
 - Works without signup (quick draft mode)
 - Snake draft handles 2-3 teams
 
-Free, no ads. Just wanted to fix this for my group.
+Free, no ads. I want to turn this into something that saves time for
+pickup groups around the world and I need people to test it and tell
+me what's wrong with it.
 
 https://picknkick.com
 
-Would love honest feedback — first impressions, the draft flow, anything
-that's confusing. What would you change?
+First impressions, the draft flow, anything confusing — I want to
+hear it all.
 ```
 
 ---
 
 ## r/PickupSoccer (~5K) — People looking for games
 
-**Title:** How does your group make teams? Ours went through 3 stages before we figured it out
+**Title:** Curious — how does your pickup group decide teams? Is it smooth or chaos?
 
 **Body:**
 
 ```
-Stage 1: Pick at the pitch, waste time, argue.
-Stage 2: One guy posts teams on WhatsApp before the game.
-Stage 3: Everyone complains the teams aren't fair.
+For those who play regular pickup — do you have a system for teams
+or is it a mess every time?
 
-We went through all three. The problem with stage 2 is whoever makes
-the teams gets blamed, and there's always unconscious bias.
-
-So I built a free web app where captains draft before the game. Snake
-order, share teams to WhatsApp, show up ready to play.
+My group went through the whole evolution: wasting time at the pitch,
+then one guy doing it on WhatsApp, then complaints about his picks
+being biased. That's what made me build a free app where captains
+draft on their phones before the game instead.
 
 https://picknkick.com
 
-No download, works in browser. Still new — looking for groups to try
-it and tell me what's missing.
+No download, browser-based. Looking for groups to test it and help
+make it better — I want to build something that works for pickup
+groups everywhere.
 
-What stage is your group at?
+What's your current system?
 ```
 
 ---
 
-## r/soccer (~4M) — Use Free Talk Friday thread ONLY
+## r/soccer (~4M) — Free Talk Friday thread ONLY
 
 **Don't make a standalone post** — it'll get removed. Drop this in the weekly Free Talk Friday thread:
 
 ```
-Anyone play weekly pickup? My group went through the classic stages —
-picking teams at the pitch and wasting time, then one guy volunteers
-to make teams on WhatsApp before the game, then everyone complains
-his teams aren't fair.
+For those who play weekly pickup — how does your group pick teams?
+Is it a problem or does nobody care?
 
-Built a free web app where captains draft on their phones instead.
-Snake order, teams to WhatsApp, nobody to blame: picknkick.com
+My group argued about it for years until I built a free app where
+captains draft on their phones before the game. Snake order, teams
+to WhatsApp, show up and play: picknkick.com
 
-Looking for groups to try it. What stage is your group at?
+Looking for groups to try it and give feedback. Curious what other
+people's experience is with this.
 ```
 
 ---
 
-## r/football (~2M) — Use Daily Discussion thread
+## r/football (~2M) — Daily Discussion thread
 
-Same deal — don't make a standalone post. Drop in the daily thread:
+Don't make a standalone post. Drop in the daily thread:
 
 ```
-Pickup/5-a-side question — does every group go through this?
+Pickup/5-a-side question — how does your group handle team selection?
+Does anyone actually have a system that works?
 
-1. Pick teams at the pitch, waste 15 minutes
-2. One guy makes teams on WhatsApp before the game
-3. Everyone complains his teams are biased
+My group tried everything over the years — picking at the pitch (waste
+of time), one guy posting teams on WhatsApp (complaints about bias).
+Eventually built a free app where captains draft on phones instead:
+picknkick.com
 
-We went through all three. Ended up building a free app where captains
-draft on phones instead. Nobody owns the teams, snake order keeps it
-fair: picknkick.com
-
-Curious if other groups deal with this same cycle.
+Looking for groups to test it. Curious how others deal with this.
 ```
 
 ---
 
 ## r/webdev (~2M) — Showoff Saturday
 
-**Title:** Showoff Saturday — real-time draft app born from WhatsApp group drama (React + Supabase)
+**Title:** Showoff Saturday — built a real-time draft app because my football group's WhatsApp drama got out of hand (React + Supabase)
 
 **Body:**
 
 ```
-My football group used to have one guy post team splits on WhatsApp
-before games. Then everyone complained he was biased. Nobody wanted
-to volunteer anymore.
-
-So I built a web app where captains draft on their phones instead.
-Real-time snake draft, teams shared to WhatsApp, no human to blame.
+One guy in our pickup football group used to post team splits on
+WhatsApp before games. Then everyone complained he was biased. Then
+nobody wanted to do it. So I built a web app where captains draft
+on their phones instead.
 
 Interesting bits:
 - Supabase Realtime for live picks across devices
@@ -210,22 +196,22 @@ Stack: React 18, TypeScript, Vite 5, Supabase, Tailwind, Framer Motion
 
 Free, no ads: https://picknkick.com
 
-Would appreciate feedback on the UX or architecture. What would you
-do differently?
+Looking for feedback on UX or architecture — and for any pickup
+groups willing to test it for real. What would you do differently?
 ```
 
 ---
 
 ## r/reactjs (~400K) — React-specific angle
 
-**Title:** Real-time multiplayer draft app with React 18 + Supabase — scratching my own itch
+**Title:** Real-time multiplayer draft app with React 18 + Supabase — born from WhatsApp group drama
 
 **Body:**
 
 ```
-Side project born from a real problem — my pickup football group needed
-a way to draft fair teams before games without one person being the
-"team maker" that everyone complains about.
+Side project — my football group needed a fair way to pick teams
+before games without one person being the "team maker" everyone
+complains about.
 
 Some React patterns that worked well:
 - Lazy routes with chunk-failure auto-retry (stale service worker recovery)
@@ -233,14 +219,14 @@ Some React patterns that worked well:
 - Custom hook for queuing TTS announcements with language auto-detection
 - Centralized captain resolution module (made N-team support easy)
 
-The real-time part uses Supabase postgres_changes — every pick triggers
-updates to all connected clients. Handled race conditions with
-SECURITY DEFINER RPCs for server-authoritative state.
+Real-time picks via Supabase postgres_changes — every pick updates
+all connected clients. Race conditions handled with SECURITY DEFINER
+RPCs for server-authoritative state.
 
 https://picknkick.com
 
-Curious what patterns others use for real-time state in React. Also
-happy to hear any UX feedback — it's free and I'm actively improving it.
+Looking for feedback and testers. Curious what patterns others use
+for real-time state in React.
 ```
 
 ---
@@ -251,7 +237,7 @@ happy to hear any UX feedback — it's free and I'm actively improving it.
 |-----|-------|------|----------|
 | Tuesday | r/SideProject | Low — very welcoming | Feedback + a few signups |
 | Wednesday | r/5aside | Low — exact audience | Real testers if you're lucky |
-| Thursday | r/bootroom | Low — if you lead with discussion | Good conversation, maybe testers |
+| Thursday | r/bootroom | Low — discussion-first works here | Good conversation, maybe testers |
 | Friday | r/soccer Free Talk Friday | Medium — big audience, strict mods | Visibility if it gets traction |
 | Next Tuesday | r/PickupSoccer | Low — small, targeted | A few interested people |
 | Next Saturday | r/webdev Showoff Saturday | Low — standard for this | Dev feedback |
@@ -263,29 +249,32 @@ happy to hear any UX feedback — it's free and I'm actively improving it.
 
 ## When People Comment
 
+**"We just count off 1-2-1-2"**
+> "That's how we started too. Does anyone in your group ever complain about it or is everyone cool with it?"
+
+**"One guy does it and nobody cares"**
+> "That worked for us too for a while. The complaints came later when people started noticing patterns. Might never happen for your group though."
+
+**"We're still at the arguing stage"**
+> "Ha — we were there for years. Moving it to before the game was the first big improvement honestly, even before the app."
+
 **"Looks cool, I'll try it"**
 > "Thanks — let me know how it goes. If anything's confusing or broken just tell me, I'll fix it."
 
-**"We're still at stage 1/2"**
-> "Haha we were there for years. It works until it doesn't. The app's there whenever you need it."
-
-**"Our group is fine with one guy picking"**
-> "That's how we started too. Worked great until it didn't — the complaints crept in slowly. If it works for your group though, no need to fix what isn't broken."
-
 **"Why not just use a random generator?"**
-> "Random doesn't account for skill. The whole point of a draft is that captains who know the players make judgment calls. That's what makes the teams balanced, not just mixed."
+> "Random doesn't account for skill. The whole point of a draft is captains who know the players make the calls. That's what makes teams balanced, not just shuffled."
 
 **"Is it really free?"**
-> "Yeah, no ads, no premium tier. Built it for my own group and figured others could use it too."
+> "Yeah, no ads, no premium. Built it for my own group and figured others could use it too."
 
 **"Does it work for basketball/volleyball/etc?"**
-> "Should work for any sport where you need to split into teams. The draft mechanic is sport-agnostic."
+> "Should work for any sport where you split into teams. The draft mechanic is sport-agnostic."
 
 **"Open source?"**
-> "Not yet but thinking about it. Want to get it more stable first."
+> "Not yet, thinking about it. Want to get it more stable first."
 
 **"The guy who makes teams in our group will love this"**
-> "Ha — that guy in our group was the happiest when I built this. He was tired of getting blamed every week."
+> "Ha — that guy in our group was the happiest when I built this. Tired of getting blamed every week."
 
 **Bug report**
 > "Appreciate you flagging that — I'll look into it today. Thanks for testing."
