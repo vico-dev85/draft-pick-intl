@@ -6,64 +6,69 @@
 
 ## r/bootroom (~21K) — Amateur players who care about the game
 
-**Title:** How does your group pick teams? We started doing a snake draft and it actually fixed the problem
+**Title:** We started picking teams before we get to the pitch — total game changer
 
 **Body:**
 
 ```
-Played weekly for a few years now. We tried everything to pick teams —
-counting off, one guy picks, "random" that never feels random.
+Played weekly for a few years now. We used to waste 10-15 minutes at the
+pitch arguing about teams. By the time we actually started playing we'd
+already lost a chunk of our booking.
 
-Eventually we started doing a snake draft. 2-3 captains, pick one player
-at a time, order flips each round. Takes about 2 minutes on our phones
-and teams actually come out balanced.
+Now we do it online before the game. Captains draft on their phones —
+snake order, takes about 2 minutes. Everyone shows up, teams are already
+done, we go straight to playing.
 
-I ended up building a free web app for it because setting it up manually
-was annoying. It's called PickNKick — no download, works in the browser.
+Sounds like a small thing but we literally gained 15 minutes of football
+every week. Over a year that's hours of actual playing time we were just
+throwing away.
 
-Still early days and I'm looking for pickup groups who'd try it and tell
-me what works and what doesn't. If you play regularly and want to give it
-a go, I'd genuinely appreciate the feedback.
+I built a free web app for it called PickNKick — works in the browser,
+no download. Still early and I'd love feedback from other groups who
+play regularly.
 
 https://picknkick.com
 
-How does your group do it? Curious if anyone else has found something
-that works.
+How does your group do it? Does anyone else sort teams before arriving
+or is it always chaos at the pitch?
 ```
 
 ---
 
 ## r/5aside (~5K) — Your exact users
 
-**Title:** Built a free team picker for our weekly games — looking for groups to try it
+**Title:** We do our team draft online before the game now — no more wasting pitch time
 
 **Body:**
 
 ```
-My group plays every week and we were wasting 10+ minutes picking teams
-and arguing about it. So I built a thing.
+My group plays every week. Used to burn 10-15 minutes at the pitch
+picking teams — arguing, re-shuffling, someone thinks it's unfair.
+That's time we're paying for and not playing.
 
-It's a free web app where captains draft players on their phones. Snake
-order — last pick round 1 gets first pick round 2. Takes about 2 minutes,
-then you share teams to WhatsApp.
+So I built a free web app where captains draft before the game. Everyone
+does it on their phones, snake order so it's fair, share teams to
+WhatsApp, done. When you show up to the pitch the teams are ready and
+you go straight to kickoff.
 
-Called it PickNKick. No app store, no signup needed for quick mode, no ads,
-no catch. I play too and just wanted something that worked.
+Called it PickNKick. No app store, no signup needed for quick mode,
+completely free. I play too and just wanted to stop wasting our pitch
+time.
 
-It's still pretty new and I'd love feedback from other groups. What's
-confusing? What's missing? What would make you actually use it every week?
+It's still new and I'd love feedback from other groups. What's confusing?
+What's missing? What would make you actually use it every week?
 
 https://picknkick.com
 
-If your group tries it even once I'd be grateful. Happy to jump on a
-message and walk you through it.
+If your group tries it even once I'd be grateful. Happy to walk you
+through it.
 ```
 
 ---
 
 ## r/SideProject (~200K) — Builders who love testing stuff
 
-**Title:** Built a free PWA for my football group to draft fair teams — would love feedback
+**Title:** Built a free PWA so my football group stops wasting pitch time picking teams — would love feedback
 
 **Body:**
 
@@ -71,10 +76,10 @@ message and walk you through it.
 Hey — sharing something I built to solve a real problem for my pickup
 football group.
 
-Every week we'd argue about how to split teams. So I made PickNKick —
-a web app where captains join on their phones and do a live snake draft.
-Pick one player at a time, order reverses each round, done in 2 minutes.
-Teams get shared to WhatsApp.
+Every week we'd waste 10-15 minutes of our pitch booking arguing about
+teams. Now captains draft on their phones before the game — snake order,
+share teams to WhatsApp, everyone shows up and goes straight to playing.
+We literally got 15 minutes of football back every week.
 
 Stack: React 18, TypeScript, Supabase (Realtime + Auth + Postgres),
 Tailwind, Framer Motion. PWA so it's installable from browser.
@@ -85,8 +90,8 @@ Some things I'm proud of:
 - Works without signup (quick draft mode)
 - Snake draft handles 2-3 teams
 
-It's free, no ads, no monetization plan yet. Just wanted to make game
-day less annoying.
+It's free, no ads, no monetization plan yet. Just wanted more time
+actually playing.
 
 https://picknkick.com
 
@@ -98,25 +103,26 @@ page and the draft flow. What's unclear? What would you change?
 
 ## r/PickupSoccer (~5K) — People looking for games
 
-**Title:** Free tool for splitting teams before pickup games — looking for testers
+**Title:** Free tool to sort teams before you get to the pitch — looking for groups to test it
 
 **Body:**
 
 ```
-If you play regular pickup you know the drill — someone has to pick teams
-and it's never smooth.
+If you play regular pickup you know the drill — show up, spend 10-15
+minutes picking teams, lose a chunk of your playing time.
 
-I built a free web app that handles it. Captains draft on their phones,
-snake order so it's fair, done in 2 minutes. No download, works in any
-browser.
+My group started drafting teams online before the game. Captains pick
+on their phones, snake order so it's fair, teams shared to the group
+chat. Everyone shows up knowing their team, straight to kickoff.
 
-https://picknkick.com
+Built a free web app for it: https://picknkick.com
+No download, works in any browser.
 
-It's new and I'm looking for groups who actually play regularly to try
-it and tell me what sucks. Not trying to sell anything — it's free and
-I just want to make it good.
+It's new and I'm looking for groups who play regularly to try it and
+tell me what sucks. Not selling anything — it's free and I just want
+to make it good.
 
-Anyone willing to give it a shot next time you play?
+Anyone willing to give it a shot before your next game?
 ```
 
 ---
@@ -126,15 +132,15 @@ Anyone willing to give it a shot next time you play?
 **Don't make a standalone post** — it'll get removed. Drop this in the weekly Free Talk Friday thread:
 
 ```
-Built a free web app for picking teams before pickup games. Captains
-draft on their phones, snake order, done in 2 minutes.
+Anyone here play weekly pickup? My group started drafting teams online
+before the game instead of wasting 15 minutes at the pitch arguing
+about it. Game changer — everyone shows up, teams are done, straight
+to playing.
 
-Looking for people who play regularly to try it and give feedback.
-No signup needed for quick mode.
+Built a free web app for it: picknkick.com (no signup for quick mode)
 
-picknkick.com
-
-Anyone here play weekly and deal with the "picking teams" problem?
+Looking for groups to try it and give feedback. Curious how other
+people handle this.
 ```
 
 ---
@@ -144,27 +150,29 @@ Anyone here play weekly and deal with the "picking teams" problem?
 Same deal — don't make a standalone post. Drop in the daily thread:
 
 ```
-Question for anyone who plays pickup/5-a-side regularly — how do you
-pick teams?
+Question for anyone who plays pickup/5-a-side — do you pick teams
+at the pitch or before?
 
-My group started using a snake draft (captains pick on phones, order
-reverses each round). Built a free app for it: picknkick.com
+My group started doing it online before the game. Captains draft on
+their phones, share to WhatsApp, show up ready to play. Gained like
+15 minutes of actual football every week.
 
-Looking for other groups to test it. Completely free, no download.
-Would love to hear what you think.
+Built a free app for it if anyone wants to try: picknkick.com
+Would love feedback from other groups.
 ```
 
 ---
 
 ## r/webdev (~2M) — Showoff Saturday
 
-**Title:** Showoff Saturday — real-time snake draft app for pickup football (React + Supabase)
+**Title:** Showoff Saturday — real-time draft app so my football group stops wasting pitch time (React + Supabase)
 
 **Body:**
 
 ```
-Built this for my weekly football group. Captains join on their phones
-and pick players in a live draft with real-time updates.
+Built this for my weekly football group. We were wasting 10-15 min at
+the pitch picking teams. Now captains draft on their phones before the
+game — show up, teams are ready, play.
 
 Interesting bits:
 - Supabase Realtime for live picks across devices
@@ -190,8 +198,8 @@ do differently?
 **Body:**
 
 ```
-Side project — pickup football groups use it to draft teams live on
-their phones.
+Side project — pickup football groups use it to draft teams on their
+phones before the game. No more wasting pitch time picking teams.
 
 Some React patterns that worked well:
 - Lazy routes with chunk-failure auto-retry (stale service worker recovery)
@@ -230,19 +238,22 @@ happy to hear any UX feedback — it's free and I'm actively improving it.
 ## When People Comment
 
 **"Looks cool, I'll try it"**
-→ "Thanks — let me know how it goes. If anything's confusing or broken just tell me, I'll fix it."
+> "Thanks — let me know how it goes. If anything's confusing or broken just tell me, I'll fix it."
 
 **"Why not just use a random generator?"**
-→ "Random doesn't account for skill differences. With a draft, captains who know the players make judgment calls. Teams end up way more balanced."
+> "Random doesn't account for skill differences. With a draft, captains who know the players make judgment calls. Teams end up way more balanced. Plus you do it before the game so you're not wasting pitch time."
 
 **"Is it really free?"**
-→ "Yeah, no ads, no premium tier. Built it for my own group and figured others could use it too."
+> "Yeah, no ads, no premium tier. Built it for my own group and figured others could use it too."
 
 **"Does it work for basketball/volleyball/etc?"**
-→ "Should work for any sport where you need to split into teams. Haven't tested it specifically but the draft mechanic is the same."
+> "Should work for any sport where you need to split into teams. Haven't tested it specifically but the draft mechanic is the same."
 
 **"Open source?"**
-→ "Not yet but thinking about it. Want to get it more stable first."
+> "Not yet but thinking about it. Want to get it more stable first."
+
+**"We just do it at the pitch, it's fine"**
+> "Fair enough — we thought the same for years. The 15 minutes back every week adds up though. If you ever want to try it, it's there."
 
 **Bug report**
-→ "Appreciate you flagging that — I'll look into it today. Thanks for testing."
+> "Appreciate you flagging that — I'll look into it today. Thanks for testing."
