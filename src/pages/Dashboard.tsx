@@ -66,6 +66,14 @@ export default function Dashboard() {
   const [isUploadingOwnerPhoto, setIsUploadingOwnerPhoto] = useState(false);
   const [showOwnerSelfieEditor, setShowOwnerSelfieEditor] = useState(false);
 
+  // Quick draft player import
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importPlayers, setImportPlayers] = useState<string[]>([]);
+  const [importing, setImporting] = useState(false);
+
+  // Member welcome (after accepting invite)
+  const [showMemberWelcome, setShowMemberWelcome] = useState(false);
+
   // Onboarding selfie prompt (before 3-step walkthrough)
   const [showOnboardingSelfie, setShowOnboardingSelfie] = useState(false);
 
@@ -75,6 +83,19 @@ export default function Dashboard() {
       navigate("/");
     }
   }, [user, authLoading, navigate]);
+
+  // Member welcome after accepting invite
+  useEffect(() => {
+    if (isMember && !clubLoading && currentClub) {
+      try {
+        const flag = localStorage.getItem("pnk_just_joined_club");
+        if (flag) {
+          localStorage.removeItem("pnk_just_joined_club");
+          setShowMemberWelcome(true);
+        }
+      } catch {}
+    }
+  }, [isMember, clubLoading, currentClub]);
 
   // Fetch drafts and player count
   useEffect(() => {
@@ -87,18 +108,32 @@ export default function Dashboard() {
     }
   }, [user, clubLoading, currentClub]);
 
-  // Show onboarding for new owners with no players
-  // If no avatar, show selfie prompt first; otherwise go straight to walkthrough
+  // Check for quick draft players to import (takes priority over normal onboarding)
   useEffect(() => {
-    if (isOwner && playerCount === 0 && !clubLoading) {
-      const hasAvatar = !!(ownerPhotoUrl || user?.user_metadata?.avatar_url);
-      if (!hasAvatar) {
-        setShowOnboardingSelfie(true);
-      } else {
-        setShowOnboarding(true);
+    if (isOwner && currentClub && !clubLoading && playerCount !== null) {
+      try {
+        const saved = localStorage.getItem("pnk_quick_draft_players");
+        if (saved) {
+          const names = JSON.parse(saved) as string[];
+          if (Array.isArray(names) && names.length > 0) {
+            setImportPlayers(names);
+            setShowImportModal(true);
+            return; // Skip normal onboarding — import modal takes priority
+          }
+        }
+      } catch { /* ignore parse errors */ }
+
+      // Normal onboarding for new owners with no players
+      if (playerCount === 0) {
+        const hasAvatar = !!(ownerPhotoUrl || user?.user_metadata?.avatar_url);
+        if (!hasAvatar) {
+          setShowOnboardingSelfie(true);
+        } else {
+          setShowOnboarding(true);
+        }
       }
     }
-  }, [isOwner, playerCount, clubLoading]);
+  }, [isOwner, currentClub, playerCount, clubLoading]);
 
   const fetchPlayerCount = async () => {
     try {
@@ -272,6 +307,47 @@ export default function Dashboard() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && joinCode.trim().length === 4) {
       handleJoinDraft();
+    }
+  };
+
+  // Import quick draft players into user_players
+  const handleImportPlayers = async () => {
+    if (!user?.id || importPlayers.length === 0) return;
+    setImporting(true);
+    try {
+      const rows = importPlayers.map((name) => ({
+        user_id: user.id,
+        display_name: name,
+        category: "regular" as const,
+      }));
+      const { error } = await supabase.from("user_players").insert(rows);
+      if (error) throw error;
+
+      toast({ title: t("quickDraftImport.success", { count: importPlayers.length }) });
+      localStorage.removeItem("pnk_quick_draft_players");
+      localStorage.removeItem("pnk_quick_draft_room");
+      setShowImportModal(false);
+      setPlayerCount(importPlayers.length);
+    } catch (err) {
+      console.error("Error importing players:", err);
+      toast({ title: t("quickDraftImport.error"), variant: "destructive" });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleSkipImport = () => {
+    localStorage.removeItem("pnk_quick_draft_players");
+    localStorage.removeItem("pnk_quick_draft_room");
+    setShowImportModal(false);
+    // Trigger normal onboarding if no players
+    if (playerCount === 0) {
+      const hasAvatar = !!(ownerPhotoUrl || user?.user_metadata?.avatar_url);
+      if (!hasAvatar) {
+        setShowOnboardingSelfie(true);
+      } else {
+        setShowOnboarding(true);
+      }
     }
   };
 
@@ -791,6 +867,138 @@ export default function Dashboard() {
         onOpenChange={setShowOwnerSelfieEditor}
         onComplete={handleOwnerSelfieComplete}
       />
+
+      {/* Member Welcome Modal — after accepting invite */}
+      <AnimatePresence>
+        {showMemberWelcome && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-40"
+              onClick={() => setShowMemberWelcome(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-xl">
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-3">&#127881;</div>
+                  <h2 className="text-xl font-heading font-bold text-foreground">
+                    {t("memberWelcome.title")}
+                  </h2>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {t("memberWelcome.subtitle", { clubName: currentClub?.name })}
+                  </p>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-foreground font-medium text-sm">{t("memberWelcome.step1Title")}</p>
+                      <p className="text-muted-foreground text-xs">{t("memberWelcome.step1Description")}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Users className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-foreground font-medium text-sm">{t("memberWelcome.step2Title")}</p>
+                      <p className="text-muted-foreground text-xs">{t("memberWelcome.step2Description")}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Zap className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-foreground font-medium text-sm">{t("memberWelcome.step3Title")}</p>
+                      <p className="text-muted-foreground text-xs">{t("memberWelcome.step3Description")}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base"
+                  onClick={() => setShowMemberWelcome(false)}
+                >
+                  {t("memberWelcome.cta")}
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Quick Draft Player Import Modal */}
+      <AnimatePresence>
+        {showImportModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-40"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+                <div className="text-4xl mb-3">&#127881;</div>
+                <h2 className="text-xl font-heading font-bold text-foreground">
+                  {t("quickDraftImport.title")}
+                </h2>
+                <p className="text-muted-foreground text-sm mt-2 mb-4">
+                  {t("quickDraftImport.subtitle", { count: importPlayers.length })}
+                </p>
+                <div className="flex flex-wrap gap-1.5 justify-center mb-6 max-h-32 overflow-y-auto">
+                  {importPlayers.map((name, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+                <Button
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base"
+                  onClick={handleImportPlayers}
+                  disabled={importing}
+                >
+                  {importing ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    t("quickDraftImport.cta", { count: importPlayers.length })
+                  )}
+                </Button>
+                <button
+                  onClick={handleSkipImport}
+                  className="mt-3 text-muted-foreground text-sm hover:text-foreground transition-colors"
+                  disabled={importing}
+                >
+                  {t("quickDraftImport.skip")}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Onboarding Selfie Prompt — before 3-step walkthrough */}
       <AnimatePresence>

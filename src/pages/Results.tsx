@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,14 @@ import {
   X,
   Check,
   Timer,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClubContext } from "@/hooks/useClubContext";
 import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 import { useTranslation } from "react-i18next";
+import { ShareCard } from "@/components/ShareCard";
+import html2canvas from "html2canvas";
 
 // Emoji reactions visitors can give
 const REACTION_EMOJIS = [
@@ -69,7 +72,7 @@ export default function Results() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isOwner, isMember } = useClubContext();
+  const { isOwner, isMember, currentClub } = useClubContext();
   const { t } = useTranslation("results");
 
   const [room, setRoom] = useState<DraftRoom | null>(null);
@@ -87,6 +90,15 @@ export default function Results() {
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [gameNight, setGameNight] = useState<{ id: string; status: string } | null>(null);
   const [startingNight, setStartingNight] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
+
+  // Detect if current user ran a quick draft that produced this room
+  const isQuickDraftCreator = !user && (() => {
+    try {
+      return localStorage.getItem("pnk_quick_draft_room") === roomCode?.toUpperCase();
+    } catch { return false; }
+  })();
 
   useEffect(() => {
     getSecureSessionId().then(setSessionId);
@@ -265,6 +277,55 @@ export default function Results() {
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
+  };
+
+  const handleShareImage = async () => {
+    if (!shareCardRef.current || !room) return;
+    setGeneratingImage(true);
+    try {
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: null,
+        scale: 2, // Retina quality
+        useCORS: true,
+        logging: false,
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          setGeneratingImage(false);
+          return;
+        }
+
+        const file = new File([blob], `${room.draft_name.replace(/[^a-zA-Z0-9]/g, "-")}.png`, {
+          type: "image/png",
+        });
+
+        // Mobile: native share with image file; Desktop: download
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        if (isMobile && navigator.share && navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: t("share.title", { name: room.draft_name }),
+            });
+          } catch {
+            // User cancelled — that's fine
+          }
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = file.name;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast({ title: t("share.imageSaved") });
+        }
+        setGeneratingImage(false);
+      }, "image/png");
+    } catch (err) {
+      console.error("Error generating share image:", err);
+      setGeneratingImage(false);
+    }
   };
 
   const handleReaction = async (emoji: string) => {
@@ -598,6 +659,20 @@ export default function Results() {
           </Button>
         )}
 
+        {/* Share as Image */}
+        <Button
+          onClick={handleShareImage}
+          disabled={generatingImage}
+          className="w-full gap-2 bg-white/15 hover:bg-white/25 text-white h-11 border border-white/20"
+        >
+          {generatingImage ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <ImageIcon className="h-5 w-5" />
+          )}
+          {t("share.imageButton")}
+        </Button>
+
         {/* Secondary actions */}
         <div className="flex gap-2">
           <Button
@@ -841,23 +916,55 @@ export default function Results() {
         )}
       </AnimatePresence>
 
-      {/* Growth CTA */}
+      {/* Growth CTA / Quick Draft Nudge */}
       {!canManageDraft && (
         <div className="relative z-10 px-4 pt-2">
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center max-w-md mx-auto">
-            <p className="text-white font-bold text-sm mb-1">
-              {t("growth.title")}
-            </p>
-            <p className="text-white/60 text-xs mb-3">
-              {t("growth.subtitle")}
-            </p>
-            <Link
-              to="/auth"
-              className="inline-block px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white font-medium text-sm rounded-lg transition-colors"
+          {isQuickDraftCreator ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5 }}
+              className="bg-lime-500/10 border border-lime-400/30 rounded-xl p-5 max-w-md mx-auto"
             >
-              {t("growth.cta")}
-            </Link>
-          </div>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-lime-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-lime-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm">
+                    {t("quickDraftNudge.title")}
+                  </p>
+                  <p className="text-white/60 text-xs mt-0.5 mb-3">
+                    {t("quickDraftNudge.subtitle")}
+                  </p>
+                  <button
+                    onClick={() => {
+                      try { localStorage.setItem("pnk_from_quick_draft", "true"); } catch {}
+                      navigate("/auth");
+                    }}
+                    className="px-5 py-2 bg-lime-400 hover:bg-lime-500 text-gray-900 font-bold text-sm rounded-lg transition-colors"
+                  >
+                    {t("quickDraftNudge.cta")}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center max-w-md mx-auto">
+              <p className="text-white font-bold text-sm mb-1">
+                {t("growth.title")}
+              </p>
+              <p className="text-white/60 text-xs mb-3">
+                {t("growth.subtitle")}
+              </p>
+              <Link
+                to="/auth"
+                className="inline-block px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white font-medium text-sm rounded-lg transition-colors"
+              >
+                {t("growth.cta")}
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
@@ -871,6 +978,17 @@ export default function Results() {
           {t("footer.brand")}
         </Link>
       </div>
+
+      {/* Hidden share card for image generation */}
+      <ShareCard
+        ref={shareCardRef}
+        draftName={room.draft_name}
+        teams={teams}
+        location={room.location}
+        isSoloDraft={isSoloDraft}
+        clubName={currentClub?.name}
+        clubLogoUrl={currentClub?.logo_url}
+      />
     </div>
   );
 }

@@ -230,6 +230,19 @@
     "duplicatePlayer": "Player exists",
     "duplicatePlayerDescription": "A player with this name already exists",
     "playerNames": "Player Names",
+    "welcome": {
+      "title": "Here's how it works",
+      "step1": "Add all the players for tonight",
+      "step2": "Pick 2–3 captains and send them the game code",
+      "step3": "Captains draft live on their phones — fair teams, done",
+      "cta": "Got it, let's go!"
+    },
+    "hints": {
+      "name": "Name your game and choose 2 or 3 teams",
+      "players": "Add everyone who's playing tonight — you need at least 6",
+      "captains": "Pick one captain per team — they'll draft the players",
+      "confirm": "All set! Hit start and the draft goes live"
+    },
     "toast": {
       "created": "Draft created!",
       "roomCode": "Game code: {{code}}",

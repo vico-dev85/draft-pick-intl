@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { X, Loader2, Save, RotateCcw } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { uploadClubLogo } from "@/lib/photoUpload";
+import { X, Loader2, Save, RotateCcw, Camera, Trash2 } from "lucide-react";
 
 interface ClubData {
   id: string;
@@ -16,6 +18,7 @@ interface ClubData {
   default_notes: string | null;
   whatsapp_invite_template: string | null;
   whatsapp_results_template: string | null;
+  logo_url: string | null;
 }
 
 interface ClubSettingsProps {
@@ -39,14 +42,18 @@ View results: {link}`;
 export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
   const { t } = useTranslation("dashboard");
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [club, setClub] = useState<ClubData | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [inviteTemplate, setInviteTemplate] = useState("");
   const [resultsTemplate, setResultsTemplate] = useState("");
 
@@ -68,6 +75,7 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
       setName(clubData.name || "");
       setLocation(clubData.default_location || "");
       setNotes(clubData.default_notes || "");
+      setLogoUrl(clubData.logo_url || null);
       setInviteTemplate(clubData.whatsapp_invite_template || DEFAULT_INVITE_TEMPLATE);
       setResultsTemplate(clubData.whatsapp_results_template || DEFAULT_RESULTS_TEMPLATE);
     } catch (err) {
@@ -78,6 +86,41 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !club) return;
+
+    setUploadingLogo(true);
+    try {
+      const url = await uploadClubLogo(user.id, club.id, file);
+      if (url) {
+        setLogoUrl(url);
+        // Save immediately so it persists
+        await supabase.rpc("update_club_settings", { p_logo_url: url });
+        toast({ title: t("settings.logoUpdated") });
+      }
+    } catch (err) {
+      console.error("Logo upload error:", err);
+      toast({ title: t("settings.logoError"), variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!club) return;
+    setLogoUrl(null);
+    // Save removal — pass empty string so COALESCE doesn't skip it
+    // We need a special value; use direct table update via RLS
+    try {
+      await supabase.from("clubs").update({ logo_url: null }).eq("id", club.id);
+      toast({ title: t("settings.logoRemoved") });
+    } catch {
+      toast({ title: t("settings.logoError"), variant: "destructive" });
     }
   };
 
@@ -163,6 +206,58 @@ export function ClubSettings({ isOpen, onClose }: ClubSettingsProps) {
                       placeholder={t("settings.clubNamePlaceholder")}
                       className="h-12"
                     />
+                  </div>
+
+                  {/* Club Logo */}
+                  <div className="space-y-2">
+                    <Label className="text-foreground">{t("settings.clubLogo")}</Label>
+                    <div className="flex items-center gap-3">
+                      {logoUrl ? (
+                        <img
+                          src={logoUrl}
+                          alt=""
+                          className="w-14 h-14 rounded-lg object-cover border border-border"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center border border-border">
+                          <Camera className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => logoInputRef.current?.click()}
+                          disabled={uploadingLogo}
+                        >
+                          {uploadingLogo ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            logoUrl ? t("settings.logoChange") : t("settings.logoUpload")
+                          )}
+                        </Button>
+                        {logoUrl && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleRemoveLogo}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t("settings.logoHint")}
+                    </p>
                   </div>
 
                   {/* Default Location */}

@@ -270,12 +270,14 @@ export default function AcceptInvite() {
   // Auto-navigate to dashboard after success
   useEffect(() => {
     if (status === "success") {
+      try { localStorage.setItem("pnk_just_joined_club", "true"); } catch {}
       const timer = setTimeout(() => navigate("/dashboard"), 2000);
       return () => clearTimeout(timer);
     }
   }, [status, navigate]);
 
   const handleGoToDashboard = () => {
+    try { localStorage.setItem("pnk_just_joined_club", "true"); } catch {}
     navigate("/dashboard");
   };
 

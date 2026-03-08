@@ -43,6 +43,15 @@ export default function Auth() {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [emailTab, setEmailTab] = useState<EmailTab>("login");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  // Detect if user came from quick draft conversion nudge
+  const [fromQuickDraft] = useState(() => {
+    try {
+      const flag = localStorage.getItem("pnk_from_quick_draft");
+      if (flag) localStorage.removeItem("pnk_from_quick_draft");
+      return !!flag;
+    } catch { return false; }
+  });
   const navigate = useNavigate();
   const { signIn, signUp, signInWithGoogle, resetPassword, user } = useAuth();
   const { toast } = useToast();
@@ -189,6 +198,26 @@ export default function Auth() {
             className="w-full max-w-sm"
           >
             <div className="bg-card rounded-2xl p-6 border border-border shadow-card">
+              {/* Value messaging */}
+              {fromQuickDraft ? (
+                <div className="text-center mb-4 pb-4 border-b border-border">
+                  <p className="text-foreground font-bold text-sm">{t("auth:value.quickDraftTitle")}</p>
+                  <p className="text-muted-foreground text-xs mt-1">{t("auth:value.quickDraftSubtitle")}</p>
+                </div>
+              ) : (
+                <div className="text-center mb-4 pb-4 border-b border-border">
+                  <p className="text-foreground font-bold text-sm mb-2">{t("auth:value.title")}</p>
+                  <div className="space-y-1.5 text-left">
+                    {(["pool", "history", "gameNight", "invites"] as const).map((key) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                        <span className="text-muted-foreground text-xs">{t(`auth:value.${key}`)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Google OAuth — Hero */}
               <div className="space-y-3">
                 <Button

@@ -16,10 +16,6 @@ function getPlayerColor(name: string): string {
   return PLAYER_COLORS[hash % PLAYER_COLORS.length];
 }
 
-function getInitials(name: string): string {
-  return name.slice(0, 2);
-}
-
 interface PlayerAvatarProps {
   name: string;
   photoUrl?: string | null;
@@ -36,18 +32,19 @@ const ovalSizes: Record<string, { w: number; h: number }> = {
   xl: { w: 72, h: 96 },
 };
 
-// Oval sizes for initials fallback (same ratio as photos)
-const sizeClasses = {
-  xs: "text-[10px]",
-  sm: "text-xs",
-  md: "text-sm",
-  lg: "text-lg",
-  xl: "text-xl",
+// SVG icon sizes (percentage of container width)
+const iconScale: Record<string, number> = {
+  xs: 0.6,
+  sm: 0.6,
+  md: 0.55,
+  lg: 0.5,
+  xl: 0.5,
 };
 
 export function PlayerAvatar({ name, photoUrl, size = "md", className }: PlayerAvatarProps) {
+  const oval = ovalSizes[size];
+
   if (photoUrl) {
-    const oval = ovalSizes[size];
     return (
       <img
         src={photoUrl}
@@ -58,18 +55,35 @@ export function PlayerAvatar({ name, photoUrl, size = "md", className }: PlayerA
     );
   }
 
-  const oval = ovalSizes[size];
+  const scale = iconScale[size];
+  const iconW = Math.round(oval.w * scale);
+  const iconH = Math.round(oval.h * scale);
+
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center text-white font-bold flex-shrink-0",
+        "rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden",
         getPlayerColor(name),
-        sizeClasses[size],
         className
       )}
       style={{ width: oval.w, height: oval.h }}
     >
-      {getInitials(name)}
+      {/* Player silhouette */}
+      <svg
+        width={iconW}
+        height={iconH}
+        viewBox="0 0 24 28"
+        fill="none"
+        style={{ marginTop: Math.round(oval.h * 0.15) }}
+      >
+        {/* Head */}
+        <circle cx="12" cy="8" r="5" fill="rgba(255,255,255,0.85)" />
+        {/* Body/shoulders */}
+        <path
+          d="M2 26c0-5.5 4.5-10 10-10s10 4.5 10 10"
+          fill="rgba(255,255,255,0.7)"
+        />
+      </svg>
     </div>
   );
 }

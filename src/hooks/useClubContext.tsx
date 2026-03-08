@@ -8,6 +8,7 @@ interface ClubLink {
   player_photo: string | null;
   club_id: string;
   club_name: string;
+  club_logo_url: string | null;
   can_create_drafts: boolean;
   can_send_invites: boolean;
   is_owner: boolean;
@@ -15,7 +16,7 @@ interface ClubLink {
 
 interface ClubContext {
   /** The club the user belongs to (owner or linked member) */
-  currentClub: { id: string; name: string } | null;
+  currentClub: { id: string; name: string; logo_url?: string | null } | null;
   /** True if the user owns this club */
   isOwner: boolean;
   /** True if the user is a linked member (not owner) */
@@ -62,7 +63,7 @@ export function useClubContext(): ClubContext {
         // Check if user already owns a club
         const { data: ownedClub } = await supabase
           .from("clubs")
-          .select("id, name")
+          .select("id, name, logo_url")
           .eq("user_id", user!.id)
           .maybeSingle();
 
@@ -73,6 +74,7 @@ export function useClubContext(): ClubContext {
             player_photo: null,
             club_id: ownedClub.id,
             club_name: ownedClub.name,
+            club_logo_url: ownedClub.logo_url || null,
             can_create_drafts: true,
             can_send_invites: true,
             is_owner: true,
@@ -91,6 +93,7 @@ export function useClubContext(): ClubContext {
             player_photo: null,
             club_id: club.id,
             club_name: club.name,
+            club_logo_url: (club as { logo_url?: string }).logo_url || null,
             can_create_drafts: true,
             can_send_invites: true,
             is_owner: true,
@@ -139,7 +142,7 @@ export function useClubContext(): ClubContext {
     }
 
     return {
-      currentClub: { id: clubLink.club_id, name: clubLink.club_name },
+      currentClub: { id: clubLink.club_id, name: clubLink.club_name, logo_url: clubLink.club_logo_url },
       isOwner: clubLink.is_owner,
       isMember: !clubLink.is_owner,
       permissions: {

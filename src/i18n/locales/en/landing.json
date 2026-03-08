@@ -1,18 +1,19 @@
 {
   "hero": {
     "title": "PickNKick",
-    "tagline1": "Pick tonight's squad",
-    "tagline2": "Draft fair teams live",
-    "tagline3": "Kick off. No arguments."
+    "step1": "Add tonight's players",
+    "step2": "Captains pick teams live",
+    "step3": "Share on WhatsApp & kick off",
+    "step4": "Fair teams. No arguments."
   },
   "cta": {
+    "startDraft": "Start a Draft — Free",
+    "startDraftSub": "No sign-up needed",
     "createClub": "Create Your Club",
-    "quickDraft": "Quick Draft",
-    "quickDraftSub": "No sign-up needed",
-    "alreadyHaveAccount": "Already have an account? Sign in"
+    "alreadyHaveAccount": "Already have an account? Sign in",
+    "joinWithCode": "Join with game code"
   },
   "joinCode": {
-    "divider": "Have a game code?",
     "placeholder": "Enter code",
     "join": "Join"
   },

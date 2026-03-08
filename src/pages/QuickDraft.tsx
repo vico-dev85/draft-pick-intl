@@ -48,6 +48,10 @@ export default function QuickDraft() {
   const [creating, setCreating] = useState(false);
   const [draftMode, setDraftMode] = useState<"all" | "even">("all");
 
+  // First-time onboarding
+  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem("pnk_onboarded_quick_draft"));
+  const [showStepHints, setShowStepHints] = useState(false);
+
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
     if (!trimmedName) return;
@@ -137,6 +141,12 @@ export default function QuickDraft() {
 
       if (error) throw error;
 
+      // Save players for post-signup import
+      try {
+        localStorage.setItem("pnk_quick_draft_players", JSON.stringify(players.map(p => p.name)));
+        localStorage.setItem("pnk_quick_draft_room", (roomCode as string).toUpperCase());
+      } catch { /* non-critical */ }
+
       toast({
         title: t("quick.toast.created"),
         description: t("quick.toast.roomCode", { code: roomCode }),
@@ -180,6 +190,56 @@ export default function QuickDraft() {
           }}
         />
       </div>
+
+      {/* Welcome Modal — first visit only */}
+      <AnimatePresence>
+        {showWelcome && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-40"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-purple-800/90 backdrop-blur-sm border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+                <div className="text-4xl mb-3">&#9889;</div>
+                <h2 className="text-xl font-heading font-bold text-white mb-4">
+                  {t("quick.welcome.title")}
+                </h2>
+                <div className="space-y-2.5 mb-6">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="flex items-center gap-2.5 justify-center">
+                      <span className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold flex-shrink-0">
+                        {n}
+                      </span>
+                      <span className="text-white/70 text-sm">
+                        {t(`quick.welcome.step${n}`)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white font-bold text-base"
+                  onClick={() => {
+                    localStorage.setItem("pnk_onboarded_quick_draft", "true");
+                    setShowWelcome(false);
+                    setShowStepHints(true);
+                  }}
+                >
+                  {t("quick.welcome.cta")}
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Content Layer */}
       <div className="relative z-10">
@@ -242,6 +302,18 @@ export default function QuickDraft() {
               )}
             </div>
           </div>
+
+          {/* Step hint — first visit only */}
+          {showStepHints && (
+            <motion.p
+              key={step}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-white/40 text-xs text-center mb-3"
+            >
+              {t(`quick.hints.${step}`)}
+            </motion.p>
+          )}
 
           <AnimatePresence mode="wait">
             {/* Step 1: Draft Name */}

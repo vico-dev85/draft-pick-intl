@@ -135,82 +135,103 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-sm text-center space-y-8"
           >
-            {/* Tagline */}
-            <div className="space-y-1">
-              <p className="text-2xl font-heading font-bold text-white">{t("hero.tagline1")}</p>
-              <p className="text-2xl font-heading font-bold text-white">{t("hero.tagline2")}</p>
-              <p className="text-2xl font-heading font-bold text-lime-400">{t("hero.tagline3")}</p>
+            {/* How it works — left-aligned text in centered block */}
+            <div className="inline-flex flex-col items-start space-y-2.5">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-full bg-lime-400/20 flex items-center justify-center text-lime-400 text-sm font-bold flex-shrink-0">
+                    {n}
+                  </span>
+                  <span className="text-base font-heading font-bold text-white">
+                    {t(`hero.step${n}`)}
+                  </span>
+                </div>
+              ))}
+              <p className="text-lg font-heading font-bold text-lime-400 pt-1 self-center">
+                {t("hero.step4")}
+              </p>
             </div>
 
-            {/* Primary CTA */}
+            {/* CTAs */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.3 }}
               className="space-y-3"
             >
-              <Button
-                onClick={handleCreateDraft}
-                size="lg"
-                className="w-full h-14 text-lg font-bold bg-lime-400 hover:bg-lime-500 text-gray-900 shadow-lg shadow-lime-400/30"
-              >
-                {t("cta.createClub")}
-              </Button>
+              {/* Primary: Quick Draft — zero friction, feeds conversion funnel */}
               <Button
                 onClick={() => navigate("/quick-draft")}
                 size="lg"
-                variant="outline"
-                className="w-full h-14 text-lg font-bold border-2 border-white/30 bg-white/5 hover:bg-white/10 text-white"
+                className="w-full h-14 text-lg font-bold bg-lime-400 hover:bg-lime-500 text-gray-900 shadow-lg shadow-lime-400/30"
               >
                 <div className="flex flex-col items-center leading-tight">
-                  <span>{t("cta.quickDraft")}</span>
-                  <span className="text-xs font-normal opacity-60">{t("cta.quickDraftSub")}</span>
+                  <span>{t("cta.startDraft")}</span>
+                  <span className="text-xs font-normal text-gray-700">{t("cta.startDraftSub")}</span>
                 </div>
               </Button>
-              <button
-                onClick={() => navigate("/auth")}
-                className="text-white/50 hover:text-white/80 transition-colors text-sm"
-              >
-                {t("cta.alreadyHaveAccount")}
-              </button>
-            </motion.div>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-white/40" />
-              <span className="text-white/80 text-sm font-medium">{t("joinCode.divider")}</span>
-              <div className="flex-1 h-px bg-white/40" />
-            </div>
-
-            {/* Join Code Input */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.3 }}
-              className="flex gap-2"
-            >
-              <Input
-                type="text"
-                placeholder={t("joinCode.placeholder")}
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                onKeyDown={handleKeyDown}
-                maxLength={4}
-                className="flex-1 h-12 text-center text-xl font-mono tracking-widest bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-purple-400 focus:ring-purple-400/20"
-                dir="ltr"
-              />
+              {/* Secondary: Create Club — committed users */}
               <Button
-                onClick={handleJoinDraft}
-                disabled={joinCode.trim().length !== 4 || isJoining}
-                className="h-12 px-6 bg-white/10 hover:bg-white/30 text-white border-2 border-white/70"
+                onClick={handleCreateDraft}
+                size="lg"
+                variant="outline"
+                className="w-full h-12 font-bold border-2 border-white/30 bg-white/5 hover:bg-white/10 text-white"
               >
-                {isJoining ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  t("joinCode.join")
-                )}
+                {t("cta.createClub")}
               </Button>
+
+              {/* Tertiary links */}
+              <div className="flex items-center justify-center gap-3 text-sm">
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="text-white/50 hover:text-white/80 transition-colors"
+                >
+                  {t("cta.alreadyHaveAccount")}
+                </button>
+              </div>
             </motion.div>
+
+            {/* Join with code — compact, collapsed */}
+            <div className="pt-2">
+              {!joinCode && !isJoining ? (
+                <button
+                  onClick={() => setJoinCode(" ")}
+                  className="text-white/40 hover:text-white/60 transition-colors text-xs"
+                >
+                  {t("cta.joinWithCode")}
+                </button>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="flex gap-2 max-w-[240px] mx-auto"
+                >
+                  <Input
+                    type="text"
+                    placeholder={t("joinCode.placeholder")}
+                    value={joinCode.trim()}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    onKeyDown={handleKeyDown}
+                    maxLength={4}
+                    autoFocus
+                    className="flex-1 h-10 text-center text-lg font-mono tracking-widest bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-purple-400 focus:ring-purple-400/20"
+                    dir="ltr"
+                  />
+                  <Button
+                    onClick={handleJoinDraft}
+                    disabled={joinCode.trim().length !== 4 || isJoining}
+                    className="h-10 px-4 bg-white/10 hover:bg-white/30 text-white border border-white/30"
+                  >
+                    {isJoining ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      t("joinCode.join")
+                    )}
+                  </Button>
+                </motion.div>
+              )}
+            </div>
           </motion.div>
         </main>
 

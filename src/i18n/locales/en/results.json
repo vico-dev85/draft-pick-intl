@@ -10,7 +10,9 @@
     "teamHeader": "{{captain}}:",
     "viewResults": "View results:",
     "fairTeams": "Fair teams. No arguments. — PickNKick",
-    "copy": "Copy"
+    "copy": "Copy",
+    "imageButton": "Share as Image",
+    "imageSaved": "Image saved!"
   },
   "gameNight": {
     "start": "Start Football Night",
@@ -53,6 +55,11 @@
     "title": "Have your own team?",
     "subtitle": "Manage drafts and football nights — totally free",
     "cta": "Get Started"
+  },
+  "quickDraftNudge": {
+    "title": "Want to save these players for next week?",
+    "subtitle": "Create your club in 10 seconds — no retyping. Free forever.",
+    "cta": "Save my players"
   },
   "footer": {
     "brand": "PickNKick"

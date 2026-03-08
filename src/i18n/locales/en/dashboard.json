@@ -48,6 +48,25 @@
   },
   "photoUpdated": "Photo updated!",
   "photoUploadError": "Error uploading photo",
+  "quickDraftImport": {
+    "title": "We saved your players!",
+    "subtitle": "Import {{count}} players from your quick draft?",
+    "cta": "Import {{count}} players",
+    "skip": "No thanks, start fresh",
+    "success": "{{count}} players imported!",
+    "error": "Could not import players"
+  },
+  "memberWelcome": {
+    "title": "You're in!",
+    "subtitle": "You just joined {{clubName}}",
+    "step1Title": "You're auto-identified in drafts",
+    "step1Description": "No need to claim your name — the app knows who you are",
+    "step2Title": "Start a draft with friends",
+    "step2Description": "Run a live draft where captains pick on their phones",
+    "step3Title": "Or split teams solo",
+    "step3Description": "Pick tonight's players and divide them into fair teams yourself",
+    "cta": "Got it!"
+  },
   "onboarding": {
     "selfie": {
       "title": "Take a Profile Photo",
@@ -58,12 +77,12 @@
     "welcome": {
       "title": "Welcome to PickNKick!",
       "subtitle": "3 simple steps to get started",
-      "step1Title": "Create your club",
-      "step1Description": "We already created one for you! You can rename it in settings",
-      "step2Title": "Add your regular players",
-      "step2Description": "Build your squad for quick draft setup every week",
-      "step3Title": "On match day, select who's playing and draft teams",
-      "step3Description": "Captains pick in turns — balanced snake order",
+      "step1Title": "Add your regular players",
+      "step1Description": "Save your squad once — pick from them every week",
+      "step2Title": "On game day, draft or split teams",
+      "step2Description": "Captains join on their phones and pick in turns — or split teams yourself",
+      "step3Title": "Share teams on WhatsApp & kick off",
+      "step3Description": "One tap to send the final teams to your group chat",
       "cta": "Got it, let's start"
     }
   },
@@ -84,6 +103,13 @@
     "inviteTemplateVars": "Variables: {draft_name}, {room_code}, {link}",
     "resultsTemplate": "Share results",
     "resultsTemplateVars": "Variables: {draft_name}, {teams}, {location}, {notes}, {link}",
+    "clubLogo": "Club logo",
+    "logoUpload": "Upload",
+    "logoChange": "Change",
+    "logoHint": "Appears on shared team images",
+    "logoUpdated": "Logo updated!",
+    "logoRemoved": "Logo removed",
+    "logoError": "Error uploading logo",
     "saveSettings": "Save Settings",
     "saved": "Settings saved successfully",
     "loadError": "Error loading settings",
