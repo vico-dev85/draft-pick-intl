@@ -26,6 +26,7 @@ import {
   ChevronRight,
   User,
   Mail,
+  ClipboardPaste,
 } from "lucide-react";
 import {
   Drawer,
@@ -45,6 +46,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { compressPhoto, uploadPlayerPhoto } from "@/lib/photoUpload";
+import { PastePlayersModal } from "@/components/PastePlayersModal";
 
 interface Player {
   id: string;
@@ -113,6 +115,9 @@ export default function Players() {
 
   // Delete confirmation
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Paste list modal
+  const [showPasteModal, setShowPasteModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -317,6 +322,55 @@ export default function Players() {
       });
     } finally {
       setIsAdding(false);
+    }
+  };
+
+  const handlePasteImport = async (names: string[]) => {
+    if (!user?.id) return;
+    try {
+      const rows = names.map((name) => ({
+        user_id: user.id,
+        name,
+        category: "regular" as const,
+        club_id: currentClub?.id || null,
+      }));
+
+      const { data, error } = await supabase
+        .from("user_players")
+        .insert(rows)
+        .select();
+
+      if (error) throw error;
+
+      const newPlayers: Player[] = (data || []).map((d) => ({
+        ...d,
+        photo_url: d.photo_url || null,
+        category: (d.category as "regular" | "occasional") || "regular",
+        can_create_drafts: d.can_create_drafts || false,
+        can_send_invites: d.can_send_invites || false,
+        invite_token: null,
+        invite_expires_at: null,
+        invite_requested_at: null,
+      }));
+
+      setPlayers((prev) =>
+        [...prev, ...newPlayers].sort((a, b) => {
+          if (a.category !== b.category) return a.category === "regular" ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        })
+      );
+
+      toast({
+        title: t("toast.playerAdded"),
+        description: `${names.length} players added`,
+      });
+    } catch (err) {
+      console.error("Paste import error:", err);
+      toast({
+        title: t("toast.error"),
+        description: t("toast.addError"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -855,6 +909,14 @@ export default function Players() {
                   </>
                 )}
               </Button>
+
+              <button
+                onClick={() => { setShowAddDrawer(false); setShowPasteModal(true); }}
+                className="w-full flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+              >
+                <ClipboardPaste className="h-4 w-4" />
+                {t("pasteList.button")}
+              </button>
             </div>
           </DrawerContent>
         </Drawer>
@@ -1182,6 +1244,14 @@ export default function Players() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PastePlayersModal
+        isOpen={showPasteModal}
+        onClose={() => setShowPasteModal(false)}
+        onImport={handlePasteImport}
+        existingNames={players.map((p) => p.name)}
+        t={t}
+      />
     </div>
   );
 }

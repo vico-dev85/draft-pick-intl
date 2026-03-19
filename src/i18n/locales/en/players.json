@@ -48,6 +48,15 @@
     "photoLabel": "Photo (optional)",
     "choosePhoto": "Choose photo"
   },
+  "pasteList": {
+    "title": "Paste Player List",
+    "hint": "Paste names — one per line, or comma-separated",
+    "placeholder": "David\nAlex\nSam\nJordan",
+    "preview": "{{count}} players to add",
+    "duplicates": "{{count}} duplicates skipped",
+    "import": "Add {{count}} players",
+    "button": "Paste list"
+  },
   "permissions": {
     "label": "Permissions",
     "canCreateDrafts": "Can create drafts",

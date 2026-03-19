@@ -243,6 +243,15 @@
       "captains": "Pick one captain per team — they'll draft the players",
       "confirm": "All set! Hit start and the draft goes live"
     },
+    "pasteList": {
+      "title": "Paste Player List",
+      "hint": "Paste names — one per line, or comma-separated",
+      "placeholder": "David\nAlex\nSam\nJordan",
+      "preview": "{{count}} players to add",
+      "duplicates": "{{count}} duplicates skipped",
+      "import": "Add {{count}} players",
+      "button": "Paste list"
+    },
     "toast": {
       "created": "Draft created!",
       "roomCode": "Game code: {{code}}",

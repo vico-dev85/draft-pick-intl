@@ -24,8 +24,10 @@ import {
   Zap,
   AlertTriangle,
   Info,
+  ClipboardPaste,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PastePlayersModal } from "@/components/PastePlayersModal";
 
 interface Player {
   id: string;
@@ -51,6 +53,7 @@ export default function QuickDraft() {
   // First-time onboarding
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem("pnk_onboarded_quick_draft"));
   const [showStepHints, setShowStepHints] = useState(false);
+  const [showPasteModal, setShowPasteModal] = useState(false);
 
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
@@ -73,6 +76,14 @@ export default function QuickDraft() {
 
     setPlayers((prev) => [...prev, newPlayer]);
     setNewPlayerName("");
+  };
+
+  const handlePasteImport = (names: string[]) => {
+    const newPlayers = names.map((name, i) => ({
+      id: `player-${Date.now()}-${i}`,
+      name,
+    }));
+    setPlayers((prev) => [...prev, ...newPlayers]);
   };
 
   const removePlayer = (playerId: string) => {
@@ -413,7 +424,7 @@ export default function QuickDraft() {
                 </div>
 
                 {/* Add Player Form */}
-                <div className="bg-amber-500/10 rounded-xl p-4 border border-amber-500/30">
+                <div className="bg-amber-500/10 rounded-xl p-4 border border-amber-500/30 space-y-2">
                   <div className="flex gap-2">
                     <Input
                       placeholder={t("quick.playerPlaceholder")}
@@ -431,6 +442,13 @@ export default function QuickDraft() {
                       <Plus className="h-5 w-5" />
                     </Button>
                   </div>
+                  <button
+                    onClick={() => setShowPasteModal(true)}
+                    className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white/80 transition-colors"
+                  >
+                    <ClipboardPaste className="h-3.5 w-3.5" />
+                    {t("quick.pasteList.button")}
+                  </button>
                 </div>
 
                 {/* Players List */}
@@ -727,6 +745,14 @@ export default function QuickDraft() {
           </AnimatePresence>
         </main>
       </div>
+
+      <PastePlayersModal
+        isOpen={showPasteModal}
+        onClose={() => setShowPasteModal(false)}
+        onImport={handlePasteImport}
+        existingNames={players.map((p) => p.name)}
+        t={(key, opts) => t(`quick.${key}`, opts)}
+      />
     </div>
   );
 }
