@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "deploy": "vitest run && vite build",
+    "deploy": "powershell -ExecutionPolicy Bypass -File deploy.ps1",
     "generate-icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
