@@ -1,15 +1,18 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getCaptainColor, getCaptainLabel } from "@/lib/draftUtils";
 import { getCaptainPlayerId, getAllCaptains } from "@/lib/captainHelpers";
 import type { Json } from "@/integrations/supabase/types";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { NightRecapCard } from "@/components/NightRecapCard";
 import { useClubContext } from "@/hooks/useClubContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Crown, Trophy, Users, Check, X } from "lucide-react";
+import { Loader2, Crown, Trophy, Users, Check, X, MessageCircle, ImageIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import html2canvas from "html2canvas";
 
 // --- Types ---
 
@@ -31,6 +34,14 @@ interface NightSummary {
   games: GameData[];
   standings: StandingData[];
   top_scorers: ScorerData[];
+  top_assists: AssistData[];
+}
+
+interface AssistData {
+  player_id: string;
+  player_name: string;
+  player_photo: string | null;
+  assists: number;
 }
 
 interface GameData {
@@ -85,6 +96,8 @@ export default function NightResults() {
   const [showClaimSheet, setShowClaimSheet] = useState(false);
   const [claimSent, setClaimSent] = useState(false);
   const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [sharingRecap, setSharingRecap] = useState(false);
+  const recapCardRef = useRef<HTMLDivElement>(null);
 
   // Build goal count map from top_scorers for badges in claim sheet
   const goalCountMap = useMemo(() => {
@@ -170,6 +183,103 @@ export default function NightResults() {
     return players.filter((p) => p.player_id);
   }, [players]);
 
+  // Captain name lookup, keyed by captain number — passed to NightRecapCard.
+  const captainNames = useMemo(() => {
+    const map: Record<number, string | null> = {};
+    if (!summary) return map;
+    for (let n = 1; n <= (summary.num_teams ?? 3); n++) {
+      const id = getCaptainPlayerId(summary, n);
+      if (!id) continue;
+      const player = players.find((p) => p.player_id === id);
+      map[n] = player?.display_name ?? null;
+    }
+    return map;
+  }, [summary, players]);
+
+  /** Share the night recap: native share on mobile, clipboard + WhatsApp Web on desktop. */
+  const handleShareRecap = async () => {
+    if (!recapCardRef.current || !summary) return;
+    setSharingRecap(true);
+    try {
+      const canvas = await html2canvas(recapCardRef.current, {
+        backgroundColor: "#0a0a1a",
+        scale: 1.5,
+        useCORS: true,
+        logging: false,
+      });
+      const jpegBlob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/jpeg", 0.88),
+      );
+      if (!jpegBlob) return;
+
+      const fileName = `${(summary.draft_name || "night-recap").replace(/[^a-zA-Z0-9]/g, "-")}-recap.jpg`;
+      const file = new File([jpegBlob], fileName, { type: "image/jpeg" });
+
+      const caption = [
+        `🏆 ${summary.draft_name || "Game Night"} — Recap`,
+        `${summary.total_games} games · ${summary.total_goals} goals`,
+      ].join("\n");
+
+      // Mobile path: native share sheet with the image attached
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], text: caption });
+          return;
+        } catch (err) {
+          if ((err as Error).name === "AbortError") return;
+        }
+      }
+
+      // Desktop path: clipboard image + WhatsApp Web + Supabase upload fallback
+      let clipboardOk = false;
+      if (navigator.clipboard && typeof window.ClipboardItem !== "undefined") {
+        try {
+          const pngBlob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/png"),
+          );
+          if (pngBlob) {
+            await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob })]);
+            clipboardOk = true;
+          }
+        } catch {
+          // clipboard unavailable / blocked
+        }
+      }
+
+      // Upload as a fallback URL
+      let imageUrl: string | null = null;
+      try {
+        const path = `${summary.room_code}-recap.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("share-images")
+          .upload(path, jpegBlob, {
+            contentType: "image/jpeg",
+            cacheControl: "3600",
+            upsert: true,
+          });
+        if (!uploadError) {
+          const { data } = supabase.storage.from("share-images").getPublicUrl(path);
+          imageUrl = data.publicUrl;
+        }
+      } catch (err) {
+        console.error("Recap upload failed:", err);
+      }
+
+      const linkLine = imageUrl ? `\n\n📷 ${imageUrl}` : "";
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(caption + linkLine)}`;
+      window.open(whatsappUrl, "_blank");
+
+      if (clipboardOk) {
+        toast({
+          title: "Image copied",
+          description: "Paste it in WhatsApp Web (Ctrl+V) to send as a photo.",
+        });
+      }
+    } finally {
+      setSharingRecap(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-800 to-purple-900 flex items-center justify-center">
@@ -226,7 +336,7 @@ export default function NightResults() {
           </p>
         </header>
 
-        <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
+        <div className="px-4 py-6 space-y-6 max-w-md mx-auto pb-24">
           {/* Stats Banner */}
           <div className="bg-black/30 rounded-xl p-4 border border-white/10 text-center">
             <div className="flex justify-center gap-8">
@@ -325,7 +435,7 @@ export default function NightResults() {
             <div className="space-y-2">
               <h3 className="text-white/70 text-sm font-medium">{t("nightResults.topScorers")}</h3>
               <div className="space-y-2">
-                {summary.top_scorers!.slice(0, 3).map((scorer, i) => (
+                {summary.top_scorers!.slice(0, 5).map((scorer, i) => (
                   <div
                     key={scorer.player_id}
                     className={`flex items-center gap-3 p-3 rounded-xl border ${
@@ -345,6 +455,38 @@ export default function NightResults() {
                     <span className="flex-1 text-white font-medium text-sm">{scorer.player_name}</span>
                     <span className={`font-bold ${i === 0 ? "text-yellow-400" : "text-white/60"}`}>
                       {scorer.goals}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Top Assists */}
+          {(summary.top_assists?.length ?? 0) > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-white/70 text-sm font-medium">Top Assists</h3>
+              <div className="space-y-2">
+                {summary.top_assists!.slice(0, 5).map((assister, i) => (
+                  <div
+                    key={assister.player_id}
+                    className={`flex items-center gap-3 p-3 rounded-xl border ${
+                      i === 0
+                        ? "bg-yellow-400/10 border-yellow-400/30"
+                        : "bg-black/20 border-white/10"
+                    }`}
+                  >
+                    <span className={`text-lg font-bold ${i === 0 ? "text-yellow-400" : "text-white/40"}`}>
+                      {i + 1}
+                    </span>
+                    <PlayerAvatar
+                      name={assister.player_name}
+                      photoUrl={assister.player_photo}
+                      size="sm"
+                    />
+                    <span className="flex-1 text-white font-medium text-sm">{assister.player_name}</span>
+                    <span className={`font-bold ${i === 0 ? "text-yellow-400" : "text-white/60"}`}>
+                      🧑‍🍳 {assister.assists}
                     </span>
                   </div>
                 ))}
@@ -509,6 +651,40 @@ export default function NightResults() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Sticky Share Recap button (bottom of viewport) */}
+      {summary && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-purple-900 via-purple-900/95 to-transparent pt-4 pb-4 px-4">
+          <div className="max-w-md mx-auto">
+            <Button
+              onClick={handleShareRecap}
+              disabled={sharingRecap}
+              className="w-full gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white h-12 text-base shadow-lg shadow-black/30"
+            >
+              {sharingRecap ? <Loader2 className="h-5 w-5 animate-spin" /> : <MessageCircle className="h-5 w-5" />}
+              Share Night Recap
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden recap card for image generation */}
+      {summary && (
+        <NightRecapCard
+          ref={recapCardRef}
+          draftName={summary.draft_name}
+          clubName={null /* could plumb through if needed */}
+          clubLogoUrl={null}
+          roomCode={summary.room_code}
+          startedAt={summary.started_at}
+          totalGames={summary.total_games}
+          totalGoals={summary.total_goals}
+          standings={summary.standings}
+          topScorers={summary.top_scorers}
+          topAssists={summary.top_assists ?? []}
+          captainNames={captainNames}
+        />
       )}
     </div>
   );

@@ -36,7 +36,10 @@
     "undoLast": "Undo last goal",
     "undone": "Goal undone",
     "unknown": "Unknown",
-    "player": "Player"
+    "player": "Player",
+    "ownGoal": "Own goal",
+    "selectAssist": "Who assisted?",
+    "noAssist": "No assist"
   },
   "standings": {
     "title": "Standings",
@@ -99,6 +102,8 @@
     "penalties": "Penalties!",
     "kickoff": "Kickoff!",
     "goalScored": "Goal! {{player}}! {{score}}",
+    "goalWithAssist": "Goal! {{player}} assisted by {{assist}}! {{score}}",
+    "ownGoal": "Own goal! {{score}}",
     "gameEndWin": "Full time! {{score}}. {{winner}} won!",
     "gameEndDraw": "Full time! Draw! {{score}}",
     "errorStartGame": "Could not start match"

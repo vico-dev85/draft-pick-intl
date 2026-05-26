@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getTeamAnimal, getTeamDisplayName } from "@/lib/captainHelpers";
-import { FAMILY_COLORS } from "@/lib/teamSymbols";
+import { FAMILY_COLORS, getTeamSymbolIconUrl } from "@/lib/teamSymbols";
 import { composeTeamSymbol, getCachedTeamSymbol } from "@/lib/composeTeamSymbol";
 
 interface TeamSymbolProps {
@@ -70,8 +70,9 @@ export function TeamSymbol({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [composeKey?.animalKey, composeKey?.displayName]);
 
-  // For variants without text we just point at the raw logo asset.
-  const symbolUrl = composedUrl ?? (showName ? null : `/assets/teams/${animal.key}.webp`);
+  // For variants without text we use the compact "icon" asset (no ribbon),
+  // which crops tight on the silhouette and looks better at small sizes.
+  const symbolUrl = composedUrl ?? (showName ? null : getTeamSymbolIconUrl(animal.key));
 
   const [imgStatus, setImgStatus] = useState<"loading" | "loaded" | "missing">(
     composedUrl ? "loaded" : "loading",

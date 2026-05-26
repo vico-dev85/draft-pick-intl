@@ -107,7 +107,7 @@ interface TeamInfo {
   players: RoomPlayer[]; // non-captain team members
 }
 
-type View = "pre_game" | "active_game" | "goal_picker" | "game_over" | "penalties" | "summary";
+type View = "pre_game" | "active_game" | "goal_picker" | "assist_picker" | "game_over" | "penalties" | "summary";
 
 // --- Rotation logic ---
 // Default rotation for first game or fallback (3-team)
@@ -165,6 +165,12 @@ export default function GameNight() {
   const [scoreA, setScoreA] = useState(0);
   const [scoreB, setScoreB] = useState(0);
   const [goalPickerTeam, setGoalPickerTeam] = useState<number | null>(null);
+  // Pending scorer waiting for assist selection. Set when user picks a scorer
+  // (or "unknown") in the scorer picker; cleared once the assist is chosen.
+  const [pendingScorer, setPendingScorer] = useState<{
+    scorer: RoomPlayer | null;
+    team: number;
+  } | null>(null);
   const [muted, setMutedState] = useState(isMuted());
   const [goalDebounce, setGoalDebounce] = useState(false);
   const [endingNight, setEndingNight] = useState(false);
@@ -390,14 +396,55 @@ export default function GameNight() {
     setView("goal_picker");
   };
 
-  const handleScorerSelected = async (player: RoomPlayer | null) => {
+  // Step 1: user picks a scorer (regular player or "unknown").
+  // Stash and open the assist picker — recording happens after assist choice.
+  const handleScorerSelected = (player: RoomPlayer | null) => {
     if (!activeGameId || goalPickerTeam === null) return;
+    setPendingScorer({ scorer: player, team: goalPickerTeam });
+    setGoalPickerTeam(null);
+    setView("assist_picker");
+  };
+
+  // Step 1 (alternate): user picks "Own goal" from the scorer picker.
+  // No scorer, no assist — record immediately.
+  const handleOwnGoal = () => {
+    if (!activeGameId || goalPickerTeam === null) return;
+    void recordGoal({
+      scorer: null,
+      assist: null,
+      team: goalPickerTeam,
+      isOwnGoal: true,
+    });
+    setGoalPickerTeam(null);
+    setView("active_game");
+  };
+
+  // Step 2: assist chosen (or "no assist"). Finalize the goal.
+  const handleAssistSelected = (assist: RoomPlayer | null) => {
+    if (!pendingScorer) return;
+    void recordGoal({
+      scorer: pendingScorer.scorer,
+      assist,
+      team: pendingScorer.team,
+      isOwnGoal: false,
+    });
+    setPendingScorer(null);
+    setView("active_game");
+  };
+
+  const recordGoal = async (args: {
+    scorer: RoomPlayer | null;
+    assist: RoomPlayer | null;
+    team: number;
+    isOwnGoal: boolean;
+  }) => {
+    if (!activeGameId) return;
 
     setGoalDebounce(true);
     setTimeout(() => setGoalDebounce(false), 1000);
 
-    const newScoreA = goalPickerTeam === teamA ? scoreA + 1 : scoreA;
-    const newScoreB = goalPickerTeam === teamB ? scoreB + 1 : scoreB;
+    const newScoreA = args.team === teamA ? scoreA + 1 : scoreA;
+    const newScoreB = args.team === teamB ? scoreB + 1 : scoreB;
 
     // Optimistic update
     setScoreA(newScoreA);
@@ -405,26 +452,37 @@ export default function GameNight() {
     scoreARef.current = newScoreA;
     scoreBRef.current = newScoreB;
 
-    const scorerName = player?.display_name || t("goals.player");
+    const scorerName = args.isOwnGoal
+      ? t("goals.ownGoal")
+      : args.scorer?.display_name || t("goals.player");
     setGoals((prev) => [
       ...prev,
       {
         id: Date.now().toString(),
         player_name: scorerName,
-        team: goalPickerTeam,
+        team: args.team,
         minute: timer.currentMinute,
       },
     ]);
 
-    setGoalPickerTeam(null);
-    setView("active_game");
-
-    // Announce
+    // Announce — different message for own goals + with-assist
     const scoreText = `${newScoreA}-${newScoreB}`;
+    let ttsText: string;
+    if (args.isOwnGoal) {
+      ttsText = t("tts.ownGoal", { score: scoreText });
+    } else if (args.assist) {
+      ttsText = t("tts.goalWithAssist", {
+        player: scorerName,
+        assist: args.assist.display_name,
+        score: scoreText,
+      });
+    } else {
+      ttsText = t("tts.goalScored", { player: scorerName, score: scoreText });
+    }
     enqueue({
       priority: 1,
       sound: "whistle.mp3",
-      ttsText: t("tts.goalScored", { player: scorerName, score: scoreText }),
+      ttsText,
       ttsDelay: 600,
     });
 
@@ -432,10 +490,12 @@ export default function GameNight() {
     try {
       await supabase.rpc("record_goal", {
         p_game_id: activeGameId,
-        p_player_id: player?.player_id || null,
-        p_team_captain_number: goalPickerTeam,
+        p_player_id: args.scorer?.player_id || null,
+        p_team_captain_number: args.team,
         p_minute: timer.currentMinute,
         p_period: timer.currentPeriod,
+        p_assist_player_id: args.assist?.player_id || null,
+        p_is_own_goal: args.isOwnGoal,
       });
     } catch (err) {
       console.error("Error recording goal:", err);
@@ -1012,6 +1072,72 @@ export default function GameNight() {
                     className="w-full p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors text-center text-white/50 text-sm"
                   >
                     {t("goals.unknown")}
+                  </button>
+                  <button
+                    onClick={handleOwnGoal}
+                    className="w-full p-3 bg-red-500/15 border border-red-400/30 rounded-xl hover:bg-red-500/25 transition-colors text-center text-red-300 text-sm font-medium"
+                  >
+                    {t("goals.ownGoal")}
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+
+          {/* ===== ASSIST PICKER ===== */}
+          {view === "assist_picker" && pendingScorer !== null && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/70 z-40"
+                onClick={() => { setPendingScorer(null); setView("active_game"); }}
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-purple-900 border-t border-white/10 rounded-t-2xl max-h-[60vh] flex flex-col"
+              >
+                <div className="flex items-center justify-between p-4 border-b border-white/10">
+                  <h3 className="text-lg font-bold text-white">{t("goals.selectAssist")}</h3>
+                  <button
+                    onClick={() => { setPendingScorer(null); setView("active_game"); }}
+                    className="p-2 text-white/60 hover:text-white"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                  {getTeamPlayers(pendingScorer.team)
+                    .filter((p) => p.id !== pendingScorer.scorer?.id)
+                    .map((player) => (
+                      <button
+                        key={player.id}
+                        onClick={() => handleAssistSelected(player)}
+                        className="w-full flex items-center gap-3 p-3 bg-black/30 border border-white/10 rounded-xl hover:bg-black/40 transition-colors text-left"
+                      >
+                        <PlayerAvatar
+                          name={player.display_name}
+                          photoUrl={player.photo_url}
+                          size="sm"
+                          className="flex-shrink-0"
+                        />
+                        <span className="text-white font-medium text-sm flex-1 truncate">
+                          {player.display_name}
+                        </span>
+                        {player.is_captain && (
+                          <Crown className="h-4 w-4 text-yellow-400 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  <button
+                    onClick={() => handleAssistSelected(null)}
+                    className="w-full p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors text-center text-white/70 text-sm font-medium"
+                  >
+                    {t("goals.noAssist")}
                   </button>
                 </div>
               </motion.div>

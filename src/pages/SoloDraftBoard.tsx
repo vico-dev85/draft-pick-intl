@@ -932,10 +932,32 @@ export default function SoloDraftBoard() {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="mt-3 flex-1 lg:grid lg:grid-cols-[1fr,320px] lg:gap-4 xl:grid-cols-[1fr,380px]">
-                {/* Available Players Pool (droppable — for returning players) */}
+              <div className="mt-3 flex-1 flex flex-col lg:grid lg:grid-cols-[1fr,320px] lg:gap-4 xl:grid-cols-[1fr,380px]">
+                {/* Teams — TOP on mobile (sticky for visibility while scrolling pool),
+                    RIGHT sidebar on desktop. Drop targets always above the fold. */}
+                <div className="lg:order-2 sticky top-2 z-10 bg-background/95 backdrop-blur-sm rounded-xl px-2 py-2 lg:static lg:bg-transparent lg:backdrop-blur-0 lg:p-0 lg:rounded-none">
+                  <div className={`grid ${getTeamGridClass(numTeams)} gap-2 lg:grid-cols-1 lg:gap-3`}>
+                    {teams.map((team) => (
+                      <DroppableTeamZone
+                        key={team.number}
+                        teamNumber={team.number}
+                        captainName={team.captainName}
+                        captainPhotoUrl={team.captainPhotoUrl}
+                        players={team.players}
+                        isActive={false}
+                        totalPlayersInDraft={totalPicks}
+                        numTeams={numTeams}
+                        onPlayerClick={handleUnassignPlayer}
+                        draggable
+                        hideCaptainChip
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Available Players Pool — BELOW teams on mobile, scrolls under sticky teams */}
                 <DroppablePoolZone>
-                  <div className="order-2 lg:order-1 mt-4 lg:mt-0 pb-20">
+                  <div className="lg:order-1 mt-4 lg:mt-0 pb-20">
                     <div className="text-base font-semibold mb-3 text-gray-800">
                       {t("solo.availablePlayers", { count: availablePlayers.length })}
                     </div>
@@ -965,27 +987,6 @@ export default function SoloDraftBoard() {
                     </div>
                   </div>
                 </DroppablePoolZone>
-
-                {/* Teams sidebar — droppable zones */}
-                <div className="order-1 lg:order-2">
-                  <div className={`grid ${getTeamGridClass(numTeams)} gap-2 lg:grid-cols-1 lg:gap-3`}>
-                    {teams.map((team) => (
-                      <DroppableTeamZone
-                        key={team.number}
-                        teamNumber={team.number}
-                        captainName={team.captainName}
-                        captainPhotoUrl={team.captainPhotoUrl}
-                        players={team.players}
-                        isActive={false}
-                        totalPlayersInDraft={totalPicks}
-                        numTeams={numTeams}
-                        onPlayerClick={handleUnassignPlayer}
-                        draggable
-                        hideCaptainChip
-                      />
-                    ))}
-                  </div>
-                </div>
               </div>
 
               {/* Drag overlay — floating ghost chip */}

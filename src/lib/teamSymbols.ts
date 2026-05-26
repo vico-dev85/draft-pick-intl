@@ -36,6 +36,14 @@ export function getTeamSymbolUrl(animalKey: AnimalKey): string {
   return `/assets/teams/${animalKey}.webp`;
 }
 
+/**
+ * Compact icon variant (no ribbon, cropped tight on the shield).
+ * Use for small/inline contexts: badges, scoreboard tiles, standings rows.
+ */
+export function getTeamSymbolIconUrl(animalKey: AnimalKey): string {
+  return `/assets/teams/${animalKey}-icon.webp`;
+}
+
 /** Convenience: resolve directly from room code + team number. */
 export function getTeamSymbolUrlForRoom(
   roomCode: string | null | undefined,
