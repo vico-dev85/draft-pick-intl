@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useGameTimer } from "@/hooks/useGameTimer";
 import { useAnnouncementQueue } from "@/hooks/useAnnouncementQueue";
 import { getCaptainColor, getCaptainLabel, getTeamGridClass } from "@/lib/draftUtils";
+import { getTeamDisplayName } from "@/lib/captainHelpers";
+import { TeamSymbol } from "@/components/TeamSymbol";
 import { getCaptainPlayerId, getNumTeams } from "@/lib/captainHelpers";
 import { toggleMute, isMuted } from "@/lib/sounds";
 import {
@@ -175,13 +177,17 @@ export default function GameNight() {
   // Announcements
   const { enqueue, clear: clearAnnouncements } = useAnnouncementQueue();
 
-  // Team name helper
+  // Team name helper — returns the full display name like "John's Foxes"
   const getTeamName = useCallback(
     (captainNumber: number) => {
       const team = teams.find((t) => t.captainNumber === captainNumber);
-      return team?.captainName || getCaptainLabel(captainNumber);
+      const captainName = team?.captainName;
+      if (summary?.room_code) {
+        return getTeamDisplayName(summary.room_code, captainNumber, captainName);
+      }
+      return captainName || getCaptainLabel(captainNumber);
     },
-    [teams]
+    [teams, summary?.room_code]
   );
 
   // Timer
@@ -707,17 +713,17 @@ export default function GameNight() {
                           : `bg-black/30 border-white/20`
                       }`}
                     >
-                      <div
-                        className={`w-12 h-12 mx-auto rounded-full ${getCaptainColor(captainNum)} flex items-center justify-center mb-2`}
-                      >
-                        {team?.captainPhoto ? (
-                          <img src={team.captainPhoto} className="w-12 h-12 rounded-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold">{captainNum}</span>
-                        )}
+                      <div className="flex justify-center mb-2">
+                        <TeamSymbol
+                          roomCode={summary.room_code}
+                          teamNumber={captainNum}
+                          captainName={team?.captainName}
+                          size={56}
+                          variant="badge"
+                        />
                       </div>
                       <p className="text-white font-medium text-sm truncate">
-                        {team?.captainName || getCaptainLabel(captainNum)}
+                        {getTeamName(captainNum)}
                       </p>
                       <p className="text-white/40 text-xs mt-1">
                         {isResting ? t("preGame.resting") : idx === 0 ? t("preGame.home") : t("preGame.away")}
@@ -796,8 +802,14 @@ export default function GameNight() {
               <div className="flex items-center justify-center gap-4">
                 {/* Team A */}
                 <div className="flex-1 text-center">
-                  <div className={`w-10 h-10 mx-auto rounded-full ${getCaptainColor(teamA)} flex items-center justify-center mb-1`}>
-                    <span className="text-white font-bold text-sm">{teamA}</span>
+                  <div className="flex justify-center mb-1">
+                    <TeamSymbol
+                      roomCode={summary.room_code}
+                      teamNumber={teamA}
+                      captainName={teams.find((t) => t.captainNumber === teamA)?.captainName}
+                      size={56}
+                      variant="badge"
+                    />
                   </div>
                   <p className="text-white font-medium text-sm truncate">{getTeamName(teamA)}</p>
                 </div>
@@ -811,8 +823,14 @@ export default function GameNight() {
 
                 {/* Team B */}
                 <div className="flex-1 text-center">
-                  <div className={`w-10 h-10 mx-auto rounded-full ${getCaptainColor(teamB)} flex items-center justify-center mb-1`}>
-                    <span className="text-white font-bold text-sm">{teamB}</span>
+                  <div className="flex justify-center mb-1">
+                    <TeamSymbol
+                      roomCode={summary.room_code}
+                      teamNumber={teamB}
+                      captainName={teams.find((t) => t.captainNumber === teamB)?.captainName}
+                      size={56}
+                      variant="badge"
+                    />
                   </div>
                   <p className="text-white font-medium text-sm truncate">{getTeamName(teamB)}</p>
                 </div>

@@ -1,11 +1,12 @@
 import { forwardRef } from "react";
+import { TeamSymbol } from "@/components/TeamSymbol";
 
 const TEAM_OVERLAY: Record<number, string> = {
-  1: "rgba(37, 99, 235, 0.35)",
-  2: "rgba(220, 38, 38, 0.35)",
-  3: "rgba(217, 119, 6, 0.35)",
-  4: "rgba(22, 163, 74, 0.35)",
-  5: "rgba(219, 39, 119, 0.35)",
+  1: "rgba(37, 99, 235, 0.32)",
+  2: "rgba(220, 38, 38, 0.32)",
+  3: "rgba(217, 119, 6, 0.32)",
+  4: "rgba(22, 163, 74, 0.32)",
+  5: "rgba(219, 39, 119, 0.32)",
 };
 
 const TEAM_COLORS: Record<number, string> = {
@@ -16,7 +17,6 @@ const TEAM_COLORS: Record<number, string> = {
   5: "#EC4899",
 };
 
-// Deterministic color from name for placeholder avatars
 const AVATAR_BG_COLORS = [
   "#6D28D9", "#2563EB", "#DC2626", "#D97706",
   "#16A34A", "#DB2777", "#0891B2", "#4F46E5",
@@ -26,54 +26,22 @@ function getAvatarBg(name: string): string {
   return AVATAR_BG_COLORS[hash % AVATAR_BG_COLORS.length];
 }
 
-type FormationPlayer = { id: string; display_name: string; photo_url?: string | null; isCaptain?: boolean };
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function getFormationRows(
-  captainName: string,
-  captainPhoto: string | null | undefined,
-  pickedPlayers: { id: string; display_name: string; photo_url?: string | null }[],
-  isSoloDraft: boolean,
-): FormationPlayer[][] {
-  const captain: FormationPlayer = { id: "__captain__", display_name: captainName, photo_url: captainPhoto, isCaptain: true };
-  const allPlayers: FormationPlayer[] = isSoloDraft
-    ? pickedPlayers.map(p => ({ ...p }))
-    : [captain, ...pickedPlayers.map(p => ({ ...p }))];
-
-  const n = allPlayers.length;
-  if (n <= 1) return [allPlayers];
-
-  const frontRow = allPlayers.slice(0, 2);
-  const remaining = allPlayers.slice(2);
-
-  if (remaining.length === 0) return [frontRow];
-
-  const shuffled = shuffle(remaining);
-
-  if (shuffled.length <= 4) {
-    return [shuffled, frontRow];
-  }
-  const mid = Math.ceil(shuffled.length / 2);
-  return [shuffled.slice(0, mid), shuffled.slice(mid), frontRow];
-}
+type RosterPlayer = { id: string; display_name: string; photo_url?: string | null; isCaptain?: boolean };
 
 interface Team {
   number: number;
+  /** Captain's actual name — used for the captain avatar label */
   name: string;
+  /** Full team display name with animal — "John's Sharks" / "כרישי יוסי" */
+  displayName?: string;
   photoUrl?: string | null;
   players: { id: string; display_name: string; photo_url?: string | null }[];
 }
 
 interface ShareCardProps {
   draftName: string;
+  /** Room code — drives the deterministic per-team animal pick. */
+  roomCode: string;
   teams: Team[];
   location?: string | null;
   notes?: string | null;
@@ -82,7 +50,6 @@ interface ShareCardProps {
   clubLogoUrl?: string | null;
 }
 
-/** Inline SVG silhouette for players without photos */
 function SilhouetteAvatar({ size, bgColor }: { size: number; bgColor: string }) {
   const iconSize = Math.round(size * 0.55);
   return (
@@ -94,8 +61,8 @@ function SilhouetteAvatar({ size, bgColor }: { size: number; bgColor: string }) 
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-      border: "2px solid rgba(255,255,255,0.9)",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.55)",
+      border: "3px solid rgba(255,255,255,0.94)",
       overflow: "hidden",
     }}>
       <svg
@@ -105,23 +72,183 @@ function SilhouetteAvatar({ size, bgColor }: { size: number; bgColor: string }) 
         fill="none"
         style={{ marginTop: Math.round(size * 0.12) }}
       >
-        <circle cx="12" cy="8" r="5" fill="rgba(255,255,255,0.8)" />
-        <path d="M2 26c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="rgba(255,255,255,0.6)" />
+        <circle cx="12" cy="8" r="5" fill="rgba(255,255,255,0.88)" />
+        <path d="M2 26c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="rgba(255,255,255,0.7)" />
       </svg>
     </div>
   );
 }
 
+/** Captain first in the roster — gets placed at the FWD center spot. */
+function getRoster(
+  captainName: string,
+  captainPhoto: string | null | undefined,
+  pickedPlayers: { id: string; display_name: string; photo_url?: string | null }[],
+  isSoloDraft: boolean,
+): RosterPlayer[] {
+  if (isSoloDraft) return pickedPlayers.map(p => ({ ...p }));
+  return [
+    { id: "__captain__", display_name: captainName, photo_url: captainPhoto, isCaptain: true },
+    ...pickedPlayers.map(p => ({ ...p })),
+  ];
+}
+
+interface PositionedPlayer extends RosterPlayer {
+  /** 0-100 from left */
+  x: number;
+  /** 0-100 from top — pitch has GOAL AT BOTTOM, so 0% is the center line and 100% is the goal */
+  y: number;
+}
+
+/**
+ * Player coordinates per roster size. Designed from user mockups using the
+ * new FULL pitch (9:16 portrait, both goals visible, center circle in middle).
+ *   - Team's OWN goal at BOTTOM, attacking UPWARD toward top goal
+ *   - Players occupy UPPER HALF of pitch (their attacking territory)
+ *   - Lower half (Y > 50%) shows opposing side, intentionally empty
+ *   - No goalkeeper (5-a-side casual convention)
+ *   - First position in each array = most attacking slot, captain goes there
+ *   - Y: 0% = top of pitch (opposing goal), 100% = bottom (own goal)
+ */
+function getPositions(n: number): { x: number; y: number }[] {
+  switch (n) {
+    case 1:
+      return [{ x: 50, y: 25 }];
+    case 2:
+      return [{ x: 35, y: 22 }, { x: 65, y: 22 }];
+    case 3:
+      return [{ x: 50, y: 16 }, { x: 32, y: 38 }, { x: 68, y: 38 }];
+    case 4:
+      // 1-2-1 diamond stretched across full pitch
+      return [
+        { x: 50, y: 15 }, // forward (captain)
+        { x: 22, y: 48 }, // left mid
+        { x: 78, y: 48 }, // right mid
+        { x: 50, y: 82 }, // back
+      ];
+    case 5:
+      // 2-3, both lines pushed slightly forward
+      return [
+        { x: 35, y: 32 }, // left fwd (captain)
+        { x: 65, y: 32 }, // right fwd
+        { x: 15, y: 62 }, // left back (wider)
+        { x: 50, y: 62 }, // center back
+        { x: 85, y: 62 }, // right back (wider)
+      ];
+    case 6:
+      // 2-2-2 stretched
+      return [
+        { x: 35, y: 15 }, // left fwd (captain)
+        { x: 65, y: 15 },
+        { x: 30, y: 48 },
+        { x: 70, y: 48 },
+        { x: 30, y: 80 },
+        { x: 70, y: 80 },
+      ];
+    case 7:
+      // 2-3-2 stretched
+      return [
+        { x: 35, y: 14 },
+        { x: 65, y: 14 },
+        { x: 20, y: 48 },
+        { x: 50, y: 48 },
+        { x: 80, y: 48 },
+        { x: 32, y: 82 },
+        { x: 68, y: 82 },
+      ];
+    case 8:
+      // 3-2-3 stretched
+      return [
+        { x: 28, y: 14 },
+        { x: 50, y: 14 },
+        { x: 72, y: 14 },
+        { x: 30, y: 48 },
+        { x: 70, y: 48 },
+        { x: 22, y: 82 },
+        { x: 50, y: 82 },
+        { x: 78, y: 82 },
+      ];
+    default:
+      // Fallback for 9+: 3 rows in upper half
+      return Array.from({ length: n }, (_, i) => {
+        const row = Math.floor(i / 3);
+        const colInRow = i % 3;
+        const colsThisRow = Math.min(3, n - row * 3);
+        const xStart = 50 - (colsThisRow - 1) * 25;
+        return {
+          x: xStart + colInRow * 50 / Math.max(1, colsThisRow - 1 || 1),
+          y: 14 + row * 16,
+        };
+      });
+  }
+}
+
+/** Captain (roster[0]) takes the first position — the most attacking slot. */
+function positionPlayers(roster: RosterPlayer[]): PositionedPlayer[] {
+  const coords = getPositions(roster.length);
+  return roster.map((p, i) => ({ ...p, x: coords[i].x, y: coords[i].y }));
+}
+
+/**
+ * 1080×1350 portrait. Three portrait pitches side-by-side at proper 3:4 aspect.
+ * Players placed in realistic GK/DEF/MID/FWD layers.
+ */
+function getLayout(numTeams: number, hasClub: boolean) {
+  const cardWidth = 1080;
+  const cardHeight = 1080;
+  const headerHeight = 72;
+  const draftNameBlock = 80;
+  // Symbol block replaces the old text-only "Team Name" banner.
+  // Bigger so the TeamSymbol logo + embedded text zone are legible.
+  const symbolSize =
+    numTeams <= 2 ? 200 :
+    numTeams === 3 ? 160 :
+    numTeams === 4 ? 120 :
+    100;
+  const symbolBlock = symbolSize + 8; // symbol + small gap below
+  const footerBlock = 54;
+  const clubCTABlock = hasClub ? 52 + 10 : 0;
+  const bodyPaddingX = 24;
+  const teamGap = 18;
+
+  // Pitch is 9:16 portrait. Bound by width allocation OR available vertical
+  // space — pick the smaller.
+  const innerWidth = cardWidth - 2 * bodyPaddingX;
+  const pitchByWidth = Math.floor((innerWidth - teamGap * (numTeams - 1)) / numTeams);
+  const availableHeight = cardHeight - headerHeight - 4 - draftNameBlock - symbolBlock - footerBlock - clubCTABlock - 32;
+  const pitchByHeightWidth = Math.floor(availableHeight * 9 / 16);
+  const pitchWidth = Math.min(pitchByWidth, pitchByHeightWidth);
+  const pitchHeight = Math.floor(pitchWidth * 16 / 9);
+
+  // Avatar size scaled to pitch — kept compact so the formation has room to breathe
+  const avatarSize =
+    numTeams <= 2 ? Math.floor(pitchWidth * 0.17) :
+    numTeams === 3 ? Math.floor(pitchWidth * 0.18) :
+    Math.floor(pitchWidth * 0.20);
+
+  const nameFontSize =
+    numTeams <= 2 ? 23 :
+    numTeams === 3 ? 20 :
+    numTeams === 4 ? 15 :
+    13;
+
+  const teamHeaderSize =
+    numTeams <= 2 ? 24 :
+    numTeams === 3 ? 20 :
+    16;
+
+  return {
+    cardWidth, cardHeight, headerHeight, draftNameBlock,
+    symbolSize, symbolBlock, footerBlock, clubCTABlock,
+    bodyPaddingX, pitchWidth, pitchHeight, teamGap,
+    avatarSize, nameFontSize, teamHeaderSize,
+  };
+}
+
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
-  ({ draftName, teams, location, isSoloDraft, clubName, clubLogoUrl }, ref) => {
+  ({ draftName, roomCode, teams, location, isSoloDraft, clubName, clubLogoUrl }, ref) => {
     const numTeams = teams.length;
-    const cardWidth = numTeams === 3 ? 720 : 600;
-    const pitchWidth = numTeams === 3 ? 210 : 260;
-    const pitchHeight = numTeams === 3 ? 310 : 360;
-    const avatarSize = numTeams === 3 ? 34 : 40;
-    const fontSize = numTeams === 3 ? 10 : 11;
-    // Team name font — smaller for 3 teams so it doesn't truncate
-    const teamNameSize = 13;
+    const L = getLayout(numTeams, !!clubName);
 
     return (
       <div
@@ -130,54 +257,66 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           position: "absolute",
           left: "-9999px",
           top: 0,
-          width: cardWidth,
+          width: L.cardWidth,
+          height: L.cardHeight,
           fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
           background: "#0a0a1a",
           overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        {/* 1. White header */}
+        {/* Header (white) */}
         <div style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "12px 20px",
+          padding: "16px 32px",
           background: "#ffffff",
+          height: L.headerHeight,
+          boxSizing: "border-box",
+          flexShrink: 0,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img
-              src="/logo.png"
-              alt=""
-              crossOrigin="anonymous"
-              style={{ height: 22 }}
-            />
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <img src="/logo.png" alt="" crossOrigin="anonymous" style={{ height: 32 }} />
             {clubLogoUrl && (
               <>
-                <div style={{ width: 1, height: 18, background: "rgba(0,0,0,0.15)" }} />
+                <div style={{ width: 1, height: 28, background: "rgba(0,0,0,0.15)" }} />
                 <img
                   src={clubLogoUrl}
                   alt=""
                   crossOrigin="anonymous"
-                  style={{ height: 24, width: 24, borderRadius: 4, objectFit: "cover" }}
+                  style={{ height: 36, width: 36, borderRadius: 6, objectFit: "cover" }}
                 />
+                {clubName && (
+                  <div style={{
+                    color: "rgba(0,0,0,0.78)",
+                    fontSize: 16,
+                    fontWeight: 800,
+                    letterSpacing: "-0.01em",
+                  }}>
+                    {clubName}
+                  </div>
+                )}
               </>
             )}
           </div>
           {location && (
-            <div style={{ color: "rgba(0,0,0,0.5)", fontSize: 11, fontWeight: 500 }}>
+            <div style={{ color: "rgba(0,0,0,0.55)", fontSize: 15, fontWeight: 600 }}>
               {location}
             </div>
           )}
         </div>
 
-        {/* 6. Purple accent line under header */}
+        {/* Purple accent line */}
         <div style={{
-          height: 3,
+          height: 4,
           background: "linear-gradient(90deg, #7C3AED, #a855f7, #7C3AED)",
+          flexShrink: 0,
         }} />
 
-        {/* Body — stadium background */}
-        <div style={{ position: "relative" }}>
+        {/* Body */}
+        <div style={{ position: "relative", flex: 1, overflow: "hidden" }}>
           <img
             src="/assets/bg/share-stadium.jpg"
             alt=""
@@ -192,250 +331,195 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           />
           <div style={{
             position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-            background: "linear-gradient(180deg, rgba(10,10,26,0.5) 0%, rgba(10,10,26,0.7) 40%, rgba(10,10,26,0.6) 100%)",
+            background: "linear-gradient(180deg, rgba(10,10,26,0.58) 0%, rgba(10,10,26,0.78) 50%, rgba(10,10,26,0.65) 100%)",
           }} />
 
-          <div style={{ position: "relative" }}>
-            {/* 4. Draft name — bigger & bolder */}
-            <div style={{
-              textAlign: "center",
-              padding: "20px 20px 14px",
-            }}>
+          <div style={{
+            position: "relative",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            padding: `16px ${L.bodyPaddingX}px 16px`,
+            boxSizing: "border-box",
+          }}>
+            {/* Draft name */}
+            <div style={{ textAlign: "center", marginBottom: 56, flexShrink: 0 }}>
               <div style={{
                 color: "#fff",
-                fontSize: 26,
+                fontSize: 44,
                 fontWeight: 900,
                 letterSpacing: "-0.02em",
-                textShadow: "0 2px 16px rgba(0,0,0,0.6)",
+                textShadow: "0 2px 20px rgba(0,0,0,0.7)",
+                lineHeight: 1.05,
               }}>
                 {draftName}
               </div>
             </div>
 
-            {/* Pitches */}
+            {/* Pitches row */}
             <div style={{
               display: "flex",
               justifyContent: "center",
-              gap: numTeams === 3 ? 8 : 14,
-              padding: `0 ${numTeams === 3 ? 12 : 20}px 16px`,
+              alignItems: "flex-start",
+              gap: L.teamGap,
+              flexShrink: 0,
             }}>
               {teams.map((team) => {
                 const teamColor = TEAM_COLORS[team.number] || TEAM_COLORS[1];
                 const overlay = TEAM_OVERLAY[team.number] || TEAM_OVERLAY[1];
-                const formationRows = getFormationRows(team.name, team.photoUrl, team.players, !!isSoloDraft);
+                const roster = getRoster(team.name, team.photoUrl, team.players, !!isSoloDraft);
+                const positioned = positionPlayers(roster);
 
                 return (
-                  <div key={team.number} style={{ width: pitchWidth }}>
-                    {/* 1. Team name — adjusted font for 3-team */}
+                  <div key={team.number} style={{ width: L.pitchWidth, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    {/* Team symbol — logo with team name in the dedicated text zone */}
                     <div style={{
-                      textAlign: "center",
-                      marginBottom: 6,
-                      color: teamColor,
-                      fontSize: teamNameSize,
-                      fontWeight: 800,
-                      textShadow: `0 1px 8px rgba(0,0,0,0.6)`,
-                      letterSpacing: "0.03em",
-                      padding: "0 4px",
+                      width: "100%",
+                      height: L.symbolBlock,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}>
-                      {isSoloDraft ? team.name : `Team ${team.name}`}
+                      <TeamSymbol
+                        roomCode={roomCode}
+                        teamNumber={team.number}
+                        captainName={team.name}
+                        displayNameOverride={team.displayName}
+                        size={L.symbolSize}
+                        variant="with-name"
+                        forCanvas
+                      />
                     </div>
 
-                    {/* Half pitch */}
+                    {/* Pitch (proper 3:4) */}
                     <div style={{
                       position: "relative",
-                      width: pitchWidth,
-                      height: pitchHeight,
+                      width: L.pitchWidth,
+                      height: L.pitchHeight,
+                      borderRadius: 14,
+                      overflow: "hidden",
+                      border: `3px solid ${teamColor}`,
+                      boxShadow: `0 8px 28px ${teamColor}55`,
                     }}>
-                      {/* 7. Brighter pitch border */}
-                      <div style={{
-                        position: "absolute",
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        borderRadius: 10,
-                        overflow: "hidden",
-                        border: `2px solid ${teamColor}90`,
-                        boxShadow: `0 4px 24px ${teamColor}40`,
-                      }}>
-                        <img
-                          src="/assets/bg/pitch-half.jpg"
-                          alt=""
-                          crossOrigin="anonymous"
+                      <img
+                        src="/assets/bg/pitch-full.png"
+                        alt=""
+                        crossOrigin="anonymous"
+                        style={{
+                          position: "absolute",
+                          top: 0, left: 0,
+                          width: "100%", height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: overlay }} />
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.18)" }} />
+
+                      {/* Players in positioned layers */}
+                      {positioned.map((player) => (
+                        <div
+                          key={player.id}
                           style={{
                             position: "absolute",
-                            top: 0, left: 0,
-                            width: "100%", height: "100%",
-                            objectFit: "cover",
+                            left: `${player.x}%`,
+                            top: `${player.y}%`,
+                            transform: "translate(-50%, -50%)",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 0,
+                            width: L.avatarSize + 36,
                           }}
-                        />
-                        <div style={{
-                          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-                          background: overlay,
-                        }} />
-                        <div style={{
-                          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-                          background: "rgba(0,0,0,0.15)",
-                        }} />
-                      </div>
-
-                      {/* Formation */}
-                      <div style={{
-                        position: "relative",
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-evenly",
-                        padding: "10px 4px 16px",
-                      }}>
-                        {[...formationRows].reverse().map((row, rowIdx, allRows) => {
-                          const isFrontRow = rowIdx === allRows.length - 1;
-                          return (
-                          <div
-                            key={rowIdx}
-                            style={{
-                              display: "flex",
-                              justifyContent: isFrontRow ? "space-evenly" : "center",
-                              gap: isFrontRow ? undefined : 0,
-                              alignItems: "center",
-                            }}
-                          >
-                            {row.map((player) => (
-                              <div
-                                key={player.id}
+                        >
+                          <div style={{ position: "relative" }}>
+                            {player.photo_url ? (
+                              <img
+                                src={player.photo_url}
+                                alt=""
+                                crossOrigin="anonymous"
                                 style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  gap: 2,
-                                  width: avatarSize + 20,
-                                  position: "relative",
+                                  width: L.avatarSize,
+                                  height: L.avatarSize,
+                                  borderRadius: "50%",
+                                  objectFit: "cover",
+                                  boxShadow: "0 3px 12px rgba(0,0,0,0.65)",
+                                  border: "3px solid rgba(255,255,255,0.95)",
                                 }}
-                              >
-                                {/* 3. Avatar — photo or silhouette placeholder */}
-                                <div style={{ position: "relative" }}>
-                                  {player.photo_url ? (
-                                    <img
-                                      src={player.photo_url}
-                                      alt=""
-                                      crossOrigin="anonymous"
-                                      style={{
-                                        width: avatarSize,
-                                        height: avatarSize,
-                                        borderRadius: "50%",
-                                        objectFit: "cover",
-                                        boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-                                        border: "2px solid rgba(255,255,255,0.9)",
-                                      }}
-                                    />
-                                  ) : (
-                                    <SilhouetteAvatar
-                                      size={avatarSize}
-                                      bgColor={getAvatarBg(player.display_name)}
-                                    />
-                                  )}
-                                  {/* C badge */}
-                                  {player.isCaptain && (
-                                    <div style={{
-                                      position: "absolute",
-                                      bottom: -2,
-                                      right: -4,
-                                      width: 15,
-                                      height: 15,
-                                      borderRadius: "50%",
-                                      background: "#FBBF24",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      color: "#78350f",
-                                      fontSize: 8,
-                                      fontWeight: 900,
-                                      lineHeight: 1,
-                                      border: "1.5px solid #fff",
-                                      boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                                      paddingBottom: 12,
-                                    }}>
-                                      C
-                                    </div>
-                                  )}
-                                </div>
-                                {/* Name pill */}
-                                <div style={{
-                                  color: "#fff",
-                                  fontSize: fontSize,
-                                  fontWeight: 700,
-                                  textAlign: "center",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  maxWidth: avatarSize + 36,
-                                  lineHeight: 1.1,
-                                  background: "rgba(0,0,0,0.65)",
-                                  padding: "0px 5px 10px",
-                                  borderRadius: 5,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}>
-                                  {player.display_name.length > 12
-                                    ? player.display_name.slice(0, 11) + "\u2026"
-                                    : player.display_name}
-                                </div>
+                              />
+                            ) : (
+                              <SilhouetteAvatar
+                                size={L.avatarSize}
+                                bgColor={getAvatarBg(player.display_name)}
+                              />
+                            )}
+                            {player.isCaptain && (
+                              <div style={{
+                                position: "absolute",
+                                bottom: -3,
+                                right: -5,
+                                width: Math.round(L.avatarSize * 0.34),
+                                height: Math.round(L.avatarSize * 0.34),
+                                borderRadius: "50%",
+                                background: "#FBBF24",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#78350f",
+                                fontSize: Math.round(L.avatarSize * 0.22),
+                                fontWeight: 900,
+                                lineHeight: 1,
+                                border: "2px solid #fff",
+                                boxShadow: "0 1px 5px rgba(0,0,0,0.6)",
+                                paddingBottom: Math.round(L.avatarSize * 0.14),
+                              }}>
+                                C
                               </div>
-                            ))}
+                            )}
                           </div>
-                          );
-                        })}
-                      </div>
+                          <div style={{
+                            color: "#fff",
+                            fontFamily: "'Rubik', 'Inter', system-ui, sans-serif",
+                            fontSize: L.nameFontSize,
+                            fontWeight: 600,
+                            letterSpacing: "0.04em",
+                            textAlign: "center",
+                            marginTop: -2,
+                            whiteSpace: "nowrap",
+                            overflow: "visible",
+                            maxWidth: L.avatarSize + 80,
+                            lineHeight: 1.1,
+                          }}>
+                            {player.display_name.length > 12
+                              ? player.display_name.slice(0, 11) + "…"
+                              : player.display_name}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </div>
 
-        {/* Club invite CTA */}
-        {clubName && (
-          <div style={{
-            margin: "0 20px 6px",
-            padding: "7px 14px",
-            borderRadius: 8,
-            background: "rgba(163, 230, 53, 0.08)",
-            border: "1px solid rgba(163, 230, 53, 0.2)",
-            textAlign: "center",
-          }}>
+            {/* Spacer pushes club CTA + footer to bottom */}
+            <div style={{ flex: 1, minHeight: 16 }} />
+
+            {/* Footer — subtle brand mark only */}
             <div style={{
-              color: "rgba(255,255,255,0.6)",
-              fontSize: 11,
-              fontWeight: 500,
-              lineHeight: 1.4,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              paddingTop: 10,
             }}>
-              Part of this group? Join{" "}
-              <span style={{ color: "#a3e635", fontWeight: 700 }}>{clubName}</span>
-              {" "}on{" "}
-              <span style={{ color: "#a3e635", fontWeight: 700 }}>picknkick.com</span>
+              <div style={{
+                color: "rgba(255,255,255,0.5)",
+                fontSize: 15,
+                fontWeight: 700,
+              }}>
+                picknkick.com
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* 5. Footer — action CTA */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: clubName ? "6px 20px 12px" : "10px 20px 12px",
-        }}>
-          <div style={{
-            color: "#a3e635",
-            fontSize: 12,
-            fontWeight: 700,
-          }}>
-            Draft your own teams →
-          </div>
-          <div style={{
-            color: "rgba(255,255,255,0.4)",
-            fontSize: 11,
-            fontWeight: 600,
-          }}>
-            picknkick.com
           </div>
         </div>
       </div>

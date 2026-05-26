@@ -112,7 +112,10 @@ export default function SoloDraftBoard() {
 
   // Step management
   const [step, setStep] = useState<SoloStep>("select");
-  const [buildMode, setBuildMode] = useState<BuildMode>("draft");
+  // Solo draft is drag-and-drop only. The "draft" snake-pick mode is still
+  // implemented below but no longer reachable from the UI.
+  const [buildMode, setBuildMode] = useState<BuildMode>("free");
+  void setBuildMode;
 
   // Player selection state (step: select)
   const [allPlayers, setAllPlayers] = useState<SoloPlayer[]>([]);
@@ -483,6 +486,30 @@ export default function SoloDraftBoard() {
 
       if (error) throw error;
 
+      // Auto-set each team's captain to its first-picked non-guest player.
+      // This unlocks the "John's Sharks" team naming. Owner can override via
+      // Results page later if they don't like the auto-pick.
+      const firstPickByTeam = new Map<number, string>();
+      [...players]
+        .filter((p) => p.teamNumber !== null && !p.isGuest && p.pickOrder !== null)
+        .sort((a, b) => (a.pickOrder ?? 0) - (b.pickOrder ?? 0))
+        .forEach((p) => {
+          if (p.teamNumber !== null && !firstPickByTeam.has(p.teamNumber)) {
+            firstPickByTeam.set(p.teamNumber, p.id);
+          }
+        });
+
+      const captainsArray = Array.from({ length: numTeams }, (_, i) =>
+        firstPickByTeam.get(i + 1) ?? null
+      );
+
+      if (captainsArray.some((c) => c !== null)) {
+        await supabase
+          .from("draft_rooms")
+          .update({ captains: captainsArray })
+          .eq("room_code", roomCode);
+      }
+
       navigate(`/results/${roomCode}`);
     } catch (err) {
       console.error("Error saving solo draft:", err);
@@ -821,49 +848,14 @@ export default function SoloDraftBoard() {
         </header>
 
         <main className="flex-1 px-3 py-2 flex flex-col lg:px-6 lg:py-3">
-          {/* Mode Toggle */}
-          <div className="flex rounded-lg bg-gray-200 p-1 mb-3">
-            <button
-              onClick={() => handleModeSwitch("draft")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                buildMode === "draft"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {t("solo.modeDraft")}
-            </button>
-            <button
-              onClick={() => handleModeSwitch("free")}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                buildMode === "free"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {t("solo.modeFree")}
-            </button>
+          {/* Hint banner */}
+          <div className={`text-center py-2 px-4 rounded-lg mb-1 ${
+            allAssigned
+              ? "bg-green-100 text-green-700 font-medium"
+              : "bg-gray-200 text-gray-600"
+          }`}>
+            {allAssigned ? t("solo.allAssigned") : t("solo.dragHint")}
           </div>
-
-          {/* Turn Banner / Hint */}
-          {buildMode === "draft" ? (
-            <TurnBanner
-              captainNumber={currentCaptainNumber}
-              captainName={t("solo.team", { number: currentCaptainNumber })}
-              isMyTurn={true}
-              soloTeamLabel={t("solo.pickingFor", { number: currentCaptainNumber })}
-            />
-          ) : (
-            <div className={`text-center py-2 px-4 rounded-lg mb-1 ${
-              allAssigned
-                ? "bg-green-100 text-green-700 font-medium"
-                : "bg-gray-200 text-gray-600"
-            }`}>
-              {allAssigned
-                ? t("solo.allAssigned")
-                : t("solo.dragHint")}
-            </div>
-          )}
 
           {/* Progress Bar */}
           <div className="mt-2 flex items-center gap-2">

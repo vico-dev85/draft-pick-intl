@@ -23,13 +23,13 @@ interface PlayerAvatarProps {
   className?: string;
 }
 
-// Oval sizes for photos (width × height, ~1:1.35 ratio)
+// Round sizes for photos (square 1:1, with border-radius full → circle)
 const ovalSizes: Record<string, { w: number; h: number }> = {
-  xs: { w: 24, h: 32 },
-  sm: { w: 32, h: 42 },
-  md: { w: 40, h: 54 },
-  lg: { w: 56, h: 76 },
-  xl: { w: 72, h: 96 },
+  xs: { w: 28, h: 28 },
+  sm: { w: 36, h: 36 },
+  md: { w: 48, h: 48 },
+  lg: { w: 64, h: 64 },
+  xl: { w: 84, h: 84 },
 };
 
 // SVG icon sizes (percentage of container width)

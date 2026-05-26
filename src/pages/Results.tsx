@@ -6,7 +6,7 @@ import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getCaptainColor, getCaptainLabel, getSecureSessionId, getTeamGridClass } from "@/lib/draftUtils";
-import { getCaptainPlayerId, getNumTeams, getAllCaptains } from "@/lib/captainHelpers";
+import { getCaptainPlayerId, getNumTeams, getAllCaptains, getTeamDisplayName } from "@/lib/captainHelpers";
 import {
   Loader2,
   Crown,
@@ -25,9 +25,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClubContext } from "@/hooks/useClubContext";
-import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 import { useTranslation } from "react-i18next";
 import { ShareCard } from "@/components/ShareCard";
+import { TeamSymbol } from "@/components/TeamSymbol";
 import html2canvas from "html2canvas";
 
 // Emoji reactions visitors can give
@@ -229,7 +229,7 @@ export default function Results() {
     let text = `🏆 ${t("share.title", { name: room.draft_name })}\n\n`;
 
     teams.forEach((team) => {
-      text += `⚽ ${team.name}:\n`;
+      text += `⚽ ${team.displayName}:\n`;
       team.players.forEach((player, idx) => {
         text += `  ${idx + 1}. ${player.display_name}\n`;
       });
@@ -246,37 +246,115 @@ export default function Results() {
     return text;
   };
 
-  const shareViaWhatsApp = () => {
-    if (!room) return;
+  const shareViaWhatsApp = async () => {
+    if (!room || !shareCardRef.current) return;
 
+    setGeneratingImage(true);
+
+    // Build a MINIMAL caption — the image carries the full team breakdown,
+    // so the text just adds context (draft name + location).
     const baseUrl = window.location.origin;
     const resultsUrl = `${baseUrl}/#/results/${room.room_code}`;
+    let message = `🏆 ${room.draft_name}`;
+    if (room.location) message += `\n📍 ${room.location}`;
+    if (room.notes) message += `\n📝 ${room.notes}`;
+    message += `\n\n⚡ ${t("share.fairTeams")}`;
 
-    let message = `🏆 *${t("share.title", { name: room.draft_name })}*\n\n`;
-
-    teams.forEach((team) => {
-      message += `⚽ *${team.name}:*\n`;
-      team.players.forEach((player, idx) => {
-        message += `${idx + 1}. ${player.display_name}\n`;
+    try {
+      // Generate the image once — used for native-share OR clipboard OR upload.
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: "#0a0a1a",
+        scale: 1.5,
+        useCORS: true,
+        logging: false,
       });
-      message += "\n";
-    });
+      const jpegBlob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/jpeg", 0.88),
+      );
 
-    if (room.location) {
-      message += `📍 ${room.location}\n`;
-    }
-    if (room.notes) {
-      message += `📝 ${room.notes}\n`;
-    }
-    if (room.location || room.notes) {
-      message += "\n";
-    }
+      const fileName = `${room.draft_name.replace(/[^a-zA-Z0-9]/g, "-")}.jpg`;
+      const file = jpegBlob ? new File([jpegBlob], fileName, { type: "image/jpeg" }) : null;
 
-    message += `📋 ${t("share.viewResults")}:\n${resultsUrl}\n\n`;
-    message += `⚡ ${t("share.fairTeams")}`;
+      // ── Path A: native share sheet (mobile) ────────────────────────────
+      // Opens WhatsApp / etc with the photo ATTACHED — no link, real image.
+      if (file && navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], text: message });
+          return; // user completed or chose a target
+        } catch (err) {
+          if ((err as Error).name === "AbortError") return; // user cancelled
+          // any other error → fall through to desktop path
+        }
+      }
 
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
+      // ── Path B: desktop — clipboard image + open WhatsApp Web ──────────
+      // We try to put the image on the clipboard (PNG, since browser clipboard
+      // image support requires PNG). If clipboard write succeeds, the user
+      // pastes (Ctrl+V) into WhatsApp Web → photo attaches.
+      let clipboardOk = false;
+      if (navigator.clipboard && typeof window.ClipboardItem !== "undefined") {
+        try {
+          const pngBlob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/png"),
+          );
+          if (pngBlob) {
+            await navigator.clipboard.write([
+              new ClipboardItem({ "image/png": pngBlob }),
+            ]);
+            clipboardOk = true;
+          }
+        } catch {
+          // clipboard.write unsupported or blocked
+        }
+      }
+
+      // Also upload to Supabase as a fallback link the user can paste/click
+      const imageUrl = jpegBlob ? await uploadShareImageBlob(jpegBlob, room.room_code) : null;
+      const linkLine = imageUrl
+        ? `\n\n📷 ${imageUrl}`
+        : `\n\n📋 ${t("share.viewResults")}:\n${resultsUrl}`;
+
+      // Open WhatsApp Web with the text message
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message + linkLine)}`;
+      window.open(whatsappUrl, "_blank");
+
+      if (clipboardOk) {
+        toast({
+          title: t("share.imageCopied") || "Image copied",
+          description:
+            t("share.imageCopiedHint") ||
+            "Paste it in WhatsApp Web (Ctrl+V) to send as a photo.",
+        });
+      }
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
+
+  /** Helper used by shareViaWhatsApp's desktop fallback. */
+  const uploadShareImageBlob = async (
+    blob: Blob,
+    roomCode: string,
+  ): Promise<string | null> => {
+    try {
+      const path = `${roomCode.toUpperCase()}.jpg`;
+      const { error } = await supabase.storage
+        .from("share-images")
+        .upload(path, blob, {
+          contentType: "image/jpeg",
+          cacheControl: "3600",
+          upsert: true,
+        });
+      if (error) {
+        console.error("Share image upload failed:", error);
+        return null;
+      }
+      const { data } = supabase.storage.from("share-images").getPublicUrl(path);
+      return data.publicUrl;
+    } catch (err) {
+      console.error("Share image upload error:", err);
+      return null;
+    }
   };
 
   const handleShareImage = async () => {
@@ -284,8 +362,8 @@ export default function Results() {
     setGeneratingImage(true);
     try {
       const canvas = await html2canvas(shareCardRef.current, {
-        backgroundColor: null,
-        scale: 2, // Retina quality
+        backgroundColor: "#0a0a1a",
+        scale: 1.5, // sharp on retina, much smaller file than scale: 2
         useCORS: true,
         logging: false,
       });
@@ -296,8 +374,8 @@ export default function Results() {
           return;
         }
 
-        const file = new File([blob], `${room.draft_name.replace(/[^a-zA-Z0-9]/g, "-")}.png`, {
-          type: "image/png",
+        const file = new File([blob], `${room.draft_name.replace(/[^a-zA-Z0-9]/g, "-")}.jpg`, {
+          type: "image/jpeg",
         });
 
         // Mobile: native share with image file; Desktop: download
@@ -321,7 +399,7 @@ export default function Results() {
           toast({ title: t("share.imageSaved") });
         }
         setGeneratingImage(false);
-      }, "image/png");
+      }, "image/jpeg", 0.88);
     } catch (err) {
       console.error("Error generating share image:", err);
       setGeneratingImage(false);
@@ -392,13 +470,22 @@ export default function Results() {
   const teams = getAllCaptains(room).map((c) => {
     const captainPlayer = players.find((p) => p.player_id === c.playerId);
     const teamPlayers = players.filter(
-      (p) => p.picked_by_captain_number === c.captainNumber
+      (p) =>
+        p.picked_by_captain_number === c.captainNumber &&
+        // In solo drafts the captain is also a picked player — exclude them
+        // here so they aren't rendered twice (once as the synthetic captain
+        // entry in ShareCard.getRoster and once as a teammate).
+        p.player_id !== c.playerId,
     );
+    const captainName = captainPlayer?.display_name ?? null;
     return {
       number: c.captainNumber,
       playerId: c.playerId,
-      name: captainPlayer?.display_name
+      // Captain's actual name (used for the captain avatar label inside the pitch)
+      name: captainName
         || (isSoloDraft ? t("team", { captain: c.captainNumber }) : getCaptainLabel(c.captainNumber)),
+      // Team's display name with animal — "John's Sharks" / "כרישי יוסי"
+      displayName: getTeamDisplayName(room.room_code, c.captainNumber, captainName),
       photoUrl: captainPlayer?.photo_url,
       players: teamPlayers.sort(
         (a, b) => (a.pick_number || 0) - (b.pick_number || 0)
@@ -459,73 +546,72 @@ export default function Results() {
             animate={{ opacity: 1 }}
             className={`grid ${getTeamGridClass(numTeams)} gap-2`}
           >
-          {teams.map((team, teamIdx) => (
-            <motion.div
-              key={team.number}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: teamIdx * 0.1 }}
-              className="bg-black/30 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10"
-            >
-              {/* Captain Header */}
-              <div
-                className={`${getCaptainColor(team.number)} p-2 flex flex-col items-center gap-1`}
+          {teams.map((team, teamIdx) => {
+            // Build the full team roster: captain (if any) + picks. Captain is
+            // just another player in the list — no longer "the team representative".
+            const fullRoster = [
+              ...(team.playerId
+                ? [{
+                    id: team.playerId,
+                    display_name: team.name,
+                    photo_url: team.photoUrl ?? null,
+                    isCaptain: true,
+                  }]
+                : []),
+              ...team.players.map((p) => ({ ...p, isCaptain: false })),
+            ];
+            return (
+              <motion.div
+                key={team.number}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: teamIdx * 0.1 }}
+                className="bg-black/30 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10"
               >
-                {isSoloDraft ? (
-                  <span className="text-white font-bold text-sm py-1">
-                    {team.name}
-                  </span>
-                ) : (
-                  <>
-                    <div className="relative">
+                {/* Team Symbol — logo + name in ribbon */}
+                <div className="p-2 flex items-center justify-center bg-black/20">
+                  <TeamSymbol
+                    roomCode={room.room_code}
+                    teamNumber={team.number}
+                    captainName={team.name}
+                    displayNameOverride={team.displayName}
+                    size={96}
+                    variant="with-name"
+                  />
+                </div>
+
+                {/* Full team roster — 5 players including captain */}
+                <div className="p-1.5 space-y-1">
+                  {fullRoster.map((player, idx) => (
+                    <motion.div
+                      key={player.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 + idx * 0.03 }}
+                      className="flex items-center gap-1.5 bg-white/10 rounded-lg p-1.5"
+                    >
                       <PlayerAvatar
-                        name={team.name}
-                        photoUrl={team.photoUrl}
-                        size="md"
-                        className="border-2 border-white/40"
+                        name={player.display_name}
+                        photoUrl={player.photo_url}
+                        size="xs"
+                        className="flex-shrink-0"
                       />
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
-                        <Crown className="h-3 w-3 text-yellow-900" />
-                      </div>
-                    </div>
-                    <span className="text-white font-bold text-sm truncate max-w-full px-1">
-                      {truncateName(team.name, 10)}
-                    </span>
-                  </>
-                )}
-              </div>
+                      <span className="text-white text-xs font-medium truncate">
+                        {truncateName(player.display_name, 9)}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
 
-              {/* Team Players */}
-              <div className="p-1.5 space-y-1">
-                {team.players.map((player, idx) => (
-                  <motion.div
-                    key={player.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 + idx * 0.03 }}
-                    className="flex items-center gap-1.5 bg-white/10 rounded-lg p-1.5"
-                  >
-                    <PlayerAvatar
-                      name={player.display_name}
-                      photoUrl={player.photo_url}
-                      size="xs"
-                      className="flex-shrink-0"
-                    />
-                    <span className="text-white text-xs font-medium truncate">
-                      {truncateName(player.display_name, 9)}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Team count */}
-              <div className="px-2 py-1.5 text-center border-t border-white/10">
-                <span className="text-white/60 text-xs">
-                  {t("players", { count: team.players.length + (isSoloDraft ? 0 : 1) })}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+                {/* Team count */}
+                <div className="px-2 py-1.5 text-center border-t border-white/10">
+                  <span className="text-white/60 text-xs">
+                    {t("players", { count: fullRoster.length })}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
           </motion.div>
         </div>
       </div>
@@ -562,7 +648,7 @@ export default function Results() {
                 animate={isActive ? { scale: [1, 1.2, 1] } : {}}
                 className={`
                   relative flex flex-col items-center justify-center gap-0.5
-                  w-14 h-16 rounded-xl transition-all duration-200
+                  w-11 h-12 rounded-lg transition-all duration-200
                   ${isActive
                     ? "bg-white/30 ring-2 ring-white/50"
                     : "bg-white/10 hover:bg-white/20"
@@ -570,7 +656,7 @@ export default function Results() {
                 `}
                 title={t(labelKey)}
               >
-                <span className="text-2xl">{emoji}</span>
+                <span className="text-lg">{emoji}</span>
                 {count > 0 && (
                   <motion.span
                     key={count}
@@ -589,20 +675,24 @@ export default function Results() {
 
       {/* Actions */}
       <div className="relative z-10 px-4 py-4 flex flex-col gap-2">
-        {/* Primary: Share to WhatsApp with text */}
+        {/* 1. Primary: Share to WhatsApp (text + uploaded image URL) */}
         <Button
           onClick={shareViaWhatsApp}
+          disabled={generatingImage}
           className="w-full gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white h-12 text-base"
         >
-          <MessageCircle className="h-5 w-5" />
+          {generatingImage ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <MessageCircle className="h-5 w-5" />
+          )}
           {t("share.button")}
         </Button>
 
-        {/* Remake Draft - club members */}
+        {/* 2. New Draft with Same Players — club members */}
         {canManageDraft && (
           <Button
             onClick={() => {
-              // Navigate to create-draft with remake state
               navigate("/create-draft", {
                 state: {
                   remake: true,
@@ -621,7 +711,7 @@ export default function Results() {
           </Button>
         )}
 
-        {/* Game Night button — club members */}
+        {/* 4. Start Football Night — club members */}
         {canManageDraft && (
           <Button
             onClick={async () => {
@@ -659,20 +749,6 @@ export default function Results() {
           </Button>
         )}
 
-        {/* Share as Image */}
-        <Button
-          onClick={handleShareImage}
-          disabled={generatingImage}
-          className="w-full gap-2 bg-white/15 hover:bg-white/25 text-white h-11 border border-white/20"
-        >
-          {generatingImage ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <ImageIcon className="h-5 w-5" />
-          )}
-          {t("share.imageButton")}
-        </Button>
-
         {/* Secondary actions */}
         <div className="flex gap-2">
           <Button
@@ -694,11 +770,6 @@ export default function Results() {
             </Link>
           </Button>
         </div>
-      </div>
-
-      {/* PWA Install Prompt */}
-      <div className="relative z-10 px-4 pt-2">
-        <InstallPromptBanner variant="results" />
       </div>
 
       {/* Smart CTA - non-club visitors */}
@@ -983,6 +1054,7 @@ export default function Results() {
       <ShareCard
         ref={shareCardRef}
         draftName={room.draft_name}
+        roomCode={room.room_code}
         teams={teams}
         location={room.location}
         isSoloDraft={isSoloDraft}
