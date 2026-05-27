@@ -342,8 +342,31 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
             padding: `16px ${L.bodyPaddingX}px 16px`,
             boxSizing: "border-box",
           }}>
-            {/* Draft name */}
-            <div style={{ textAlign: "center", marginBottom: 56, flexShrink: 0 }}>
+            {/* Draft name + club logo */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 18,
+              marginBottom: 56,
+              flexShrink: 0,
+            }}>
+              {clubLogoUrl && (
+                <img
+                  src={clubLogoUrl}
+                  alt=""
+                  crossOrigin="anonymous"
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 12,
+                    objectFit: "cover",
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    flexShrink: 0,
+                  }}
+                />
+              )}
               <div style={{
                 color: "#fff",
                 fontSize: 44,
@@ -351,6 +374,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                 letterSpacing: "-0.02em",
                 textShadow: "0 2px 20px rgba(0,0,0,0.7)",
                 lineHeight: 1.05,
+                textAlign: "center",
               }}>
                 {draftName}
               </div>

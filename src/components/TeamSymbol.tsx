@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getTeamAnimal, getTeamDisplayName } from "@/lib/captainHelpers";
-import { FAMILY_COLORS, getTeamSymbolIconUrl } from "@/lib/teamSymbols";
+import { getTeamSymbolIconUrl } from "@/lib/teamSymbols";
 import { composeTeamSymbol, getCachedTeamSymbol } from "@/lib/composeTeamSymbol";
 
 interface TeamSymbolProps {
@@ -40,7 +40,6 @@ export function TeamSymbol({
   forCanvas = false,
 }: TeamSymbolProps) {
   const animal = getTeamAnimal(roomCode, teamNumber);
-  const familyColors = FAMILY_COLORS[animal.family];
   const displayName =
     displayNameOverride ?? getTeamDisplayName(roomCode, teamNumber, captainName);
   const showName = variant === "with-name";
@@ -94,27 +93,27 @@ export function TeamSymbol({
         overflow: isCircle ? "hidden" : "visible",
       }}
     >
-      {/* Placeholder fallback shown while loading / composing / on error.
-          Family-color circle + animal's first letter. */}
+      {/* Subtle loading spinner shown while the logo / composed image loads. */}
       {(imgStatus !== "loaded" || !symbolUrl) && (
         <div
           style={{
             position: "absolute",
             inset: 0,
-            borderRadius: isCircle ? "50%" : "16%",
-            background: familyColors.bg,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: familyColors.fg,
-            fontFamily: "'Heebo', 'Rubik', 'Inter', sans-serif",
-            fontWeight: 800,
-            lineHeight: 1,
-            fontSize: size * 0.4,
-            boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.15)",
           }}
         >
-          {animal.en.charAt(0)}
+          <div
+            className="animate-spin"
+            style={{
+              width: Math.max(14, size * 0.2),
+              height: Math.max(14, size * 0.2),
+              border: `${Math.max(1.5, size * 0.022)}px solid rgba(255,255,255,0.12)`,
+              borderTopColor: "rgba(255,255,255,0.55)",
+              borderRadius: "50%",
+            }}
+          />
         </div>
       )}
 

@@ -86,7 +86,7 @@ interface RoomPlayer {
 
 export default function NightResults() {
   const { nightId } = useParams<{ nightId: string }>();
-  const { isMember } = useClubContext();
+  const { isMember, currentClub } = useClubContext();
   const { toast } = useToast();
   const { t } = useTranslation("gamenight");
 
@@ -486,7 +486,10 @@ export default function NightResults() {
                     />
                     <span className="flex-1 text-white font-medium text-sm">{assister.player_name}</span>
                     <span className={`font-bold ${i === 0 ? "text-yellow-400" : "text-white/60"}`}>
-                      🧑‍🍳 {assister.assists}
+                      <span className="inline-flex items-center gap-1">
+                        {assister.assists}
+                        <img src="/assets/icons/chef-hat.webp" alt="" className="w-4 h-4 inline-block" />
+                      </span>
                     </span>
                   </div>
                 ))}
@@ -674,8 +677,8 @@ export default function NightResults() {
         <NightRecapCard
           ref={recapCardRef}
           draftName={summary.draft_name}
-          clubName={null /* could plumb through if needed */}
-          clubLogoUrl={null}
+          clubName={currentClub?.name ?? summary.club_name ?? null}
+          clubLogoUrl={currentClub?.logo_url ?? null}
           roomCode={summary.room_code}
           startedAt={summary.started_at}
           totalGames={summary.total_games}

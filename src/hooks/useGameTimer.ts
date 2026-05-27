@@ -49,6 +49,12 @@ export function useGameTimer(options: UseGameTimerOptions = {}) {
   const elapsedBeforePauseRef = useRef<number>(0);
   const rafIdRef = useRef<number>(0);
   const durationRef = useRef<number>(regularDurationMs);
+  // Mirror of currentPeriod for use inside tick — React state is async, so when
+  // startExtraTime() flips the period and immediately requests a new tick, the
+  // tick's closure still holds the OLD period until React rerenders. Without
+  // this ref, the extra-time time-up fires as if it were the regular time-up,
+  // which spawns another extra-time loop.
+  const currentPeriodRef = useRef<"regular" | "extra_time">("regular");
   // Warning flags — fire once per period
   const twoMinFiredRef = useRef(false);
   const oneMinFiredRef = useRef(false);
@@ -83,12 +89,14 @@ export function useGameTimer(options: UseGameTimerOptions = {}) {
     if (remaining <= 0) {
       cancelAnimationFrame(rafIdRef.current);
       setState("TIME_UP");
-      onTimeUp?.(currentPeriod === "regular" ? "regular" : "extra_time");
+      // Read from ref (always current), not closure (could be stale right after
+      // startExtraTime() flipped the period).
+      onTimeUp?.(currentPeriodRef.current);
       return;
     }
 
     rafIdRef.current = requestAnimationFrame(tick);
-  }, [onTwoMinWarning, onOneMinWarning, onLastAttack, onTimeUp, lastAttackWarningMs, currentPeriod]);
+  }, [onTwoMinWarning, onOneMinWarning, onLastAttack, onTimeUp, lastAttackWarningMs]);
 
   const startTicking = useCallback(() => {
     startTimeRef.current = performance.now();
@@ -99,6 +107,7 @@ export function useGameTimer(options: UseGameTimerOptions = {}) {
     durationRef.current = regularDurationMs;
     elapsedBeforePauseRef.current = 0;
     setRemainingMs(regularDurationMs);
+    currentPeriodRef.current = "regular";
     setCurrentPeriod("regular");
     resetWarningFlags();
     setState("PLAYING");
@@ -121,6 +130,7 @@ export function useGameTimer(options: UseGameTimerOptions = {}) {
     durationRef.current = extraTimeDurationMs;
     elapsedBeforePauseRef.current = 0;
     setRemainingMs(extraTimeDurationMs);
+    currentPeriodRef.current = "extra_time";
     setCurrentPeriod("extra_time");
     resetWarningFlags();
     setState("EXTRA_TIME");
@@ -147,6 +157,7 @@ export function useGameTimer(options: UseGameTimerOptions = {}) {
     elapsedBeforePauseRef.current = 0;
     durationRef.current = regularDurationMs;
     setRemainingMs(regularDurationMs);
+    currentPeriodRef.current = "regular";
     setCurrentPeriod("regular");
     resetWarningFlags();
     setState("PRE_GAME");
@@ -160,6 +171,7 @@ export function useGameTimer(options: UseGameTimerOptions = {}) {
       elapsedBeforePauseRef.current = elapsedMs;
       const remaining = Math.max(0, duration - elapsedMs);
       setRemainingMs(remaining);
+      currentPeriodRef.current = period;
       setCurrentPeriod(period);
       resetWarningFlags();
 

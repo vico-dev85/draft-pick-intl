@@ -629,9 +629,17 @@ export default function Players() {
       toast({ title: t("delete.success") });
     } catch (err) {
       console.error("Error deleting player:", err);
+      // FK violation = player has draft/game history blocking the delete.
+      // Surface a more useful message than the generic toast.
+      const msg = (err as { message?: string })?.message ?? "";
+      const isFkViolation =
+        msg.includes("violates foreign key constraint") ||
+        msg.includes("23503");
       toast({
         title: t("toast.error"),
-        description: t("toast.deleteError"),
+        description: isFkViolation
+          ? "This player has draft or game history. Run migration 20260527_player_delete_cascade.sql to allow deletes."
+          : t("toast.deleteError"),
         variant: "destructive",
       });
     }

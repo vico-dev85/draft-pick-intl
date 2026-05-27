@@ -149,9 +149,12 @@ export function useClubContext(): ClubContext {
         canCreateDrafts: clubLink.is_owner || clubLink.can_create_drafts,
         canSendInvites: clubLink.is_owner || clubLink.can_send_invites,
       },
-      playerId: clubLink.is_owner ? null : clubLink.player_id,
-      playerName: clubLink.is_owner ? null : clubLink.player_name,
-      playerPhoto: clubLink.is_owner ? null : (clubLink.player_photo || null),
+      // Expose the player record whenever one exists — owners can add themselves
+      // to their own player pool, and we want their personal stats to surface
+      // (clubLink.player_id is "" when the owner has no user_players row).
+      playerId: clubLink.player_id || null,
+      playerName: clubLink.player_name || null,
+      playerPhoto: clubLink.player_photo || null,
       loading: false,
     };
   }, [loading, authLoading, clubLink]);

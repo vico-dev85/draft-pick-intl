@@ -85,8 +85,10 @@ function PlayerStatRow({
   photo?: string | null;
   name: string;
   count: number;
+  /** Symbol next to the count — emoji string OR image URL. Image URLs end with .webp/.png/.svg. */
   unit: string;
 }) {
+  const isImage = /\.(webp|png|svg|jpg|jpeg)$/i.test(unit);
   const trophy = rank <= 3 ? RANK_TROPHIES[rank - 1] : "";
   return (
     <div style={{
@@ -144,7 +146,24 @@ function PlayerStatRow({
         fontWeight: 800,
         fontVariantNumeric: "tabular-nums",
       }}>
-        {count}<span style={{ fontSize: 14, marginLeft: 4, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{unit}</span>
+        {count}
+        {isImage ? (
+          <img
+            src={unit}
+            alt=""
+            crossOrigin="anonymous"
+            style={{
+              display: "inline-block",
+              width: 22,
+              height: 22,
+              marginLeft: 5,
+              verticalAlign: "-5px",
+              objectFit: "contain",
+            }}
+          />
+        ) : (
+          <span style={{ fontSize: 14, marginLeft: 4, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{unit}</span>
+        )}
       </span>
     </div>
   );
@@ -259,8 +278,24 @@ export const NightRecapCard = forwardRef<HTMLDivElement, NightRecapCardProps>(
             padding: "20px 28px 18px",
             boxSizing: "border-box",
           }}>
-            {/* Title */}
-            <div style={{ textAlign: "center", marginBottom: 18, flexShrink: 0 }}>
+            {/* Title — club logo top-left as a hero crest, title stays centered */}
+            <div style={{ marginBottom: 18, flexShrink: 0, textAlign: "center", position: "relative", minHeight: 120 }}>
+              {clubLogoUrl && (
+                <img
+                  src={clubLogoUrl}
+                  alt=""
+                  crossOrigin="anonymous"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: 120,
+                    height: 120,
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.6))",
+                  }}
+                />
+              )}
               <div style={{
                 color: "#fff",
                 fontSize: 46,
@@ -268,6 +303,7 @@ export const NightRecapCard = forwardRef<HTMLDivElement, NightRecapCardProps>(
                 letterSpacing: "-0.02em",
                 textShadow: "0 2px 20px rgba(0,0,0,0.7)",
                 lineHeight: 1.05,
+                paddingTop: 30,
               }}>
                 {draftName || "Game Night"} — Recap
               </div>
@@ -397,7 +433,7 @@ export const NightRecapCard = forwardRef<HTMLDivElement, NightRecapCardProps>(
                       photo={p.player_photo}
                       name={p.player_name}
                       count={p.assists}
-                      unit="🧑‍🍳"
+                      unit="/assets/icons/chef-hat.webp"
                     />
                   ))}
                 </div>

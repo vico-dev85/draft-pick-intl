@@ -208,9 +208,13 @@ export default function GameNight() {
       enqueue({ priority: 3, ttsText: t("tts.lastAttack") });
     },
     onTimeUp: (period) => {
+      // Read scores from refs — the onTimeUp closure was captured at hook init
+      // and won't have the latest scoreA/scoreB if goals were scored mid-game.
+      const sA = scoreARef.current;
+      const sB = scoreBRef.current;
       if (period === "regular") {
         // Check if tied
-        if (scoreA === scoreB) {
+        if (sA === sB) {
           enqueue({ priority: 4, sound: "whistle.mp3", ttsText: t("tts.drawExtraTime"), ttsDelay: 800 });
           setTimeout(() => {
             timer.startExtraTime();
@@ -228,7 +232,7 @@ export default function GameNight() {
         }
       } else {
         // Extra time ended
-        if (scoreA === scoreB) {
+        if (sA === sB) {
           enqueue({ priority: 5, ttsText: t("tts.penalties") });
           timer.goToPenalties();
           setView("penalties");

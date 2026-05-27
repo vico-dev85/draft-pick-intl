@@ -27,6 +27,7 @@ import {
 import { ClubSettings } from "@/components/ClubSettings";
 import { SelfieAvatarEditor } from "@/components/SelfieAvatarEditor";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { PlayerStatsCard, ClubLeaderboardsCard } from "@/components/PlayerStats";
 import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { Logo } from "@/components/ui/logo";
@@ -73,6 +74,7 @@ export default function Dashboard() {
 
   // Member welcome (after accepting invite)
   const [showMemberWelcome, setShowMemberWelcome] = useState(false);
+  const [showMemberSelfiePrompt, setShowMemberSelfiePrompt] = useState(false);
 
   // Onboarding selfie prompt (before 3-step walkthrough)
   const [showOnboardingSelfie, setShowOnboardingSelfie] = useState(false);
@@ -92,6 +94,8 @@ export default function Dashboard() {
         if (flag) {
           localStorage.removeItem("pnk_just_joined_club");
           setShowMemberWelcome(true);
+          // Flag so the selfie prompt opens after the welcome modal closes
+          localStorage.setItem("pnk_offer_selfie_after_welcome", "1");
         }
       } catch {}
     }
@@ -571,9 +575,18 @@ export default function Dashboard() {
                     <h2 className="text-xl font-heading font-bold text-foreground truncate">
                       {user?.user_metadata?.full_name || user?.email?.split("@")[0] || t("profile.defaultOwnerName")}
                     </h2>
-                    <p className="text-muted-foreground text-sm">
-                      {currentClub.name}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      {currentClub.logo_url && (
+                        <img
+                          src={currentClub.logo_url}
+                          alt=""
+                          className="w-5 h-5 rounded-md object-cover border border-border"
+                        />
+                      )}
+                      <p className="text-muted-foreground text-sm truncate">
+                        {currentClub.name}
+                      </p>
+                    </div>
                     <div className="flex items-center gap-1.5 mt-1">
                       <Crown className="h-3.5 w-3.5 text-amber-400" />
                       <span className="text-amber-400 text-xs">{t("profile.clubOwner")}</span>
@@ -681,6 +694,16 @@ export default function Dashboard() {
                 </Button>
               </div>
             </motion.div>
+
+            {/* Personal Stats — always shows when a club exists; the card handles
+                empty states (owner without player record / 0 games played). */}
+            {currentClub && (
+              <PlayerStatsCard
+                playerId={playerId}
+                playerName={playerName ?? (user?.user_metadata?.full_name as string | undefined) ?? user?.email?.split("@")[0] ?? "You"}
+                playerPhoto={localPhotoUrl || playerPhoto}
+              />
+            )}
 
             {/* Active Drafts */}
             {activeDrafts.length > 0 && (
@@ -840,6 +863,13 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
+
+            {/* Club Leaderboards — public, anyone in the club sees these */}
+            {currentClub && (
+              <div className="mt-6">
+                <ClubLeaderboardsCard clubId={currentClub.id} />
+              </div>
+            )}
           </motion.div>
         </main>
 
@@ -931,7 +961,18 @@ export default function Dashboard() {
 
                 <Button
                   className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base"
-                  onClick={() => setShowMemberWelcome(false)}
+                  onClick={() => {
+                    setShowMemberWelcome(false);
+                    // If the post-invite flow asked us to offer a selfie next, do it
+                    try {
+                      const offer = localStorage.getItem("pnk_offer_selfie_after_welcome");
+                      if (offer) {
+                        localStorage.removeItem("pnk_offer_selfie_after_welcome");
+                        // Small delay so the welcome modal exit anim finishes
+                        setTimeout(() => setShowMemberSelfiePrompt(true), 200);
+                      }
+                    } catch {}
+                  }}
                 >
                   {t("memberWelcome.cta")}
                 </Button>
@@ -993,6 +1034,54 @@ export default function Dashboard() {
                   disabled={importing}
                 >
                   {t("quickDraftImport.skip")}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Member Selfie Prompt — shown right after the join-club welcome */}
+      <AnimatePresence>
+        {showMemberSelfiePrompt && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 z-40"
+              onClick={() => setShowMemberSelfiePrompt(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+                <div className="text-4xl mb-3">📸</div>
+                <h2 className="text-xl font-heading font-bold text-foreground">
+                  Add your photo
+                </h2>
+                <p className="text-muted-foreground text-sm mt-2 mb-6">
+                  Take a quick selfie so the rest of the group can spot you in
+                  team line-ups and share images. You can do this anytime later.
+                </p>
+                <Button
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base"
+                  onClick={() => {
+                    setShowMemberSelfiePrompt(false);
+                    setShowMemberSelfieEditor(true);
+                  }}
+                >
+                  📸 Take selfie
+                </Button>
+                <button
+                  onClick={() => setShowMemberSelfiePrompt(false)}
+                  className="mt-3 text-muted-foreground text-sm hover:text-foreground transition-colors"
+                >
+                  Skip for now
                 </button>
               </div>
             </motion.div>

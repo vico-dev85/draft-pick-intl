@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 import { motion } from "framer-motion";
@@ -49,6 +49,7 @@ export default function AcceptInvite() {
   const [peekData, setPeekData] = useState<PeekResult | null>(null);
   const [inviteData, setInviteData] = useState<{ playerName?: string; clubName?: string } | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [anonLoading, setAnonLoading] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [emailTab, setEmailTab] = useState<EmailTab>("signup");
   const [showPassword, setShowPassword] = useState(false);
@@ -58,6 +59,12 @@ export default function AcceptInvite() {
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  // Guard against the auto-accept effect firing twice (e.g. when Supabase's
+  // onAuthStateChange emits SIGNED_IN then TOKEN_REFRESHED in quick succession).
+  // Without this, the second call to accept_player_invite fails with "Invalid"
+  // because the token was already consumed by the first call.
+  const acceptingRef = useRef(false);
 
   // Store token in both sessionStorage and localStorage for cross-tab survival
   useEffect(() => {
@@ -126,7 +133,8 @@ export default function AcceptInvite() {
     }
   }, [authLoading, token, user]);
 
-  // When user becomes authenticated while on invite-preview, auto-accept
+  // When user becomes authenticated while on invite-preview, auto-accept.
+  // Duplicate-call protection is inside handleAcceptInvite via acceptingRef.
   useEffect(() => {
     if (user && status === "invite-preview") {
       handleAcceptInvite();
@@ -134,11 +142,17 @@ export default function AcceptInvite() {
   }, [user, status]);
 
   const handleAcceptInvite = async () => {
+    // Guard: prevent ANY duplicate accept attempts regardless of which code
+    // path called us (peek auto-accept, auth state effect, button click, etc.)
+    if (acceptingRef.current) return;
+    acceptingRef.current = true;
+
     const inviteToken = token || sessionStorage.getItem("pendingInviteToken") || localStorage.getItem("pendingInviteToken");
 
     if (!inviteToken) {
       setError(t("auth:invite.missingLink"));
       setStatus("error");
+      acceptingRef.current = false; // allow retry
       return;
     }
 
@@ -204,6 +218,33 @@ export default function AcceptInvite() {
         variant: "destructive",
       });
       setGoogleLoading(false);
+    }
+  };
+
+  /**
+   * Quick anonymous sign-in. Creates a real (but anonymous) Supabase user
+   * tied to this device. The auto-accept effect then links them to the
+   * invited player record. No email/password required, session persists
+   * indefinitely on this device (browser localStorage).
+   */
+  const handleAnonymousSignIn = async () => {
+    setAnonLoading(true);
+    try {
+      const { error } = await supabase.auth.signInAnonymously();
+      if (error) {
+        // Most common cause: Anonymous Sign-Ins not enabled in Supabase Dashboard
+        toast({
+          title: t("auth:errors.loginError"),
+          description: error.message,
+          variant: "destructive",
+        });
+        setAnonLoading(false);
+      }
+      // On success, useAuth's listener will set `user`, triggering the
+      // auto-accept effect upstream which calls accept_player_invite.
+    } catch (err) {
+      console.error("Anonymous sign-in failed:", err);
+      setAnonLoading(false);
     }
   };
 
@@ -335,8 +376,38 @@ export default function AcceptInvite() {
                   : t("auth:invite.signInToJoin")}
               </p>
 
-              {/* Google OAuth — Primary */}
               <div className="space-y-3">
+                {/* Quick Join (anonymous) — primary CTA when we know the player's name */}
+                {peekData?.player_name && (
+                  <>
+                    <Button
+                      type="button"
+                      className="w-full h-12 bg-purple-600 hover:bg-purple-500 text-white font-bold text-base shadow-lg shadow-purple-600/30"
+                      disabled={anonLoading}
+                      onClick={handleAnonymousSignIn}
+                    >
+                      {anonLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <>
+                          <UserPlus className="h-5 w-5 mr-2" />
+                          Continue as {peekData.player_name}
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-white/50 text-xs text-center -mt-1">
+                      Quick join — stays signed in on this device. No password needed.
+                    </p>
+                    {/* Divider — separates quick-join from email/Google */}
+                    <div className="flex items-center gap-4 pt-2">
+                      <div className="flex-1 h-px bg-white/10" />
+                      <span className="text-white/30 text-xs uppercase tracking-wider">{t("auth:form.or")}</span>
+                      <div className="flex-1 h-px bg-white/10" />
+                    </div>
+                  </>
+                )}
+
+                {/* Google OAuth */}
                 <Button
                   type="button"
                   className="w-full h-12 bg-white hover:bg-white/90 text-gray-700 font-medium"
@@ -544,6 +615,17 @@ export default function AcceptInvite() {
               <h2 className="text-xl font-bold text-white mb-2">{t("auth:invite.somethingWentWrongTitle")}</h2>
               <p className="text-white/70 mb-6">{error}</p>
               <div className="space-y-3">
+                {/* If we're already signed in despite the error, the link
+                    may have already been consumed successfully — surface a
+                    direct path to the dashboard. */}
+                {user && (
+                  <Button
+                    onClick={handleGoToDashboard}
+                    className="w-full h-12 bg-purple-500 hover:bg-purple-600 text-white font-bold"
+                  >
+                    {t("auth:invite.goToDashboard")}
+                  </Button>
+                )}
                 <Button
                   onClick={() => navigate("/")}
                   className="w-full h-12 bg-white/10 hover:bg-white/20 text-white"
