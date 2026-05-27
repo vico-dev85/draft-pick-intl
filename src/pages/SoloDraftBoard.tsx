@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -105,6 +105,7 @@ function DroppablePoolZone({ children }: { children: React.ReactNode }) {
 
 export default function SoloDraftBoard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useTranslation("draft");
   const { user, loading: authLoading } = useAuth();
@@ -166,6 +167,53 @@ export default function SoloDraftBoard() {
   useEffect(() => {
     preloadSounds();
   }, []);
+
+  // Pre-fill from URL params (used by the WhatsApp bot's /solo command).
+  //   ?s=<CODE>                — short code (preferred, looks up preset in DB)
+  //   ?players=<id1>,<id2>...  — explicit list (fallback / direct linking)
+  //   ?teams=<2|3>             — team count
+  // Runs once the roster is loaded; respects manual selections.
+  useEffect(() => {
+    if (allPlayers.length === 0) return;
+    if (selectedPlayerIds.length > 0) return;
+
+    let cancelled = false;
+
+    const applyIds = (ids: string[], teams?: number) => {
+      if (cancelled) return;
+      const valid = ids.filter((id) => allPlayers.some((p) => p.id === id));
+      if (valid.length > 0) setSelectedPlayerIds(valid);
+      if (teams === 2 || teams === 3) setNumTeams(teams);
+    };
+
+    const code = searchParams.get("s");
+    if (code) {
+      // Resolve short code via DB
+      (async () => {
+        const { data, error } = await supabase.rpc("get_solo_preset", {
+          p_code: code.toUpperCase(),
+        });
+        if (cancelled) return;
+        if (error || !data || data.length === 0) {
+          console.warn("Solo preset not found or expired:", code, error?.message);
+          return;
+        }
+        const row = data[0] as { player_ids: string[]; num_teams: number };
+        applyIds(row.player_ids, row.num_teams);
+      })();
+      return () => { cancelled = true; };
+    }
+
+    const playersParam = searchParams.get("players");
+    if (playersParam) {
+      const ids = playersParam.split(",").map((s) => s.trim()).filter(Boolean);
+      const teamsParam = searchParams.get("teams");
+      const teams = teamsParam ? parseInt(teamsParam, 10) : undefined;
+      applyIds(ids, teams);
+    }
+
+    return () => { cancelled = true; };
+  }, [allPlayers, searchParams]);
 
   const fetchPlayers = async () => {
     try {
